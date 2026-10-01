@@ -221,21 +221,31 @@ h2 {
 }
 
 .aviso-item {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 5px;
     width: 100%;
-    padding: 13px 16px;
     color: rgba(240, 240, 240, 0.78);
     text-align: left;
     background: transparent;
-    border: 0;
     border-bottom: 1px solid rgba(150, 150, 150, 0.1);
-    cursor: pointer;
 }
 
 .aviso-item:hover,
 .aviso-item.nao-lido {
     background: rgba(240, 120, 24, 0.08);
+}
+
+.aviso-item-abrir {
+    display: grid;
+    gap: 5px;
+    width: 100%;
+    padding: 13px 16px 8px;
+    color: inherit;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
 }
 
 .aviso-item span,
@@ -260,6 +270,45 @@ h2 {
 .aviso-item time {
     color: rgba(240, 240, 240, 0.38);
     font: 0.62rem 'Poppins', sans-serif;
+}
+
+.aviso-amizade-acoes {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 11px;
+}
+
+.aviso-amizade-acoes button {
+    min-height: 29px;
+    padding: 0 10px;
+    color: #eeeeee;
+    font: 600 0.65rem 'Poppins', sans-serif;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.aviso-amizade-acoes button:first-child {
+    color: #ffffff;
+    background: #28784d;
+    border-color: #28784d;
+}
+
+.aviso-amizade-acoes button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.aviso-amizade-resultado,
+.avisos-erro {
+    padding: 0 16px 10px;
+    color: rgba(240, 240, 240, 0.56);
+    font: 0.68rem 'Poppins', sans-serif;
+}
+
+.avisos-erro {
+    color: #ffaaa0;
 }
 
 .avisos-vazio {
@@ -816,6 +865,10 @@ main.container-site {
     transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
+.btn-mensagens-header {
+    white-space: nowrap;
+}
+
 .btn-filtro:hover {
     color: #000000;
     background: #ffffff;
@@ -1094,6 +1147,362 @@ main.container-site {
 .link-avatar-card:focus-visible {
     outline: 2px solid var(--souls-brasa);
     outline-offset: 2px;
+}
+
+.perfil-erro-amizade {
+    margin: 14px 0 0;
+    color: #ffaaa0;
+    font: 0.76rem/1.5 'Poppins', sans-serif;
+    text-align: right;
+}
+
+.mensagens-privadas-page {
+    display: grid;
+    grid-template-columns: minmax(240px, 310px) minmax(0, 1fr);
+    width: min(1440px, 100%);
+    height: calc(100dvh - 76px);
+    min-height: 480px;
+    margin: 0 auto;
+    overflow: hidden;
+    color: #eeeeee;
+    background: #101010;
+    border: 1px solid rgba(190, 190, 190, 0.14);
+}
+
+.mensagens-privadas-lista {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #151515;
+    border-right: 1px solid rgba(190, 190, 190, 0.12);
+}
+
+.mensagens-privadas-lista > header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 20px 16px;
+    border-bottom: 1px solid rgba(190, 190, 190, 0.12);
+}
+
+.mensagens-privadas-lista h1 {
+    margin: 0;
+    color: #f2f2f2;
+    font: 700 1rem 'Cinzel', serif;
+}
+
+.mensagens-privadas-lista > header > span {
+    color: rgba(230, 230, 230, 0.48);
+    font: 0.66rem 'Poppins', sans-serif;
+}
+
+.mensagem-privada-contato {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 66px;
+    padding: 10px 14px;
+    color: #eeeeee;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(190, 190, 190, 0.08);
+    cursor: pointer;
+}
+
+.mensagem-privada-contato:hover,
+.mensagem-privada-contato.ativo {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.mensagem-privada-contato img,
+.mensagem-privada-cabecalho > img,
+.mensagem-privada-avatar-vazio {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+    object-fit: cover;
+    color: rgba(240, 240, 240, 0.72);
+    font: 600 0.8rem 'Cinzel', serif;
+    background: #414141;
+    border-radius: 50%;
+}
+
+.mensagem-privada-contato strong {
+    overflow: hidden;
+    font: 600 0.76rem 'Poppins', sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mensagens-privadas-conversa {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    background:
+        radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.025), transparent 55%),
+        #101010;
+}
+
+.mensagem-privada-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 72px;
+    padding: 12px 20px;
+    background: rgba(18, 18, 18, 0.96);
+    border-bottom: 1px solid rgba(190, 190, 190, 0.12);
+}
+
+.mensagem-privada-cabecalho > div {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+.mensagem-privada-cabecalho strong {
+    overflow: hidden;
+    color: #f2f2f2;
+    font: 600 0.82rem 'Poppins', sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mensagem-privada-cabecalho > div > span {
+    color: rgba(230, 230, 230, 0.48);
+    font: 0.64rem 'Poppins', sans-serif;
+}
+
+.mensagem-privada-perfil,
+.mensagem-privada-voltar {
+    min-height: 32px;
+    margin-left: auto;
+    padding: 0 10px;
+    color: rgba(240, 240, 240, 0.74);
+    font: 600 0.66rem 'Poppins', sans-serif;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(220, 220, 220, 0.13);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.mensagem-privada-voltar {
+    display: none;
+    margin: 0;
+}
+
+.mensagem-privada-perfil:hover,
+.mensagem-privada-voltar:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.mensagens-privadas-historico {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    padding: 24px clamp(16px, 5vw, 64px) 110px;
+    scrollbar-color: rgba(190, 190, 190, 0.25) transparent;
+    scrollbar-width: thin;
+}
+
+.mensagem-privada-balao {
+    align-self: flex-start;
+    width: fit-content;
+    max-width: min(78%, 620px);
+    padding: 9px 12px 6px;
+    color: #eeeeee;
+    background: #202020;
+    border-radius: 12px 12px 12px 3px;
+}
+
+.mensagem-privada-balao.propria {
+    align-self: flex-end;
+    background: #30343a;
+    border-radius: 12px 12px 3px 12px;
+}
+
+.mensagem-privada-balao p {
+    margin: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    font: 0.82rem/1.5 'Poppins', sans-serif;
+}
+
+.mensagem-privada-balao time {
+    display: block;
+    margin-top: 4px;
+    color: rgba(230, 230, 230, 0.48);
+    font: 0.58rem 'Poppins', sans-serif;
+    text-align: right;
+}
+
+.mensagens-privadas-compositor {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 9px;
+    padding: 14px clamp(12px, 4vw, 40px) max(14px, env(safe-area-inset-bottom));
+    background: linear-gradient(transparent, rgba(12, 12, 12, 0.98) 20%);
+}
+
+.mensagens-privadas-compositor textarea {
+    width: min(100%, 900px);
+    min-height: 46px;
+    max-height: 150px;
+    flex: 1;
+    padding: 12px 14px;
+    color: #eeeeee;
+    font: 0.78rem/1.4 'Poppins', sans-serif;
+    resize: vertical;
+    background: #222222;
+    border: 1px solid rgba(220, 220, 220, 0.15);
+    border-radius: 8px;
+}
+
+.mensagens-privadas-compositor button {
+    min-height: 42px;
+    padding: 0 15px;
+    color: #101010;
+    font: 600 0.72rem 'Poppins', sans-serif;
+    background: var(--souls-brasa);
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.mensagens-privadas-compositor button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mensagens-privadas-vazio,
+.mensagens-privadas-erro {
+    margin: auto;
+    padding: 20px;
+    color: rgba(230, 230, 230, 0.56);
+    font: 0.74rem/1.6 'Poppins', sans-serif;
+    text-align: center;
+}
+
+.mensagens-privadas-erro {
+    position: absolute;
+    right: 16px;
+    bottom: 76px;
+    left: 16px;
+    margin: 0;
+    padding: 8px;
+    color: #ffaaa0;
+    background: rgba(20, 20, 20, 0.94);
+}
+
+.mensagens-privadas-selecione {
+    display: grid;
+    flex: 1;
+    align-content: center;
+    justify-items: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+}
+
+.mensagens-privadas-selecione h2 {
+    margin: 0;
+    color: #eeeeee;
+    font: 700 1.2rem 'Cinzel', serif;
+}
+
+.mensagens-privadas-selecione p {
+    max-width: 420px;
+    margin: 0;
+    color: rgba(230, 230, 230, 0.56);
+    font: 0.76rem/1.6 'Poppins', sans-serif;
+}
+
+@media (max-width: 768px) {
+    .perfil-erro-amizade {
+        text-align: left;
+    }
+
+    .mensagens-privadas-page {
+        position: relative;
+        grid-template-columns: minmax(0, 1fr);
+        height: calc(100dvh - 65px);
+        min-height: 360px;
+    }
+
+    .mensagens-privadas-lista {
+        border-right: 0;
+    }
+
+    .mensagens-privadas-page.com-conversa .mensagens-privadas-lista {
+        display: none;
+    }
+
+    .mensagens-privadas-page:not(.com-conversa) .mensagens-privadas-conversa {
+        display: none;
+    }
+
+    .mensagem-privada-voltar {
+        display: inline-block;
+    }
+
+    .mensagem-privada-cabecalho {
+        min-height: 62px;
+        gap: 8px;
+        padding: 9px 10px;
+    }
+
+    .mensagem-privada-cabecalho > img,
+    .mensagem-privada-cabecalho > .mensagem-privada-avatar-vazio {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .mensagem-privada-perfil {
+        padding-inline: 7px;
+        font-size: 0.6rem;
+    }
+
+    .mensagens-privadas-historico {
+        padding: 16px 12px 96px;
+    }
+
+    .mensagem-privada-balao {
+        max-width: 86%;
+    }
+
+    .mensagens-privadas-compositor {
+        gap: 6px;
+        padding: 9px 9px max(9px, env(safe-area-inset-bottom));
+    }
+
+    .mensagens-privadas-compositor textarea {
+        min-height: 42px;
+        padding: 10px;
+        font-size: 0.72rem;
+        resize: none;
+    }
+
+    .mensagens-privadas-compositor button {
+        min-height: 40px;
+        padding-inline: 10px;
+        font-size: 0.65rem;
+    }
 }
 
 .perfil-usuario-post {

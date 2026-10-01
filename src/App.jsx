@@ -11,6 +11,7 @@ import ImagemDecorativaAdiada from './components/ImagemDecorativaAdiada';
 const CardPost = lazy(() => import('./components/cards-posts/CardPost'));
 const CardBuild = lazy(() => import('./components/cards-builds/CardBuild'));
 const ChatGlobal = lazy(() => import('./components/ChatGlobal'));
+const MensagensPrivadas = lazy(() => import('./components/MensagensPrivadas'));
 const PaginaLogin = lazy(() => import('./components/autenticacao/PaginaLogin'));
 const PaginaConfigurarPerfil = lazy(() => import('./components/autenticacao/PaginaConfigurarPerfil'));
 const PaginaPerfil = lazy(() => import('./components/autenticacao/PaginaPerfil'));
@@ -434,6 +435,7 @@ function Home() {
           <div className="lado-direito">
             {user ? (
               <>
+                <button className="btn-filtro btn-mensagens-header" type="button" onClick={() => navigate('/mensagens')}>Mensagens</button>
                 <AvisosHeader />
                 <button
                   className="botao-avatar-header"
@@ -1453,6 +1455,16 @@ function App() {
         <Route path="/chat" element={(
           <Suspense fallback={<main className="componente-carregando" role="status">Preparando chat...</main>}>
             <ChatGlobal />
+          </Suspense>
+        )} />
+        <Route path="/mensagens" element={(
+          <Suspense fallback={<main className="componente-carregando" role="status">Preparando conversas...</main>}>
+            <MensagensPrivadas />
+          </Suspense>
+        )} />
+        <Route path="/mensagens/:pessoaId" element={(
+          <Suspense fallback={<main className="componente-carregando" role="status">Preparando conversa...</main>}>
+            <MensagensPrivadas />
           </Suspense>
         )} />
         <Route path="/posts" element={<BibliotecaPosts />} />

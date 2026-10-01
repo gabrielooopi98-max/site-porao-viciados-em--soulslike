@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/useAuth';
+import { criarNotificacao } from '../../services/notificacoes';
 import VisualizadorAvatar from '../VisualizadorAvatar';
 
 function PaginaPerfilPublico() {
@@ -10,6 +11,10 @@ function PaginaPerfilPublico() {
   const { user } = useAuth();
   const [perfil, setPerfil] = useState(null);
   const [seguindo, setSeguindo] = useState(false);
+  const [amizade, setAmizade] = useState(null);
+  const [amizadeCarregadaPara, setAmizadeCarregadaPara] = useState('');
+  const [erroAmizade, setErroAmizade] = useState('');
+  const [salvandoAmizade, setSalvandoAmizade] = useState(false);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
@@ -83,6 +88,88 @@ function PaginaPerfilPublico() {
     return () => { ativo = false; };
   }, [id, user]);
 
+  useEffect(() => {
+    if (!user || user.id === id) return undefined;
+    let ativo = true;
+    supabase
+      .from('amizades')
+      .select('id, solicitante_id, destinatario_id, solicitante_nome, solicitante_avatar_url, destinatario_nome, destinatario_avatar_url, status')
+      .or(`and(solicitante_id.eq.${user.id},destinatario_id.eq.${id}),and(solicitante_id.eq.${id},destinatario_id.eq.${user.id})`)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!ativo) return;
+        if (error) {
+          console.error('Erro ao verificar amizade:', error);
+          setAmizade(null);
+          setErroAmizade('Não foi possível verificar o status de amizade.');
+        } else {
+          setAmizade(data);
+        }
+        setAmizadeCarregadaPara(`${user.id}:${id}`);
+      })
+      .catch((error) => {
+        if (!ativo) return;
+        console.error('Erro ao verificar amizade:', error);
+        setErroAmizade('Não foi possível verificar o status de amizade.');
+        setAmizadeCarregadaPara(`${user.id}:${id}`);
+      });
+
+    return () => { ativo = false; };
+  }, [id, user]);
+
+  const amizadeCarregada = Boolean(user && user.id !== id && amizadeCarregadaPara === `${user.id}:${id}`);
+
+  async function atualizarAmizade(acao) {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (salvandoAmizade || !amizadeCarregada) return;
+
+    setSalvandoAmizade(true);
+    setErroAmizade('');
+    try {
+      if (acao === 'solicitar') {
+        const solicitacao = await supabase.from('amizades').insert({
+          solicitante_id: user.id,
+          destinatario_id: id,
+          solicitante_nome: user.user_metadata?.display_name || 'Viciado em Souls',
+          solicitante_avatar_url: user.user_metadata?.avatar_url || null,
+          destinatario_nome: perfil.nome,
+          destinatario_avatar_url: perfil.avatar || null,
+        }).select('id, solicitante_id, destinatario_id, solicitante_nome, solicitante_avatar_url, destinatario_nome, destinatario_avatar_url, status').single();
+        if (solicitacao.error) throw solicitacao.error;
+
+        const aviso = await criarNotificacao({
+          destinatario_id: id,
+          ator_id: user.id,
+          ator_nome: user.user_metadata?.display_name || 'Viciado em Souls',
+          tipo: 'pedido_amizade',
+          amizade_id: solicitacao.data.id,
+        });
+        if (aviso.error) {
+          const { error: erroReversao } = await supabase.from('amizades').delete().eq('id', solicitacao.data.id).eq('solicitante_id', user.id);
+          if (erroReversao) console.error('Não foi possível desfazer o pedido sem notificação:', erroReversao);
+          throw aviso.error;
+        }
+        setAmizade(solicitacao.data);
+      } else if (acao === 'aceitar') {
+        const resultado = await supabase.from('amizades').update({ status: 'aceita' }).eq('id', amizade.id).eq('destinatario_id', user.id).eq('status', 'pendente').select().single();
+        if (resultado.error) throw resultado.error;
+        setAmizade(resultado.data);
+      } else {
+        const resultado = await supabase.from('amizades').delete().eq('id', amizade.id).eq('status', amizade.status);
+        if (resultado.error) throw resultado.error;
+        setAmizade(null);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar amizade:', error);
+      setErroAmizade(`Não foi possível atualizar a amizade: ${error.message || 'tente novamente.'}`);
+    } finally {
+      setSalvandoAmizade(false);
+    }
+  }
+
   async function alternarSeguir() {
     if (!user) {
       navigate('/login');
@@ -135,7 +222,23 @@ function PaginaPerfilPublico() {
             <button className="btn-criar-post" type="button" onClick={alternarSeguir}>
               {user?.id === id ? 'Editar perfil' : seguindo ? 'Seguindo' : 'Seguir'}
             </button>
+            {user?.id !== id && (
+              !user ? (
+                <button className="btn-filtro" type="button" onClick={() => navigate('/login')}>Adicionar amigo</button>
+              ) : !amizadeCarregada ? (
+                <button className="btn-filtro" type="button" disabled>Verificando amizade...</button>
+              ) : amizade?.status === 'aceita' ? (
+                <button className="btn-criar-post" type="button" onClick={() => navigate(`/mensagens/${id}`)}>Conversar</button>
+              ) : amizade?.solicitante_id === user.id ? (
+                <button className="btn-filtro" type="button" disabled={salvandoAmizade} onClick={() => atualizarAmizade('remover')}>Pedido enviado · Cancelar</button>
+              ) : amizade ? (
+                <button className="btn-criar-post" type="button" disabled={salvandoAmizade} onClick={() => atualizarAmizade('aceitar')}>Aceitar amizade</button>
+              ) : (
+                <button className="btn-filtro" type="button" disabled={salvandoAmizade} onClick={() => atualizarAmizade('solicitar')}>Adicionar amigo</button>
+              )
+            )}
           </div>
+          {erroAmizade && <p className="perfil-erro-amizade" role="alert">{erroAmizade}</p>}
         </section>
       </main>
     </>
