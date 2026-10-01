@@ -45,12 +45,19 @@ function PaginaLogin() {
   const { user, signOut } = useAuth();
   const returnTo = location.state?.returnTo === '/chat' ? '/chat' : '/';
   const veioDoChat = returnTo === '/chat';
+  const redefinirSenha = new URLSearchParams(location.search).get('redefinir-senha') === '1';
 
   const [modoCadastro, setModoCadastro] = useState(false);
+  const [modoRecuperacao, setModoRecuperacao] = useState(
+    () => new URLSearchParams(location.search).get('recuperar') === '1'
+  );
+  const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [senhaAtualizada, setSenhaAtualizada] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
 
@@ -62,7 +69,38 @@ function PaginaLogin() {
     setCarregando(true);
 
     try {
+      if (modoRecuperacao && !redefinirSenha) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/login?redefinir-senha=1`,
+        });
+
+        if (error) throw error;
+
+        setAviso('Se houver uma conta com este e-mail, enviaremos um link para redefinir sua senha.');
+        return;
+      }
+
+      if (redefinirSenha) {
+        if (senha !== confirmarSenha) {
+          setErro('As senhas não coincidem.');
+          return;
+        }
+
+        const { error } = await supabase.auth.updateUser({ password: senha });
+        if (error) throw error;
+
+        setSenhaAtualizada(true);
+        setSenha('');
+        setConfirmarSenha('');
+        return;
+      }
+
       if (modoCadastro) {
+        if (senha !== confirmarSenha) {
+          setErro('As senhas não coincidem.');
+          return;
+        }
+
         const erroNome = validarNomeExibicao(nome);
         if (erroNome) {
           setErro(erroNome);
@@ -107,9 +145,11 @@ function PaginaLogin() {
     } catch (error) {
       console.error('Erro de autenticação:', error);
 
-      setErro(
-        obterMensagemErroAutenticacao(error, modoCadastro)
-      );
+      setErro(redefinirSenha
+        ? 'Não foi possível redefinir a senha. Solicite um novo link e tente novamente.'
+        : modoRecuperacao
+          ? 'Não foi possível enviar o link agora. Confira o e-mail e tente novamente.'
+          : obterMensagemErroAutenticacao(error, modoCadastro));
 
     } finally {
       setCarregando(false);
@@ -126,12 +166,15 @@ function PaginaLogin() {
 
   function irParaLogin() {
     setModoCadastro(false);
+    setModoRecuperacao(false);
     setErro('');
     setAviso('');
+    navigate('/login', { replace: true });
   }
 
   function irParaCadastro() {
     setModoCadastro(true);
+    setModoRecuperacao(false);
     setErro('');
     setAviso('');
   }
@@ -140,15 +183,113 @@ function PaginaLogin() {
     <main className="autenticacao-page">
 
       <section
-        className={`autenticacao-painel ${user ? 'painel-conta' : ''}`}
+        className={`autenticacao-painel ${user && !modoRecuperacao && !redefinirSenha ? 'painel-conta' : ''}`}
         aria-labelledby="titulo-autenticacao"
       >
 
-        {/* =========================
-            USUÁRIO LOGADO
-        ========================= */}
+        {senhaAtualizada ? (
+          <div className="autenticacao-recuperacao">
+            <span className="banner-kicker">Viciados em Souls</span>
+            <h1 id="titulo-autenticacao">Senha atualizada</h1>
+            <p className="autenticacao-descricao">
+              Sua senha foi alterada. Agora você já pode continuar na comunidade.
+            </p>
+            <button
+              className="btn-criar-post autenticacao-enviar"
+              type="button"
+              onClick={() => navigate('/', { replace: true })}
+            >
+              Ir para a comunidade
+            </button>
+          </div>
+        ) : modoRecuperacao || redefinirSenha ? (
+          <div className="autenticacao-recuperacao">
+            <button
+              className="btn-filtro autenticacao-voltar"
+              type="button"
+              onClick={irParaLogin}
+            >
+              Voltar ao login
+            </button>
 
-        {user ? (
+            <span className="banner-kicker">Viciados em Souls</span>
+            <h1 id="titulo-autenticacao">
+              {redefinirSenha ? 'Nova senha' : 'Recuperar senha'}
+            </h1>
+            <p className="autenticacao-descricao">
+              {redefinirSenha
+                ? 'Escolha uma nova senha para sua conta.'
+                : 'Informe o e-mail da sua conta para receber um link de redefinição.'}
+            </p>
+
+            <form className="autenticacao-form" onSubmit={enviarFormulario}>
+              {redefinirSenha ? (
+                <>
+                  <div className="autenticacao-campo-rotulado">
+                    <label htmlFor="nova-senha">Nova senha</label>
+                    <div className="autenticacao-campo-senha">
+                      <input
+                        id="nova-senha"
+                        autoComplete="new-password"
+                        type={senhaVisivel ? 'text' : 'password'}
+                        minLength={6}
+                        required
+                        value={senha}
+                        onChange={(evento) => setSenha(evento.target.value)}
+                      />
+                      <button
+                        className="autenticacao-alternar-senha"
+                        type="button"
+                        aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}
+                        onClick={() => setSenhaVisivel((visivel) => !visivel)}
+                      >
+                        {senhaVisivel ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="autenticacao-campo-rotulado">
+                    <label htmlFor="confirmar-nova-senha">Confirmar nova senha</label>
+                    <input
+                      id="confirmar-nova-senha"
+                      autoComplete="new-password"
+                      type={senhaVisivel ? 'text' : 'password'}
+                      minLength={6}
+                      required
+                      value={confirmarSenha}
+                      onChange={(evento) => setConfirmarSenha(evento.target.value)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <label>
+                  E-mail
+                  <input
+                    autoComplete="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(evento) => setEmail(evento.target.value)}
+                  />
+                </label>
+              )}
+
+              {erro && <p className="autenticacao-erro" role="alert">{erro}</p>}
+              {aviso && <p className="autenticacao-aviso" role="status">{aviso}</p>}
+
+              <button
+                className="btn-criar-post autenticacao-enviar"
+                type="submit"
+                disabled={carregando}
+              >
+                {carregando
+                  ? 'Aguarde...'
+                  : redefinirSenha
+                    ? 'Salvar nova senha'
+                    : 'Enviar link de recuperação'}
+              </button>
+            </form>
+          </div>
+        ) : user ? (
 
           <>
             <span className="banner-kicker">
@@ -231,20 +372,41 @@ function PaginaLogin() {
                   />
                 </label>
 
-                <label>
-                  Senha
+                <div className="autenticacao-campo-rotulado">
+                  <label htmlFor="senha-login">Senha</label>
+                  <div className="autenticacao-campo-senha">
+                    <input
+                      id="senha-login"
+                      autoComplete="current-password"
+                      type={senhaVisivel ? 'text' : 'password'}
+                      minLength={6}
+                      required
+                      value={senha}
+                      onChange={(evento) => setSenha(evento.target.value)}
+                    />
+                    <button
+                      className="autenticacao-alternar-senha"
+                      type="button"
+                      aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setSenhaVisivel((visivel) => !visivel)}
+                    >
+                      {senhaVisivel ? 'Ocultar' : 'Mostrar'}
+                    </button>
+                  </div>
+                </div>
 
-                  <input
-                    autoComplete="current-password"
-                    type="password"
-                    minLength={6}
-                    required
-                    value={senha}
-                    onChange={(evento) =>
-                      setSenha(evento.target.value)
-                    }
-                  />
-                </label>
+                <button
+                  className="autenticacao-link-secundario"
+                  type="button"
+                  onClick={() => {
+                    setModoRecuperacao(true);
+                    setErro('');
+                    setAviso('');
+                    navigate('/login?recuperar=1', { replace: true });
+                  }}
+                >
+                  Esqueceu sua senha?
+                </button>
 
                 {erro && !modoCadastro && (
                   <p
@@ -334,20 +496,41 @@ function PaginaLogin() {
                 </label>
 
 
-                <label>
-                  Senha
+                <div className="autenticacao-campo-rotulado">
+                  <label htmlFor="senha-cadastro">Senha</label>
+                  <div className="autenticacao-campo-senha">
+                    <input
+                      id="senha-cadastro"
+                      autoComplete="new-password"
+                      type={senhaVisivel ? 'text' : 'password'}
+                      minLength={6}
+                      required
+                      value={senha}
+                      onChange={(evento) => setSenha(evento.target.value)}
+                    />
+                    <button
+                      className="autenticacao-alternar-senha"
+                      type="button"
+                      aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setSenhaVisivel((visivel) => !visivel)}
+                    >
+                      {senhaVisivel ? 'Ocultar' : 'Mostrar'}
+                    </button>
+                  </div>
+                </div>
 
+                <div className="autenticacao-campo-rotulado">
+                  <label htmlFor="confirmar-senha-cadastro">Confirmar senha</label>
                   <input
+                    id="confirmar-senha-cadastro"
                     autoComplete="new-password"
-                    type="password"
+                    type={senhaVisivel ? 'text' : 'password'}
                     minLength={6}
                     required
-                    value={senha}
-                    onChange={(evento) =>
-                      setSenha(evento.target.value)
-                    }
+                    value={confirmarSenha}
+                    onChange={(evento) => setConfirmarSenha(evento.target.value)}
                   />
-                </label>
+                </div>
 
 
                 {erro && modoCadastro && (

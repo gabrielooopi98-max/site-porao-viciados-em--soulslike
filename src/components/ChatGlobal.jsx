@@ -118,6 +118,45 @@ function PreviewMidiaRespondida({ tipo, url, texto }) {
     return null;
 }
 
+function obterFigurinha(texto) {
+    const id = texto?.match(/^sticker:([0-9a-f-]{36})$/i)?.[1];
+    if (id) return { id };
+
+    const marcadorAntigo = texto?.match(/^sticker:(fogueira|darksign|caveira|espada|escudo|coroa|lagrimas|aplausos|coracao):[a-f0-9-]+$/i)?.[1]?.toLowerCase();
+    const figurinhasAntigas = {
+        fogueira: '🔥',
+        darksign: '☀️',
+        caveira: '💀',
+        espada: '⚔️',
+        escudo: '🛡️',
+        coroa: '👑',
+        lagrimas: '😭',
+        aplausos: '👏',
+        coracao: '❤️',
+    };
+    return marcadorAntigo ? { emojiAntigo: figurinhasAntigas[marcadorAntigo] } : null;
+}
+
+function aplicarEventoMensagem(mensagensAtuais, payload) {
+    if (payload.eventType === 'INSERT') {
+        if (mensagensAtuais.some((mensagem) => mensagem.id === payload.new.id)) return mensagensAtuais;
+        return [...mensagensAtuais, payload.new]
+            .sort((a, b) => new Date(a.criado_em) - new Date(b.criado_em));
+    }
+
+    if (payload.eventType === 'UPDATE') {
+        return mensagensAtuais
+            .map((mensagem) => mensagem.id === payload.new.id ? payload.new : mensagem)
+            .sort((a, b) => new Date(a.criado_em) - new Date(b.criado_em));
+    }
+
+    if (payload.eventType === 'DELETE') {
+        return mensagensAtuais.filter((mensagem) => mensagem.id !== payload.old.id);
+    }
+
+    return mensagensAtuais;
+}
+
 function ChatGlobal() {
     const navigate = useNavigate();
     const { user, carregando: carregandoAuth } = useAuth();
@@ -126,7 +165,11 @@ function ChatGlobal() {
     const [texto, setTexto] = useState('');
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null);
     const [arquivoPreviewUrl, setArquivoPreviewUrl] = useState('');
-    const [emotesAbertos, setEmotesAbertos] = useState(false);
+    const [figurinhasAbertas, setFigurinhasAbertas] = useState(false);
+    const [figurinhasSalvas, setFigurinhasSalvas] = useState([]);
+    const [figurinhasCarregadasPara, setFigurinhasCarregadasPara] = useState(null);
+    const [buscaFigurinha, setBuscaFigurinha] = useState('');
+    const [adicionandoFigurinha, setAdicionandoFigurinha] = useState(false);
     const [midiaAmpliadaIndex, setMidiaAmpliadaIndex] = useState(null);
     const [gravandoAudio, setGravandoAudio] = useState(false);
     const [carregando, setCarregando] = useState(true);
@@ -135,7 +178,6 @@ function ChatGlobal() {
     const [erro, setErro] = useState('');
     const [editandoId, setEditandoId] = useState(null);
     const [respondendoA, setRespondendoA] = useState(null);
-    const [sidebarAberta, setSidebarAberta] = useState(false);
     const [membrosAbertos, setMembrosAbertos] = useState(false);
     const [novasMensagens, setNovasMensagens] = useState(0);
     const mensagensRef = useRef(null);
@@ -184,6 +226,8 @@ function ChatGlobal() {
         }
 
         let ativo = true;
+        const eventosDuranteCarregamento = [];
+        let historicoSincronizado = false;
         const canal = supabase
             .channel('chat-global-mensagens')
             .on('postgres_changes', {
@@ -192,20 +236,8 @@ function ChatGlobal() {
                 table: 'mensagens_chat',
             }, (payload) => {
                 if (!ativo) return;
-                setMensagens((atuais) => {
-                    if (payload.eventType === 'INSERT') {
-                        return atuais.some((mensagem) => mensagem.id === payload.new.id)
-                            ? atuais
-                            : [...atuais, payload.new];
-                    }
-                    if (payload.eventType === 'UPDATE') {
-                        return atuais.map((mensagem) => mensagem.id === payload.new.id ? payload.new : mensagem);
-                    }
-                    if (payload.eventType === 'DELETE') {
-                        return atuais.filter((mensagem) => mensagem.id !== payload.old.id);
-                    }
-                    return atuais;
-                });
+                if (!historicoSincronizado) eventosDuranteCarregamento.push(payload);
+                setMensagens((atuais) => aplicarEventoMensagem(atuais, payload));
             })
             .subscribe();
 
@@ -217,7 +249,21 @@ function ChatGlobal() {
             .then(({ data, error }) => {
                 if (!ativo) return;
                 if (error) setErro(`Não foi possível carregar as mensagens: ${error.message || 'execute a migration do chat.'}`);
-                setMensagens(data ?? []);
+                const historicoInicial = data ?? [];
+                const mensagensSincronizadas = eventosDuranteCarregamento.reduce(
+                    aplicarEventoMensagem,
+                    historicoInicial
+                );
+                historicoSincronizado = true;
+                setMensagens(mensagensSincronizadas);
+                setCarregando(false);
+            })
+            .catch((error) => {
+                if (!ativo) return;
+                console.error('Erro ao carregar mensagens do chat:', error);
+                setErro('Não foi possível carregar as mensagens. Confira sua conexão e tente novamente.');
+                setMensagens(eventosDuranteCarregamento.reduce(aplicarEventoMensagem, []));
+                historicoSincronizado = true;
                 setCarregando(false);
             });
 
@@ -225,6 +271,38 @@ function ChatGlobal() {
             ativo = false;
             supabase.removeChannel(canal);
         };
+    }, [user]);
+
+    useEffect(() => {
+        if (!user) return undefined;
+
+        let ativo = true;
+        supabase
+            .from('figurinhas_chat')
+            .select('id, midia_url, midia_path, midia_tipo, midia_nome, criado_em')
+            .eq('autor_id', user.id)
+            .order('criado_em', { ascending: false })
+            .limit(100)
+            .then(({ data, error }) => {
+                if (!ativo) return;
+                if (error) {
+                    console.error('Erro ao carregar figurinhas do chat:', error);
+                    setFigurinhasSalvas([]);
+                    setErro(`Não foi possível carregar suas figurinhas: ${error.message}`);
+                } else {
+                    setFigurinhasSalvas(data ?? []);
+                }
+                setFigurinhasCarregadasPara(user.id);
+            })
+            .catch((error) => {
+                if (!ativo) return;
+                console.error('Erro ao carregar figurinhas do chat:', error);
+                setFigurinhasSalvas([]);
+                setErro('Não foi possível carregar suas figurinhas. Confira sua conexão e tente novamente.');
+                setFigurinhasCarregadasPara(user.id);
+            });
+
+        return () => { ativo = false; };
     }, [user]);
 
     useEffect(() => {
@@ -356,6 +434,11 @@ function ChatGlobal() {
         : pessoasDigitando.length
             ? `${resumirNomes(pessoasDigitando)} ${pessoasDigitando.length === 1 ? 'está digitando' : 'estão digitando'}...`
             : '';
+    const carregandoFigurinhas = Boolean(user && figurinhasCarregadasPara !== user.id);
+    const figurinhasDoUsuario = figurinhasCarregadasPara === user?.id ? figurinhasSalvas : [];
+    const figurinhasFiltradas = figurinhasDoUsuario.filter((figurinha) => (
+        figurinha.midia_nome.toLocaleLowerCase('pt-BR').includes(buscaFigurinha.trim().toLocaleLowerCase('pt-BR'))
+    ));
 
     useEffect(() => {
         const container = mensagensRef.current;
@@ -393,10 +476,13 @@ function ChatGlobal() {
         container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     }
 
-    async function enviarMensagem(evento) {
-        evento.preventDefault();
-        const mensagem = texto.trim();
-        if (!user || (!mensagem && !arquivoSelecionado) || enviando) return;
+    async function enviarMensagem(evento, figurinha = null) {
+        evento?.preventDefault();
+        const mensagem = figurinha
+            ? `sticker:${figurinha.id}`
+            : texto.trim();
+        if (!user || (!figurinha && !mensagem && !arquivoSelecionado) || enviando) return;
+        const salvandoEdicao = Boolean(editandoId && !figurinha);
 
         if (timerDigitandoRef.current) window.clearTimeout(timerDigitandoRef.current);
         timerDigitandoRef.current = null;
@@ -409,12 +495,16 @@ function ChatGlobal() {
 
         setEnviando(true);
         setErro('');
-        setStatusEnvio(editandoId ? 'Salvando edição...' : arquivoSelecionado?.type.startsWith('video/') ? 'Preparando vídeo...' : arquivoSelecionado ? 'Enviando mídia...' : 'Enviando mensagem...');
+        setStatusEnvio(figurinha ? 'Enviando figurinha...' : salvandoEdicao ? 'Salvando edição...' : arquivoSelecionado?.type.startsWith('video/') ? 'Preparando vídeo...' : arquivoSelecionado ? 'Enviando mídia...' : 'Enviando mensagem...');
         deveIrParaOFimRef.current = true;
         let caminhoMidia = null;
         try {
-            let dadosMidia = {};
-            if (!editandoId && arquivoSelecionado) {
+            let dadosMidia = figurinha ? {
+                midia_url: figurinha.midia_url,
+                midia_tipo: figurinha.midia_tipo,
+                midia_nome: figurinha.midia_nome,
+            } : {};
+            if (!figurinha && !salvandoEdicao && arquivoSelecionado) {
                 let arquivoParaEnviar = arquivoSelecionado;
                 if (arquivoSelecionado.type.startsWith('video/')) {
                     const { normalizarVideo } = await import('../services/normalizarVideo');
@@ -441,8 +531,8 @@ function ChatGlobal() {
                 };
             }
 
-            setStatusEnvio(editandoId ? 'Salvando edição...' : 'Enviando mensagem...');
-            const resultado = editandoId
+            setStatusEnvio(figurinha ? 'Enviando figurinha...' : salvandoEdicao ? 'Salvando edição...' : 'Enviando mensagem...');
+            const resultado = salvandoEdicao
                 ? await supabase.from('mensagens_chat').update({ texto: mensagem, editada: true }).eq('id', editandoId).eq('autor_id', user.id).select().single()
                 : await supabase.from('mensagens_chat').insert({
                     autor_id: user.id,
@@ -462,12 +552,14 @@ function ChatGlobal() {
 
             envioBloqueadoRef.current = true;
             window.setTimeout(() => { envioBloqueadoRef.current = false; }, 1200);
-            setMensagens((atuais) => editandoId
+            setMensagens((atuais) => salvandoEdicao
                 ? atuais.map((item) => item.id === editandoId ? resultado.data : item)
                 : atuais.some((item) => item.id === resultado.data.id) ? atuais : [...atuais, resultado.data]);
-            setTexto('');
-            limparArquivoSelecionado();
-            setEditandoId(null);
+            if (!figurinha) {
+                setTexto('');
+                limparArquivoSelecionado();
+            }
+            if (!figurinha) setEditandoId(null);
             setRespondendoA(null);
         } catch (error) {
             deveIrParaOFimRef.current = false;
@@ -536,17 +628,76 @@ function ChatGlobal() {
         requestAnimationFrame(() => document.getElementById('mensagem-chat-global')?.focus());
     }
 
+    async function adicionarFigurinha(evento) {
+        const arquivo = evento.target.files?.[0] ?? null;
+        evento.target.value = '';
+        if (!arquivo) return;
+
+        const tiposPermitidos = new Map([
+            ['image/gif', 'gif'],
+            ['image/jpeg', 'jpg'],
+            ['image/png', 'png'],
+            ['image/webp', 'webp'],
+        ]);
+        const extensao = tiposPermitidos.get(arquivo.type);
+        if (!extensao) {
+            setErro('Escolha uma figurinha em GIF, PNG, JPG ou WebP.');
+            return;
+        }
+        if (arquivo.size > 5 * 1024 * 1024) {
+            setErro('A figurinha precisa ter no máximo 5 MB.');
+            return;
+        }
+        if (figurinhasDoUsuario.length >= 100) {
+            setErro('Sua coleção chegou ao limite de 100 figurinhas.');
+            return;
+        }
+
+        setAdicionandoFigurinha(true);
+        setErro('');
+        const caminho = `${user.id}/${gerarIdUnico()}.${extensao}`;
+        let arquivoEnviado = false;
+        try {
+            const upload = await supabase.storage.from('figurinhas-chat').upload(caminho, arquivo, {
+                contentType: arquivo.type,
+                cacheControl: '31536000',
+                upsert: false,
+            });
+            if (upload.error) throw upload.error;
+            arquivoEnviado = true;
+
+            const { data: urlPublica } = supabase.storage.from('figurinhas-chat').getPublicUrl(caminho);
+            const resultado = await supabase.from('figurinhas_chat').insert({
+                autor_id: user.id,
+                midia_url: urlPublica.publicUrl,
+                midia_path: caminho,
+                midia_tipo: arquivo.type,
+                midia_nome: arquivo.name.slice(0, 120) || 'figurinha',
+            }).select('id, midia_url, midia_path, midia_tipo, midia_nome, criado_em').single();
+            if (resultado.error) throw resultado.error;
+
+            setFigurinhasSalvas((atuais) => [resultado.data, ...atuais]);
+        } catch (error) {
+            if (arquivoEnviado) {
+                try {
+                    const { error: erroRemocao } = await supabase.storage.from('figurinhas-chat').remove([caminho]);
+                    if (erroRemocao) console.error('Não foi possível limpar o arquivo da figurinha após falha:', erroRemocao);
+                } catch (erroLimpeza) {
+                    console.error('Não foi possível limpar o arquivo da figurinha após falha:', erroLimpeza);
+                }
+            }
+            console.error('Erro ao adicionar figurinha ao chat:', error);
+            setErro(`Não foi possível adicionar a figurinha: ${error.message || 'confira a configuração do Supabase.'}`);
+        } finally {
+            setAdicionandoFigurinha(false);
+        }
+    }
+
     function limparArquivoSelecionado() {
         if (arquivoPreviewRef.current) URL.revokeObjectURL(arquivoPreviewRef.current);
         arquivoPreviewRef.current = '';
         setArquivoPreviewUrl('');
         setArquivoSelecionado(null);
-    }
-
-    function inserirEmote(emote) {
-        setTexto((atual) => `${atual}${emote}`);
-        setEmotesAbertos(false);
-        requestAnimationFrame(() => document.getElementById('mensagem-chat-global')?.focus());
     }
 
     async function alternarGravacaoAudio() {
@@ -644,7 +795,7 @@ function ChatGlobal() {
             </header>
 
             <main className="chat-global-page">
-                <section className={`chat-global-room ${!carregandoAuth && !user ? 'chat-global-visitante' : ''} ${sidebarAberta ? 'chat-global-sidebar-ativa' : ''} ${membrosAbertos ? 'chat-global-membros-ativos' : ''}`} aria-label="Chat global">
+                <section className={`chat-global-room ${!carregandoAuth && !user ? 'chat-global-visitante' : ''} ${membrosAbertos ? 'chat-global-membros-ativos' : ''}`} aria-label="Chat global">
                     {!carregandoAuth && !user ? (
                         <>
                             <div className="area-svg chat-global-visitor-art" aria-hidden="true">
@@ -673,28 +824,10 @@ function ChatGlobal() {
                         </>
                     ) : (
                         <>
-                            <aside className="chat-global-sidebar">
-                                <div className="chat-global-server">
-                                    <span className="chat-global-server-mark">VS</span>
-                                    <div><strong>Viciados em Souls</strong><span>Comunidade brasileira</span></div>
-                                    <button className="chat-global-panel-close" type="button" onClick={() => setSidebarAberta(false)} aria-label="Fechar canais">×</button>
-                                </div>
-                                <div className="chat-global-channel-section">
-                                    <span className="chat-global-section-label">Canais de texto</span>
-                                    <button className="chat-global-channel chat-global-channel-active" type="button"><span>#</span> geral</button>
-                                    <button className="chat-global-channel" type="button" disabled><span>#</span> builds <small>em breve</small></button>
-                                    <button className="chat-global-channel" type="button" disabled><span>#</span> conquistas <small>em breve</small></button>
-                                </div>
-                                <div className="chat-global-sidebar-footer">
-                                    <span className="chat-global-presence-dot" />
-                                    <div><strong>{user.user_metadata?.display_name || 'Viciado em Souls'}</strong><span>online</span></div>
-                                </div>
-                            </aside>
-
                             <div className="chat-global-main">
                                 <header className="chat-global-channel-heading">
                                     <div className="chat-global-channel-title"><span>#</span><div><h1>geral</h1><p>Conversa da comunidade em um só lugar.</p></div></div>
-                                    <div className="chat-global-channel-meta"><button className="chat-global-side-toggle chat-global-side-toggle-canais" type="button" onClick={() => setSidebarAberta((aberta) => !aberta)} aria-label="Abrir canais" aria-expanded={sidebarAberta}>Canais</button><span className="chat-global-online-dot" />{membrosOnline.length} online<button className="chat-global-side-toggle chat-global-side-toggle-membros" type="button" onClick={() => setMembrosAbertos((abertos) => !abertos)} aria-label="Abrir membros" aria-expanded={membrosAbertos}>Membros</button></div>
+                                    <div className="chat-global-channel-meta"><span className="chat-global-online-dot" />{membrosOnline.length} online<button className="chat-global-side-toggle chat-global-side-toggle-membros" type="button" onClick={() => setMembrosAbertos((abertos) => !abertos)} aria-label="Abrir membros" aria-expanded={membrosAbertos}>Membros</button></div>
                                 </header>
                                 <div className={`chat-global-messages${mensagens.length === 0 && !carregando ? ' chat-global-messages-vazio' : ''}`} ref={mensagensRef} onScroll={acompanharRolagemMensagens} role="log" aria-live="polite">
                                     {carregando ? (
@@ -707,29 +840,36 @@ function ChatGlobal() {
                                         </div>
                                     ) : mensagens.map((mensagem) => {
                                         const propria = mensagem.autor_id === user?.id;
+                                        const figurinha = obterFigurinha(mensagem.texto);
                                         return (
                                             <div key={mensagem.id} data-chat-mensagem-id={mensagem.id} className={`chat-mensagem-item ${propria ? 'chat-mensagem-item-propria' : 'chat-mensagem-item-outra'}`}>
-                                                <article className={`chat-mensagem ${propria ? 'chat-mensagem-propria' : 'chat-mensagem-outra'}`}>
+                                                <article className={`chat-mensagem ${propria ? 'chat-mensagem-propria' : 'chat-mensagem-outra'}${figurinha ? ' chat-mensagem-com-figurinha' : ''}`}>
                                                     <div className="chat-mensagem-cabecalho">
                                                         <button className="chat-global-profile-avatar" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)} aria-label={`Abrir perfil de ${mensagem.autor_nome || 'Viciado em Souls'}`}>
                                                             {mensagem.autor_avatar_url ? <img src={mensagem.autor_avatar_url} alt="" /> : <span className="chat-mensagem-avatar-vazio" aria-hidden="true">?</span>}
                                                         </button>
                                                         <button className="chat-global-profile-name" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)}>{mensagem.autor_nome || 'Viciado em Souls'}</button>
-                                                        <time>{new Date(mensagem.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time>
                                                         {mensagem.editada && <span className="chat-mensagem-editada">Editada</span>}
                                                     </div>
                                                     {(mensagem.resposta_texto || mensagem.resposta_midia_tipo) && <button className="chat-mensagem-resposta" type="button" onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)} disabled={!mensagem.resposta_mensagem_id} aria-label="Ir para a mensagem respondida"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>{mensagem.resposta_midia_tipo ? <PreviewMidiaRespondida tipo={mensagem.resposta_midia_tipo} url={mensagem.resposta_midia_url} texto={mensagem.resposta_texto} /> : <span>{mensagem.resposta_texto}</span>}</button>}
-                                                    {mensagem.midia_url && (
+                                                    {figurinha && mensagem.midia_url && <button className="chat-mensagem-sticker" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Ampliar figurinha"><img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Figurinha enviada no chat'} loading="lazy" /></button>}
+                                                    {mensagem.midia_url && !figurinha && (
                                                         <div className="chat-mensagem-midia">
                                                             {mensagem.midia_tipo?.startsWith('image/') && <button className="chat-mensagem-imagem-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Ampliar imagem"><img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada no chat'} loading="lazy" /></button>}
                                                             {mensagem.midia_tipo?.startsWith('video/') && <button className="chat-mensagem-video-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Abrir vídeo em tela cheia"><video src={mensagem.midia_url} muted playsInline preload="metadata" /><span aria-hidden="true">▶</span></button>}
                                                             {mensagem.midia_tipo?.startsWith('audio/') && <AudioMensagemChat src={mensagem.midia_url} />}
                                                         </div>
                                                     )}
-                                                    {mensagem.texto?.trim() && <p>{mensagem.texto}</p>}
+                                                    {figurinha?.emojiAntigo && <span className="chat-mensagem-figurinha-antiga" role="img" aria-label="Figurinha antiga">{figurinha.emojiAntigo}</span>}
+                                                    {!figurinha && mensagem.texto?.trim() && <p>{mensagem.texto}</p>}
+                                                    <time dateTime={mensagem.criado_em}>
+                                                        {new Date(mensagem.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </time>
                                                 </article>
                                                 <div className="chat-mensagem-acoes">
-                                                    {propria ? <><button type="button" onClick={() => iniciarEdicao(mensagem)}>Editar</button><button type="button" onClick={() => excluirMensagem(mensagem)}>Excluir</button></> : <button type="button" onClick={() => iniciarResposta(mensagem)}>Responder</button>}
+                                                    {propria
+                                                        ? <>{!figurinha && <button type="button" onClick={() => iniciarEdicao(mensagem)}>Editar</button>}<button type="button" onClick={() => excluirMensagem(mensagem)}>Excluir</button></>
+                                                        : <button type="button" onClick={() => iniciarResposta(mensagem)}>Responder</button>}
                                                 </div>
                                             </div>
                                         );
@@ -742,9 +882,36 @@ function ChatGlobal() {
                                     <div className="chat-global-input-wrap">{respondendoA && <div className="chat-global-resposta-ativa"><div><strong>Respondendo a {respondendoA.autor_nome || 'Viciado em Souls'}</strong><span>{respondendoA.texto}</span></div><button type="button" onClick={() => setRespondendoA(null)} aria-label="Cancelar resposta">×</button></div>}{arquivoSelecionado && <div className="chat-global-arquivo-ativo">{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('image/') && <img src={arquivoPreviewUrl} alt="Prévia do anexo" />}{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('video/') && <video src={arquivoPreviewUrl} muted />}{!arquivoPreviewUrl && <span className="chat-global-arquivo-icone">♫</span>}<span>{arquivoSelecionado.name}</span><button type="button" onClick={limparArquivoSelecionado} aria-label="Remover arquivo anexado">×</button></div>}<div className="chat-global-textarea-wrap"><textarea id="mensagem-chat-global" rows="1" value={texto} onChange={(evento) => setTexto(evento.target.value)} onKeyDown={(evento) => { if (evento.key === 'Enter' && !evento.shiftKey) enviarMensagem(evento); }} placeholder="Conversar em #geral" maxLength={500} /><input id="arquivo-chat-global" className="chat-global-file-input" type="file" accept="image/*,video/*,audio/*" onChange={selecionarArquivo} disabled={enviando || gravandoAudio} /><button type="button" className="btn-enviar-arquivos-chat-global" aria-label="Anexar imagem, vídeo ou áudio" onClick={() => document.getElementById('arquivo-chat-global')?.click()} disabled={enviando || gravandoAudio}>+</button><button type="button" className={`btn-gravar-audio-chat-global${gravandoAudio ? ' gravando' : ''}`} aria-label={gravandoAudio ? 'Parar gravação de áudio' : 'Gravar áudio'} aria-pressed={gravandoAudio} onClick={alternarGravacaoAudio} disabled={enviando}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg></button></div></div>
                                     <button type="submit" className="btn-enviar-mensagem-chat-global" disabled={(!texto.trim() && !arquivoSelecionado) || enviando} aria-label={editandoId ? 'Salvar edição' : 'Enviar mensagem'}>{editandoId ? 'Salvar' : 'Enviar'}</button>
                                 </form>
-                                <div className="chat-global-emotes-area">
-                                    {emotesAbertos && <div className="chat-global-emotes-picker" role="dialog" aria-label="Emotes do chat">{emojisChat.map((emote) => <button key={emote} type="button" onClick={() => inserirEmote(emote)}>{emote}</button>)}</div>}
-                                    <button className="chat-global-emotes-toggle" type="button" onClick={() => setEmotesAbertos((aberto) => !aberto)} aria-label="Abrir emotes" aria-expanded={emotesAbertos}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8.5 14.2s1.2 2 3.5 2 3.5-2 3.5-2" /><path d="M9 9.5h.01M15 9.5h.01" /></svg></button>
+                                <div className="chat-global-sticker-area">
+                                    {figurinhasAbertas && (
+                                        <div className="chat-global-sticker-picker" role="dialog" aria-label="Minhas figurinhas">
+                                            <div className="chat-global-sticker-picker-header">
+                                                <strong>Figurinhas</strong>
+                                                <label className="chat-global-sticker-add">
+                                                    <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" onChange={adicionarFigurinha} disabled={adicionandoFigurinha || figurinhasDoUsuario.length >= 100} />
+                                                    {adicionandoFigurinha ? 'Adicionando...' : '+ Adicionar'}
+                                                </label>
+                                            </div>
+                                            <label className="chat-global-sticker-search">
+                                                <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
+                                                <input type="search" value={buscaFigurinha} onChange={(evento) => setBuscaFigurinha(evento.target.value)} placeholder="Pesquisar nas minhas figurinhas" aria-label="Pesquisar nas minhas figurinhas" />
+                                            </label>
+                                            {carregandoFigurinhas ? (
+                                                <p className="chat-global-sticker-empty">Carregando sua coleção...</p>
+                                            ) : figurinhasFiltradas.length ? (
+                                                <div className="chat-global-stickers-grid">
+                                                    {figurinhasFiltradas.map((figurinha) => (
+                                                        <button key={figurinha.id} type="button" title={figurinha.midia_nome} aria-label={`Enviar figurinha: ${figurinha.midia_nome}`} disabled={enviando} onClick={() => { setFigurinhasAbertas(false); enviarMensagem(null, figurinha); }}>
+                                                            <img src={figurinha.midia_url} alt="" loading="lazy" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="chat-global-sticker-empty">{buscaFigurinha ? 'Nenhuma figurinha encontrada.' : 'Sua coleção está vazia. Adicione uma imagem ou GIF para começar.'}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                    <button className="chat-global-sticker-toggle" type="button" onClick={() => setFigurinhasAbertas((aberto) => !aberto)} aria-label="Abrir figurinhas" aria-expanded={figurinhasAbertas}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h10l4 4v13H5z" /><path d="M14.5 3.5v5h4.5M8 12h8M8 16h5" /></svg></button>
                                 </div>
                                 {erro && <p className="chat-global-erro" role="alert">{erro}</p>}
                             </div>
@@ -795,12 +962,12 @@ function formatarDuracaoAudio(segundos) {
 }
 
 function textoDeResposta(mensagem) {
+    const figurinha = obterFigurinha(mensagem.texto);
+    if (figurinha) return 'Figurinha enviada';
     if (mensagem.texto?.trim()) return mensagem.texto.trim();
     if (mensagem.midia_tipo?.startsWith('audio/')) return '♫ Áudio enviado';
     if (mensagem.midia_tipo?.startsWith('image/') || mensagem.midia_tipo?.startsWith('video/')) return '';
     return 'Mídia enviada';
 }
-
-const emojisChat = ['😀', '😂', '😍', '😎', '🔥', '⚔️', '🛡️', '💀', '🎮', '👏', '❤️', '👍', '👀', '😭', '😡', '🤝', '🙌', '✨', '🏆', '☠️'];
 
 export default ChatGlobal;

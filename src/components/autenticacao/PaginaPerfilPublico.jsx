@@ -16,19 +16,58 @@ function PaginaPerfilPublico() {
     let ativo = true;
 
     Promise.all([
-      supabase.from('posts').select('autor_nome, autor_avatar_url, autor_avatar_zoom, autor_avatar_pos_x, autor_avatar_pos_y', { head: false }).eq('autor_id', id).limit(1).maybeSingle(),
+      supabase.from('posts')
+        .select('autor_nome, autor_avatar_url, autor_avatar_zoom, autor_avatar_pos_x, autor_avatar_pos_y, criado_em')
+        .eq('autor_id', id)
+        .not('autor_avatar_url', 'is', null)
+        .order('criado_em', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from('builds')
+        .select('autor_nome, autor_avatar_url, autor_avatar_zoom, autor_avatar_pos_x, autor_avatar_pos_y, criado_em')
+        .eq('autor_id', id)
+        .not('autor_avatar_url', 'is', null)
+        .order('criado_em', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      user
+        ? supabase.from('mensagens_chat')
+          .select('autor_nome, autor_avatar_url, criado_em')
+          .eq('autor_id', id)
+          .not('autor_avatar_url', 'is', null)
+          .order('criado_em', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
       supabase.from('posts').select('id', { count: 'exact', head: true }).eq('autor_id', id),
       supabase.from('builds').select('id', { count: 'exact', head: true }).eq('autor_id', id),
       supabase.from('seguidores').select('id', { count: 'exact', head: true }).eq('seguido_id', id),
       user && user.id !== id
         ? supabase.from('seguidores').select('id').eq('seguidor_id', user.id).eq('seguido_id', id).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-    ]).then(([perfilPost, resultadoPosts, resultadoBuilds, resultadoSeguidores, resultadoSeguindo]) => {
+    ]).then(([perfilPost, perfilBuild, perfilChat, resultadoPosts, resultadoBuilds, resultadoSeguidores, resultadoSeguindo]) => {
       if (!ativo) return;
 
-      const fonte = perfilPost.data;
+      const perfilAtual = user?.id === id ? {
+        autor_nome: user.user_metadata?.display_name,
+        autor_avatar_url: user.user_metadata?.avatar_url,
+        autor_avatar_zoom: user.user_metadata?.avatar_zoom,
+        autor_avatar_pos_x: user.user_metadata?.avatar_pos_x,
+        autor_avatar_pos_y: user.user_metadata?.avatar_pos_y,
+        criado_em: new Date().toISOString(),
+      } : null;
+      const fontes = [perfilAtual, perfilPost.data, perfilBuild.data, perfilChat.data]
+        .filter((fonte) => fonte?.autor_avatar_url)
+        .sort((a, b) => new Date(b.criado_em || 0) - new Date(a.criado_em || 0));
+      const fonte = fontes[0] || perfilAtual || perfilPost.data || perfilBuild.data || perfilChat.data;
+
+      [perfilPost, perfilBuild, perfilChat, resultadoPosts, resultadoBuilds, resultadoSeguidores, resultadoSeguindo]
+        .forEach((resultado) => {
+          if (resultado?.error) console.error('Erro ao carregar informações do perfil público:', resultado.error);
+        });
+
       setPerfil({
-        nome: fonte?.autor_nome || 'Viciado em Souls',
+        nome: fonte?.autor_nome || user?.id === id && user.user_metadata?.display_name || 'Viciado em Souls',
         avatar: fonte?.autor_avatar_url || '',
         avatarZoom: fonte?.autor_avatar_zoom ?? 1,
         avatarPosX: fonte?.autor_avatar_pos_x ?? 50,

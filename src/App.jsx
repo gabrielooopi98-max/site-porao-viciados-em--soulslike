@@ -492,7 +492,7 @@ function Home() {
 
             <div className="area-svg area-posts-banner-fundo" aria-hidden="true">
               <ImagemDecorativaAdiada
-                src="/svg-animado/dark-souls-banner-1760x575.svg"
+                src="/svg-animado/dark-souls-banner-1760x575-otimizado.svg"
                 alt=""
                 className="dark-souls-banner"
               />

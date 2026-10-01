@@ -23,6 +23,7 @@ function AvisosHeader() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [aberto, setAberto] = useState(false);
+  const [secaoSelecionada, setSecaoSelecionada] = useState('avisos');
   const [notificacoes, setNotificacoes] = useState([]);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ function AvisosHeader() {
   async function alternarAvisos() {
     const novoEstado = !aberto;
     setAberto(novoEstado);
+    if (novoEstado) setSecaoSelecionada('avisos');
 
     if (novoEstado && naoLidas) {
       await marcarNotificacoesLidas(user.id);
@@ -81,28 +83,66 @@ function AvisosHeader() {
 
       {aberto && (
         <div className="avisos-menu" role="dialog" aria-label="Avisos da comunidade">
-          <div className="avisos-menu-cabecalho">
-            <strong>Avisos</strong>
-            <span>{notificacoes.length ? `${notificacoes.length} recentes` : 'Nenhum aviso'}</span>
+          <div className="avisos-menu-abas" role="tablist" aria-label="Painel da comunidade">
+            <button
+              id="aba-avisos"
+              className={`avisos-menu-aba ${secaoSelecionada === 'avisos' ? 'ativa' : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={secaoSelecionada === 'avisos'}
+              aria-controls="conteudo-avisos"
+              onClick={() => setSecaoSelecionada('avisos')}
+            >
+              Avisos
+              {naoLidas > 0 && <span>{naoLidas > 9 ? '9+' : naoLidas}</span>}
+            </button>
+            <button
+              id="aba-desafios"
+              className={`avisos-menu-aba ${secaoSelecionada === 'desafios' ? 'ativa' : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={secaoSelecionada === 'desafios'}
+              aria-controls="conteudo-desafios"
+              onClick={() => setSecaoSelecionada('desafios')}
+            >
+              Desafios
+            </button>
           </div>
 
-          {notificacoes.length ? (
-            <div className="avisos-lista">
-              {notificacoes.map((notificacao) => (
-                <button
-                  className={`aviso-item ${notificacao.lida ? '' : 'nao-lido'}`}
-                  key={notificacao.id}
-                  type="button"
-                  onClick={() => abrirNotificacao(notificacao)}
-                >
-                  <span>{obterMensagem(notificacao)}</span>
-                  {notificacao.texto && <small>{notificacao.texto}</small>}
-                  <time>{formatarData(notificacao.criado_em)}</time>
-                </button>
-              ))}
-            </div>
+          {secaoSelecionada === 'avisos' ? (
+            <section id="conteudo-avisos" className="avisos-menu-conteudo" role="tabpanel" aria-labelledby="aba-avisos">
+              <div className="avisos-menu-cabecalho">
+                <strong>Avisos</strong>
+                <span>{notificacoes.length ? `${notificacoes.length} recentes` : 'Nenhum aviso'}</span>
+              </div>
+
+              {notificacoes.length ? (
+                <div className="avisos-lista">
+                  {notificacoes.map((notificacao) => (
+                    <button
+                      className={`aviso-item ${notificacao.lida ? '' : 'nao-lido'}`}
+                      key={notificacao.id}
+                      type="button"
+                      onClick={() => abrirNotificacao(notificacao)}
+                    >
+                      <span>{obterMensagem(notificacao)}</span>
+                      {notificacao.texto && <small>{notificacao.texto}</small>}
+                      <time>{formatarData(notificacao.criado_em)}</time>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="avisos-vazio">Você ainda não recebeu avisos.</p>
+              )}
+            </section>
           ) : (
-            <p className="avisos-vazio">Você ainda não recebeu avisos.</p>
+            <section id="conteudo-desafios" className="avisos-menu-conteudo" role="tabpanel" aria-labelledby="aba-desafios">
+              <div className="avisos-menu-cabecalho">
+                <strong>Desafios</strong>
+                <span>Em breve</span>
+              </div>
+              <p className="avisos-vazio">Os desafios da comunidade estarão disponíveis em breve.</p>
+            </section>
           )}
         </div>
       )}
