@@ -211,7 +211,7 @@ function ChatGlobal() {
 
         supabase
             .from('mensagens_chat')
-            .select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, resposta_midia_url, criado_em')
+            .select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, resposta_midia_url, editada, criado_em')
             .order('criado_em', { ascending: true })
             .limit(100)
             .then(({ data, error }) => {
@@ -443,7 +443,7 @@ function ChatGlobal() {
 
             setStatusEnvio(editandoId ? 'Salvando edição...' : 'Enviando mensagem...');
             const resultado = editandoId
-                ? await supabase.from('mensagens_chat').update({ texto: mensagem }).eq('id', editandoId).eq('autor_id', user.id).select().single()
+                ? await supabase.from('mensagens_chat').update({ texto: mensagem, editada: true }).eq('id', editandoId).eq('autor_id', user.id).select().single()
                 : await supabase.from('mensagens_chat').insert({
                     autor_id: user.id,
                     autor_nome: user.user_metadata?.display_name || 'Viciado em Souls',
@@ -456,14 +456,14 @@ function ChatGlobal() {
                     resposta_midia_tipo: respondendoA?.midia_tipo || null,
                     resposta_midia_nome: respondendoA?.midia_nome || null,
                     resposta_midia_url: respondendoA?.midia_url || null,
-                }).select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, resposta_midia_url, criado_em').single();
+                }).select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, resposta_midia_url, editada, criado_em').single();
 
             if (resultado.error) throw resultado.error;
 
             envioBloqueadoRef.current = true;
             window.setTimeout(() => { envioBloqueadoRef.current = false; }, 1200);
             setMensagens((atuais) => editandoId
-                ? atuais.map((item) => item.id === editandoId ? { ...item, texto: mensagem } : item)
+                ? atuais.map((item) => item.id === editandoId ? resultado.data : item)
                 : atuais.some((item) => item.id === resultado.data.id) ? atuais : [...atuais, resultado.data]);
             setTexto('');
             limparArquivoSelecionado();
@@ -716,6 +716,7 @@ function ChatGlobal() {
                                                         </button>
                                                         <button className="chat-global-profile-name" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)}>{mensagem.autor_nome || 'Viciado em Souls'}</button>
                                                         <time>{new Date(mensagem.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time>
+                                                        {mensagem.editada && <span className="chat-mensagem-editada">Editada</span>}
                                                     </div>
                                                     {(mensagem.resposta_texto || mensagem.resposta_midia_tipo) && <button className="chat-mensagem-resposta" type="button" onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)} disabled={!mensagem.resposta_mensagem_id} aria-label="Ir para a mensagem respondida"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>{mensagem.resposta_midia_tipo ? <PreviewMidiaRespondida tipo={mensagem.resposta_midia_tipo} url={mensagem.resposta_midia_url} texto={mensagem.resposta_texto} /> : <span>{mensagem.resposta_texto}</span>}</button>}
                                                     {mensagem.midia_url && (
