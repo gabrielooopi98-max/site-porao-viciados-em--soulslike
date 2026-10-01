@@ -84,6 +84,40 @@ function AudioMensagemChat({ src }) {
     );
 }
 
+function PreviewMidiaRespondida({ tipo, url, texto }) {
+    if (tipo?.startsWith('audio/')) {
+        return (
+            <span className="chat-resposta-midia-preview">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg>
+                <span>Áudio</span>
+                <span className="chat-resposta-midia-onda" aria-hidden="true">{[35, 65, 45, 80, 50, 70, 35, 90, 52, 68, 42, 76].map((altura, indice) => <i key={indice} style={{ height: `${altura}%` }} />)}</span>
+            </span>
+        );
+    }
+
+    if (tipo?.startsWith('video/')) {
+        return (
+            <span className="chat-resposta-midia-preview">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2" /><path d="m16 10 5-3v10l-5-3z" /></svg>
+                {texto?.trim() && <span className="chat-resposta-midia-comentario">{texto}</span>}
+                {url && <video className="chat-resposta-midia-miniatura" src={url} muted playsInline preload="metadata" />}
+            </span>
+        );
+    }
+
+    if (tipo?.startsWith('image/')) {
+        return (
+            <span className="chat-resposta-midia-preview">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                {texto?.trim() && <span className="chat-resposta-midia-comentario">{texto}</span>}
+                {url && <img className="chat-resposta-midia-miniatura" src={url} alt="" loading="lazy" />}
+            </span>
+        );
+    }
+
+    return null;
+}
+
 function ChatGlobal() {
     const navigate = useNavigate();
     const { user, carregando: carregandoAuth } = useAuth();
@@ -97,6 +131,7 @@ function ChatGlobal() {
     const [gravandoAudio, setGravandoAudio] = useState(false);
     const [carregando, setCarregando] = useState(true);
     const [enviando, setEnviando] = useState(false);
+    const [statusEnvio, setStatusEnvio] = useState('');
     const [erro, setErro] = useState('');
     const [editandoId, setEditandoId] = useState(null);
     const [respondendoA, setRespondendoA] = useState(null);
@@ -118,16 +153,25 @@ function ChatGlobal() {
     useEffect(() => {
         if (midiaAmpliadaIndex === null) return undefined;
         const overflowOriginal = document.body.style.overflow;
-        const fecharComEscape = (evento) => {
+        const controlarGaleria = (evento) => {
             if (evento.key === 'Escape') setMidiaAmpliadaIndex(null);
+            if (evento.key === 'ArrowLeft' || evento.key === 'ArrowRight') {
+                const totalMidias = mensagens.filter((mensagem) => (
+                    (mensagem.midia_tipo?.startsWith('image/') || mensagem.midia_tipo?.startsWith('video/'))
+                    && mensagem.midia_url
+                )).length;
+                if (!totalMidias) return;
+                const direcao = evento.key === 'ArrowLeft' ? -1 : 1;
+                setMidiaAmpliadaIndex((indiceAtual) => ((indiceAtual ?? 0) + direcao + totalMidias) % totalMidias);
+            }
         };
         document.body.style.overflow = 'hidden';
-        window.addEventListener('keydown', fecharComEscape);
+        window.addEventListener('keydown', controlarGaleria);
         return () => {
             document.body.style.overflow = overflowOriginal;
-            window.removeEventListener('keydown', fecharComEscape);
+            window.removeEventListener('keydown', controlarGaleria);
         };
-    }, [midiaAmpliadaIndex]);
+    }, [mensagens, midiaAmpliadaIndex]);
     const envioBloqueadoRef = useRef(false);
     const mensagensAnterioresRef = useRef(0);
     const historicoCarregadoRef = useRef(false);
@@ -167,7 +211,7 @@ function ChatGlobal() {
 
         supabase
             .from('mensagens_chat')
-            .select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, criado_em')
+            .select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, resposta_midia_url, criado_em')
             .order('criado_em', { ascending: true })
             .limit(100)
             .then(({ data, error }) => {
@@ -365,26 +409,39 @@ function ChatGlobal() {
 
         setEnviando(true);
         setErro('');
+        setStatusEnvio(editandoId ? 'Salvando edição...' : arquivoSelecionado?.type.startsWith('video/') ? 'Preparando vídeo...' : arquivoSelecionado ? 'Enviando mídia...' : 'Enviando mensagem...');
         deveIrParaOFimRef.current = true;
         let caminhoMidia = null;
         try {
             let dadosMidia = {};
             if (!editandoId && arquivoSelecionado) {
-                const extensao = arquivoSelecionado.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+                let arquivoParaEnviar = arquivoSelecionado;
+                if (arquivoSelecionado.type.startsWith('video/')) {
+                    const { normalizarVideo } = await import('../services/normalizarVideo');
+                    arquivoParaEnviar = await normalizarVideo(arquivoSelecionado, ({ etapa, progresso }) => {
+                        setStatusEnvio(etapa === 'carregando'
+                            ? 'Carregando conversor de vídeo...'
+                            : `Convertendo vídeo... ${progresso}%`);
+                    });
+                }
+
+                setStatusEnvio('Enviando mídia...');
+                const extensao = arquivoParaEnviar.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
                 caminhoMidia = `chat/${user.id}/${gerarIdUnico()}.${extensao}`;
-                const upload = await supabase.storage.from('midias').upload(caminhoMidia, arquivoSelecionado, {
-                    contentType: arquivoSelecionado.type,
+                const upload = await supabase.storage.from('midias').upload(caminhoMidia, arquivoParaEnviar, {
+                    contentType: arquivoParaEnviar.type,
                     upsert: false,
                 });
                 if (upload.error) throw upload.error;
                 const { data: urlPublica } = supabase.storage.from('midias').getPublicUrl(caminhoMidia);
                 dadosMidia = {
                     midia_url: urlPublica.publicUrl,
-                    midia_tipo: arquivoSelecionado.type,
-                    midia_nome: arquivoSelecionado.name,
+                    midia_tipo: arquivoParaEnviar.type,
+                    midia_nome: arquivoParaEnviar.name,
                 };
             }
 
+            setStatusEnvio(editandoId ? 'Salvando edição...' : 'Enviando mensagem...');
             const resultado = editandoId
                 ? await supabase.from('mensagens_chat').update({ texto: mensagem }).eq('id', editandoId).eq('autor_id', user.id).select().single()
                 : await supabase.from('mensagens_chat').insert({
@@ -398,7 +455,8 @@ function ChatGlobal() {
                     resposta_texto: respondendoA ? textoDeResposta(respondendoA) : null,
                     resposta_midia_tipo: respondendoA?.midia_tipo || null,
                     resposta_midia_nome: respondendoA?.midia_nome || null,
-                }).select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, criado_em').single();
+                    resposta_midia_url: respondendoA?.midia_url || null,
+                }).select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, resposta_midia_url, criado_em').single();
 
             if (resultado.error) throw resultado.error;
 
@@ -413,11 +471,12 @@ function ChatGlobal() {
             setRespondendoA(null);
         } catch (error) {
             deveIrParaOFimRef.current = false;
-            if (caminhoMidia) await supabase.storage.from('midias').remove([caminhoMidia]);
+            if (caminhoMidia) await supabase.storage.from('midias').remove([caminhoMidia]).catch(() => {});
             console.error('Erro ao enviar mensagem:', error);
             setErro(`Não foi possível enviar a mensagem: ${error.message || 'execute a migration do chat.'}`);
         }
         setEnviando(false);
+        setStatusEnvio('');
     }
 
     function iniciarEdicao(mensagem) {
@@ -430,6 +489,7 @@ function ChatGlobal() {
     function iniciarResposta(mensagem) {
         setEditandoId(null);
         setRespondendoA({ ...mensagem, texto: textoDeResposta(mensagem) });
+        requestAnimationFrame(() => document.getElementById('mensagem-chat-global')?.focus());
     }
 
     function irParaMensagemOriginal(mensagemId) {
@@ -555,13 +615,14 @@ function ChatGlobal() {
     }
 
     const midiasGaleria = mensagens
-        .filter((mensagem) => mensagem.midia_tipo?.startsWith('image/') && mensagem.midia_url)
+        .filter((mensagem) => (mensagem.midia_tipo?.startsWith('image/') || mensagem.midia_tipo?.startsWith('video/')) && mensagem.midia_url)
         .map((mensagem) => ({
             url: mensagem.midia_url,
             nome: mensagem.midia_nome || 'Imagem enviada no chat',
             id: mensagem.id,
+            tipo: mensagem.midia_tipo,
         }));
-    const imagemAmpliada = midiaAmpliadaIndex === null ? null : midiasGaleria[midiaAmpliadaIndex];
+    const midiaAmpliada = midiaAmpliadaIndex === null ? null : midiasGaleria[midiaAmpliadaIndex];
 
     function navegarGaleria(direcao) {
         if (!midiasGaleria.length) return;
@@ -656,11 +717,11 @@ function ChatGlobal() {
                                                         <button className="chat-global-profile-name" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)}>{mensagem.autor_nome || 'Viciado em Souls'}</button>
                                                         <time>{new Date(mensagem.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time>
                                                     </div>
-                                                    {(mensagem.resposta_texto || mensagem.resposta_midia_tipo) && <button className={`chat-mensagem-resposta${mensagem.resposta_midia_tipo?.startsWith('audio/') ? ' chat-mensagem-resposta-audio' : ''}`} type="button" onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)} disabled={!mensagem.resposta_mensagem_id} aria-label="Ir para a mensagem respondida"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>{mensagem.resposta_midia_tipo?.startsWith('audio/') ? <span className="chat-mensagem-resposta-audio-preview"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg><span>Áudio</span><span className="chat-mensagem-resposta-onda" aria-hidden="true">{[35, 65, 45, 80, 50, 70, 35, 90, 52, 68, 42, 76].map((altura, indice) => <i key={indice} style={{ height: `${altura}%` }} />)}</span></span> : <span>{mensagem.resposta_texto}</span>}</button>}
+                                                    {(mensagem.resposta_texto || mensagem.resposta_midia_tipo) && <button className="chat-mensagem-resposta" type="button" onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)} disabled={!mensagem.resposta_mensagem_id} aria-label="Ir para a mensagem respondida"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>{mensagem.resposta_midia_tipo ? <PreviewMidiaRespondida tipo={mensagem.resposta_midia_tipo} url={mensagem.resposta_midia_url} texto={mensagem.resposta_texto} /> : <span>{mensagem.resposta_texto}</span>}</button>}
                                                     {mensagem.midia_url && (
                                                         <div className="chat-mensagem-midia">
                                                             {mensagem.midia_tipo?.startsWith('image/') && <button className="chat-mensagem-imagem-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Ampliar imagem"><img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada no chat'} loading="lazy" /></button>}
-                                                            {mensagem.midia_tipo?.startsWith('video/') && <video src={mensagem.midia_url} controls preload="metadata" />}
+                                                            {mensagem.midia_tipo?.startsWith('video/') && <button className="chat-mensagem-video-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Abrir vídeo em tela cheia"><video src={mensagem.midia_url} muted playsInline preload="metadata" /><span aria-hidden="true">▶</span></button>}
                                                             {mensagem.midia_tipo?.startsWith('audio/') && <AudioMensagemChat src={mensagem.midia_url} />}
                                                         </div>
                                                     )}
@@ -674,7 +735,7 @@ function ChatGlobal() {
                                     })}
                                     {novasMensagens > 0 && <button className="chat-global-novas-mensagens" type="button" onClick={irParaNovasMensagens}>{novasMensagens} {novasMensagens === 1 ? 'nova mensagem' : 'novas mensagens'} <span>↓</span></button>}
                                 </div>
-                                {textoAtividadeChat && <div className="chat-global-typing-status" role="status"><span className={pessoasGravandoAudio.length ? 'gravando' : ''} />{textoAtividadeChat}</div>}
+                                {enviando ? <div className="chat-global-typing-status chat-global-envio-status" role="status"><span aria-hidden="true" />{statusEnvio || 'Enviando mensagem...'}</div> : textoAtividadeChat && <div className="chat-global-typing-status" role="status"><span className={pessoasGravandoAudio.length ? 'gravando' : ''} />{textoAtividadeChat}</div>}
                                 {editandoId && <div className="chat-global-editando" role="status"><span>Editando mensagem</span><button type="button" onClick={() => { setEditandoId(null); setTexto(''); }}>Cancelar</button></div>}
                                 <form className="chat-global-composer" onSubmit={enviarMensagem}>
                                     <div className="chat-global-input-wrap">{respondendoA && <div className="chat-global-resposta-ativa"><div><strong>Respondendo a {respondendoA.autor_nome || 'Viciado em Souls'}</strong><span>{respondendoA.texto}</span></div><button type="button" onClick={() => setRespondendoA(null)} aria-label="Cancelar resposta">×</button></div>}{arquivoSelecionado && <div className="chat-global-arquivo-ativo">{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('image/') && <img src={arquivoPreviewUrl} alt="Prévia do anexo" />}{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('video/') && <video src={arquivoPreviewUrl} muted />}{!arquivoPreviewUrl && <span className="chat-global-arquivo-icone">♫</span>}<span>{arquivoSelecionado.name}</span><button type="button" onClick={limparArquivoSelecionado} aria-label="Remover arquivo anexado">×</button></div>}<div className="chat-global-textarea-wrap"><textarea id="mensagem-chat-global" rows="1" value={texto} onChange={(evento) => setTexto(evento.target.value)} onKeyDown={(evento) => { if (evento.key === 'Enter' && !evento.shiftKey) enviarMensagem(evento); }} placeholder="Conversar em #geral" maxLength={500} /><input id="arquivo-chat-global" className="chat-global-file-input" type="file" accept="image/*,video/*,audio/*" onChange={selecionarArquivo} disabled={enviando || gravandoAudio} /><button type="button" className="btn-enviar-arquivos-chat-global" aria-label="Anexar imagem, vídeo ou áudio" onClick={() => document.getElementById('arquivo-chat-global')?.click()} disabled={enviando || gravandoAudio}>+</button><button type="button" className={`btn-gravar-audio-chat-global${gravandoAudio ? ' gravando' : ''}`} aria-label={gravandoAudio ? 'Parar gravação de áudio' : 'Gravar áudio'} aria-pressed={gravandoAudio} onClick={alternarGravacaoAudio} disabled={enviando}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg></button></div></div>
@@ -702,7 +763,23 @@ function ChatGlobal() {
                             </aside>
                         </>
                     )}
-                    {imagemAmpliada && <div className="chat-global-image-viewer" role="dialog" aria-modal="true" aria-label="Galeria de imagens do chat" onClick={() => setMidiaAmpliadaIndex(null)}><button type="button" className="chat-global-image-viewer-close" onClick={() => setMidiaAmpliadaIndex(null)} aria-label="Fechar imagem">×</button><button type="button" className="chat-global-image-viewer-prev" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(-1); }} aria-label="Imagem anterior">‹</button><img src={imagemAmpliada.url} alt={imagemAmpliada.nome} onClick={(evento) => evento.stopPropagation()} /><button type="button" className="chat-global-image-viewer-next" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(1); }} aria-label="Próxima imagem">›</button><div className="chat-global-image-thumbnails" onClick={(evento) => evento.stopPropagation()}>{midiasGaleria.map((midia, indice) => <button className={indice === midiaAmpliadaIndex ? 'ativo' : ''} type="button" key={midia.id} onClick={() => setMidiaAmpliadaIndex(indice)} aria-label={`Abrir imagem ${indice + 1}`}><img src={midia.url} alt="" /></button>)}</div></div>}
+                    {midiaAmpliada && (
+                        <div className="chat-global-image-viewer" role="dialog" aria-modal="true" aria-label="Galeria de mídias do chat" onClick={() => setMidiaAmpliadaIndex(null)}>
+                            <button type="button" className="chat-global-image-viewer-close" onClick={() => setMidiaAmpliadaIndex(null)} aria-label="Fechar visualizador">×</button>
+                            <button type="button" className="chat-global-image-viewer-prev" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(-1); }} aria-label="Mídia anterior">‹</button>
+                            {midiaAmpliada.tipo?.startsWith('video/')
+                                ? <video className="chat-global-image-viewer-media chat-global-image-viewer-video" src={midiaAmpliada.url} controls playsInline muted={false} preload="auto" onClick={(evento) => evento.stopPropagation()} />
+                                : <img className="chat-global-image-viewer-media" src={midiaAmpliada.url} alt={midiaAmpliada.nome} onClick={(evento) => evento.stopPropagation()} />}
+                            <button type="button" className="chat-global-image-viewer-next" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(1); }} aria-label="Próxima mídia">›</button>
+                            <div className="chat-global-image-thumbnails" onClick={(evento) => evento.stopPropagation()}>
+                                {midiasGaleria.map((midia, indice) => (
+                                    <button className={indice === midiaAmpliadaIndex ? 'ativo' : ''} type="button" key={midia.id} onClick={() => setMidiaAmpliadaIndex(indice)} aria-label={`Abrir ${midia.tipo?.startsWith('video/') ? 'vídeo' : 'imagem'} ${indice + 1}`}>
+                                        {midia.tipo?.startsWith('video/') ? <video src={midia.url} muted playsInline preload="metadata" /> : <img src={midia.url} alt="" />}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </section>
             </main>
         </>
@@ -719,8 +796,7 @@ function formatarDuracaoAudio(segundos) {
 function textoDeResposta(mensagem) {
     if (mensagem.texto?.trim()) return mensagem.texto.trim();
     if (mensagem.midia_tipo?.startsWith('audio/')) return '♫ Áudio enviado';
-    if (mensagem.midia_tipo?.startsWith('image/')) return '▧ Foto enviada';
-    if (mensagem.midia_tipo?.startsWith('video/')) return '▶ Vídeo enviado';
+    if (mensagem.midia_tipo?.startsWith('image/') || mensagem.midia_tipo?.startsWith('video/')) return '';
     return 'Mídia enviada';
 }
 

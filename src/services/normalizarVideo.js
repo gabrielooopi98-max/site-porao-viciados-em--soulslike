@@ -57,7 +57,7 @@ export async function normalizarVideo(file, aoAtualizarProgresso = () => {}) {
             '-preset', 'ultrafast',
             '-crf', '24',
             '-pix_fmt', 'yuv420p',
-            '-c:a', 'libmp3lame',
+            '-c:a', 'aac',
             '-b:a', '128k',
             '-ac', '2',
             '-movflags', '+faststart',

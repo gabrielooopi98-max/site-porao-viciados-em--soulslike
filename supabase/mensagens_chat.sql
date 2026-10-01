@@ -12,6 +12,7 @@ create table if not exists public.mensagens_chat (
     resposta_texto text,
     resposta_midia_tipo text,
     resposta_midia_nome text,
+    resposta_midia_url text,
     criado_em timestamptz not null default now()
 );
 
@@ -21,6 +22,7 @@ alter table public.mensagens_chat
     add column if not exists resposta_texto text,
     add column if not exists resposta_midia_tipo text,
     add column if not exists resposta_midia_nome text,
+    add column if not exists resposta_midia_url text,
     add column if not exists midia_url text,
     add column if not exists midia_tipo text,
     add column if not exists midia_nome text;
