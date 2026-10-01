@@ -28,7 +28,7 @@ function VideoPublicacao({ src, type, className, label, modoPreviaVideo }) {
             ref={videoRef}
             controls={!modoPreviaVideo}
             playsInline
-            preload={modoPreviaVideo && pertoDaTela ? 'metadata' : 'none'}
+            preload={!modoPreviaVideo || pertoDaTela ? 'metadata' : 'none'}
             className={className}
             aria-hidden={modoPreviaVideo}
             aria-label={label}

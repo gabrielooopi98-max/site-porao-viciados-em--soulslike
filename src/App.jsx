@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/useAuth';
 import AvisosHeader from './components/AvisosHeader';
 import ImagemDecorativaAdiada from './components/ImagemDecorativaAdiada';
+import PresencaMensagensPrivadas from './components/PresencaMensagensPrivadas';
 
 const CardPost = lazy(() => import('./components/cards-posts/CardPost'));
 const CardBuild = lazy(() => import('./components/cards-builds/CardBuild'));
@@ -1430,6 +1431,7 @@ function PaginaDetalhesBuild() {
 function App() {
   return (
     <AuthProvider>
+      <PresencaMensagensPrivadas />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={(

@@ -83,3 +83,48 @@ export async function normalizarVideo(file, aoAtualizarProgresso = () => {}) {
         atualizarProgresso = () => {};
     }
 }
+
+export async function normalizarAudio(blob, aoAtualizarProgresso = () => {}) {
+    if (!blob?.type.startsWith('audio/')) {
+        throw new Error('O arquivo recebido não é um áudio válido.');
+    }
+
+    atualizarProgresso = aoAtualizarProgresso;
+    atualizarProgresso({ etapa: 'carregando', progresso: 0 });
+
+    const { ffmpeg, fetchFile } = await obterFFmpeg();
+    const prefixo = `audio-${crypto.randomUUID()}`;
+    const extensaoEntrada = blob.type.includes('ogg') ? 'ogg' : blob.type.includes('mp4') ? 'm4a' : blob.type.includes('wav') ? 'wav' : 'webm';
+    const arquivoEntrada = `${prefixo}-entrada.${extensaoEntrada}`;
+    const arquivoSaida = `${prefixo}-saida.m4a`;
+
+    try {
+        await ffmpeg.writeFile(arquivoEntrada, await fetchFile(blob));
+        const codigoSaida = await ffmpeg.exec([
+            '-i', arquivoEntrada,
+            '-map', '0:a:0',
+            '-c:a', 'aac',
+            '-b:a', '96k',
+            '-ac', '1',
+            '-ar', '44100',
+            '-f', 'mp4',
+            '-y', arquivoSaida,
+        ]);
+
+        if (codigoSaida !== 0) {
+            throw new Error('O conversor não conseguiu preparar o áudio para reprodução.');
+        }
+
+        const dados = await ffmpeg.readFile(arquivoSaida);
+        if (!(dados instanceof Uint8Array) || !dados.byteLength) {
+            throw new Error('O conversor gerou um arquivo de áudio vazio.');
+        }
+        return new Blob([new Uint8Array(dados)], { type: 'audio/mp4' });
+    } finally {
+        await Promise.all([
+            ffmpeg.deleteFile(arquivoEntrada).catch(() => {}),
+            ffmpeg.deleteFile(arquivoSaida).catch(() => {}),
+        ]);
+        atualizarProgresso = () => {};
+    }
+}

@@ -400,17 +400,6 @@ function DetalhesPost({ post, fecharDetalhesPost }) {
                                 : 'comente o que você achou...'}
                             disabled={!user || enviandoComentario}
                         ></textarea>
-                        <button
-                            className="btn-enviar-comentario-post"
-                            type="submit"
-                            aria-label="Enviar comentário"
-                            disabled={!user || enviandoComentario || !textoComentario.trim()}
-                        >
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M21 3 10 14" />
-                                <path d="m21 3-7 18-4-7-7-4 18-7Z" />
-                            </svg>
-                        </button>
                     </div>
                 </form>
             </section>

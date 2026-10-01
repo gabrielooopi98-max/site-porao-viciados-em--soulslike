@@ -1050,9 +1050,10 @@ main.container-site {
     padding: 10px 22px;
     color: #eeeeee;
     font-family: 'Poppins', sans-serif;
+    font-weight: 700;
     font-size: 0.9rem;
-    background: rgba(18, 18, 18, 0.88);
-    border: 1px solid rgba(190, 190, 190, 0.34);
+    background: transparent;
+    border: 1px solid rgba(255, 252, 252, 0.34);
     border-radius: 3px;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
@@ -1060,8 +1061,9 @@ main.container-site {
 
 .ver-mais-posts:hover,
 .ver-mais-builds:hover {
-    background: rgba(54, 54, 54, 0.88);
-    border-color: rgba(220, 220, 220, 0.66);
+    background: #fffdfde5;
+    color: #000;
+    border-color: rgba(0, 0, 0, 0.66);
 }
 
 .biblioteca-posts-page,
@@ -1260,6 +1262,13 @@ main.container-site {
     font: 0.66rem 'Poppins', sans-serif;
 }
 
+.mensagens-privadas-lista > header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #151515;
+}
+
 .mensagem-privada-contato {
     display: flex;
     align-items: center;
@@ -1275,9 +1284,51 @@ main.container-site {
     cursor: pointer;
 }
 
+.mensagem-privada-avatar-wrap {
+    position: relative;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+}
+
+.mensagem-privada-avatar-wrap img,
+.mensagem-privada-cabecalho .mensagem-privada-avatar-wrap > .mensagem-privada-avatar-vazio {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+}
+
+.mensagem-privada-presenca {
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 11px;
+    height: 11px;
+    border: 2px solid #151515;
+    border-radius: 50%;
+    background: #686868;
+}
+
+.mensagem-privada-presenca.online {
+    background: #39bd78;
+}
+
+.mensagem-privada-contato-info {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 3px;
+}
+
 .mensagem-privada-contato:hover,
 .mensagem-privada-contato.ativo {
     background: rgba(255, 255, 255, 0.07);
+}
+
+.mensagem-privada-contato.ativo {
+    box-shadow: inset 3px 0 #bd6b32;
 }
 
 .mensagem-privada-contato img,
@@ -1342,6 +1393,19 @@ main.container-site {
     font: 0.64rem 'Poppins', sans-serif;
 }
 
+.mensagem-privada-contato-info small {
+    color: rgba(230, 230, 230, 0.46);
+    font: 0.62rem 'Poppins', sans-serif;
+}
+
+.mensagem-privada-contato-info small.online {
+    color: #69c990;
+}
+
+.mensagem-privada-atividade {
+    color: #d69a69 !important;
+}
+
 .mensagem-privada-perfil,
 .mensagem-privada-voltar {
     min-height: 32px;
@@ -1379,6 +1443,7 @@ main.container-site {
 }
 
 .mensagem-privada-balao {
+    position: relative;
     align-self: flex-start;
     width: fit-content;
     max-width: min(78%, 620px);
@@ -1394,6 +1459,79 @@ main.container-site {
     border-radius: 12px 12px 3px 12px;
 }
 
+.mensagem-privada-balao.destacada {
+    outline: 2px solid rgba(214, 154, 105, 0.9);
+    outline-offset: 2px;
+}
+
+.mensagem-privada-resposta-preview {
+    display: grid;
+    width: 100%;
+    gap: 2px;
+    margin: 0 0 7px;
+    padding: 5px 8px;
+    color: rgba(240, 240, 240, 0.72);
+    text-align: left;
+    background: rgba(0, 0, 0, 0.2);
+    border: 0;
+    border-left: 2px solid #d69a69;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.mensagem-privada-resposta-preview strong {
+    color: #e4ad7e;
+    font: 600 0.62rem 'Poppins', sans-serif;
+}
+
+.mensagem-privada-resposta-preview span {
+    overflow: hidden;
+    font: 0.66rem 'Poppins', sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mensagem-privada-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 3px;
+    margin-top: 3px;
+}
+
+.mensagem-privada-acoes button {
+    display: grid;
+    width: 25px;
+    height: 24px;
+    padding: 0;
+    place-items: center;
+    color: rgba(240, 240, 240, 0.55);
+    font: 0.9rem 'Poppins', sans-serif;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.mensagem-privada-acoes button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mensagem-privada-acoes svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+.mensagem-privada-editada {
+    color: rgba(230, 230, 230, 0.42);
+    font: 0.54rem 'Poppins', sans-serif;
+}
+
 .mensagem-privada-balao p {
     margin: 0;
     overflow-wrap: anywhere;
@@ -1402,11 +1540,64 @@ main.container-site {
 }
 
 .mensagem-privada-balao time {
-    display: block;
-    margin-top: 4px;
+    display: inline;
     color: rgba(230, 230, 230, 0.48);
     font: 0.58rem 'Poppins', sans-serif;
     text-align: right;
+}
+
+.mensagem-privada-balao footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    min-height: 12px;
+    margin-top: 4px;
+}
+
+.mensagem-privada-recibo {
+    color: rgba(230, 230, 230, 0.46);
+    font: 0.62rem 'Poppins', sans-serif;
+    letter-spacing: -0.16em;
+}
+
+.mensagem-privada-recibo.lida {
+    color: #72b7f2;
+}
+
+.mensagem-privada-audio {
+    display: block;
+    width: min(280px, 68vw);
+    height: 38px;
+}
+
+.mensagem-privada-audio-erro {
+    color: #ffaaa0;
+    font: 0.72rem 'Poppins', sans-serif;
+}
+
+.mensagem-privada-legenda {
+    margin-top: 7px !important;
+}
+
+.mensagem-privada-midia {
+    display: block;
+    width: min(360px, 70vw);
+    max-height: 420px;
+    object-fit: contain;
+    border-radius: 7px;
+    background: #090909;
+}
+
+.mensagem-privada-midia.imagem {
+    height: auto;
+}
+
+.mensagem-privada-figurinha {
+    display: block;
+    width: min(190px, 48vw);
+    max-height: 190px;
+    object-fit: contain;
 }
 
 .mensagens-privadas-compositor {
@@ -1421,8 +1612,244 @@ main.container-site {
     background: linear-gradient(transparent, rgba(12, 12, 12, 0.98) 20%);
 }
 
+.mensagem-privada-compositor-contexto {
+    position: absolute;
+    right: 12px;
+    bottom: calc(100% + 4px);
+    left: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    color: rgba(240, 240, 240, 0.78);
+    background: #202020;
+    border-left: 2px solid #d69a69;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mensagem-privada-compositor-contexto > div {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.mensagem-privada-compositor-contexto strong {
+    color: #e4ad7e;
+    font: 600 0.65rem 'Poppins', sans-serif;
+}
+
+.mensagem-privada-compositor-contexto span {
+    overflow: hidden;
+    font: 0.62rem 'Poppins', sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mensagens-privadas-compositor .mensagem-privada-compositor-contexto button {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    color: rgba(240, 240, 240, 0.72);
+    font: 1.2rem 'Poppins', sans-serif;
+    background: transparent;
+    border: 0;
+}
+
+.mensagens-privadas-compositor .mensagem-privada-input-arquivo,
+.mensagens-privadas-adicionar-figurinha input {
+    display: none;
+}
+
+.mensagens-privadas-compositor .mensagem-privada-anexar {
+    display: grid;
+    min-width: 40px;
+    min-height: 42px;
+    padding: 0;
+    place-items: center;
+    color: rgba(240, 240, 240, 0.78);
+    font: 300 1.65rem/1 'Poppins', sans-serif;
+    background: #222;
+    border: 1px solid rgba(220, 220, 220, 0.14);
+}
+
+.mensagem-privada-anexar:hover:not(:disabled),
+.mensagem-privada-microfone:hover:not(:disabled),
+.mensagem-privada-botao-figurinhas:hover {
+    color: #fff;
+    background: #303030;
+}
+
+.mensagem-privada-arquivo-preview {
+    position: absolute;
+    right: 12px;
+    bottom: calc(100% - 4px);
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 8px 10px;
+    color: rgba(240, 240, 240, 0.82);
+    font: 0.68rem 'Poppins', sans-serif;
+    background: #202020;
+    border: 1px solid rgba(220, 220, 220, 0.15);
+    border-radius: 9px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mensagem-privada-arquivo-preview img,
+.mensagem-privada-arquivo-preview video {
+    width: 48px;
+    height: 42px;
+    flex: 0 0 48px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.mensagem-privada-arquivo-preview span {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mensagem-privada-arquivo-preview button {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    color: rgba(240, 240, 240, 0.7);
+    font: 1.2rem 'Poppins', sans-serif;
+    background: transparent;
+}
+
+.mensagens-privadas-figurinhas {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.mensagens-privadas-compositor .mensagem-privada-botao-figurinhas {
+    display: grid;
+    min-width: 40px;
+    min-height: 42px;
+    padding: 0;
+    place-items: center;
+    color: rgba(240, 240, 240, 0.72);
+    background: transparent;
+}
+
+.mensagem-privada-botao-figurinhas svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+.mensagens-privadas-seletor-figurinhas {
+    position: absolute;
+    right: 0;
+    bottom: 50px;
+    z-index: 5;
+    display: flex;
+    width: min(324px, calc(100vw - 24px));
+    max-height: min(72vh, 440px);
+    flex-direction: column;
+    padding: 12px;
+    background: #202020;
+    border: 1px solid rgba(220, 220, 220, 0.18);
+    border-radius: 12px;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.52);
+}
+
+.mensagens-privadas-seletor-figurinhas > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.mensagens-privadas-seletor-figurinhas > header strong {
+    color: #f2f2f2;
+    font: 600 0.88rem 'Poppins', sans-serif;
+}
+
+.mensagens-privadas-adicionar-figurinha {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    color: #fff;
+    font: 600 0.68rem 'Poppins', sans-serif;
+    background: #267b50;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.mensagens-privadas-busca-figurinha input {
+    width: 100%;
+    min-height: 38px;
+    margin-bottom: 10px;
+    padding: 0 11px;
+    color: #f5f5f5;
+    font: 0.68rem 'Poppins', sans-serif;
+    background: #171717;
+    border: 1px solid rgba(230, 230, 230, 0.2);
+    border-radius: 20px;
+    outline: 0;
+}
+
+.mensagens-privadas-busca-figurinha input:focus {
+    border-color: #38a36a;
+}
+
+.mensagens-privadas-grade-figurinhas {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+    overflow-y: auto;
+}
+
+.mensagens-privadas-grade-figurinhas button {
+    display: grid;
+    min-width: 0;
+    aspect-ratio: 1;
+    place-items: center;
+    padding: 4px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.055);
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.mensagens-privadas-grade-figurinhas img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.mensagens-privadas-figurinhas-vazio {
+    display: grid;
+    min-height: 120px;
+    place-items: center;
+    margin: 0;
+    padding: 14px;
+    color: rgba(235, 235, 235, 0.72);
+    font: 0.7rem/1.5 'Poppins', sans-serif;
+    text-align: center;
+}
+
 .mensagens-privadas-compositor textarea {
     width: min(100%, 900px);
+    min-width: 0;
     min-height: 46px;
     max-height: 150px;
     flex: 1;
@@ -1449,6 +1876,64 @@ main.container-site {
 .mensagens-privadas-compositor button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.mensagens-privadas-compositor .mensagem-privada-microfone,
+.mensagens-privadas-compositor .mensagem-privada-cancelar-audio {
+    display: inline-grid;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0 10px;
+    place-items: center;
+    color: rgba(240, 240, 240, 0.82);
+    background: #222;
+    border: 1px solid rgba(220, 220, 220, 0.14);
+}
+
+.mensagens-privadas-compositor .mensagem-privada-microfone svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+.mensagens-privadas-compositor .mensagem-privada-parar-audio {
+    color: #101010;
+}
+
+.mensagem-privada-gravacao {
+    display: flex;
+    min-height: 46px;
+    flex: 1;
+    align-items: center;
+    gap: 9px;
+    padding: 0 14px;
+    color: rgba(240, 240, 240, 0.8);
+    font: 0.74rem 'Poppins', sans-serif;
+    background: #222;
+    border: 1px solid rgba(220, 220, 220, 0.15);
+    border-radius: 8px;
+}
+
+.mensagem-privada-gravacao strong {
+    margin-left: auto;
+    color: #ef9871;
+    font-variant-numeric: tabular-nums;
+}
+
+.mensagem-privada-gravacao-ponto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ec655d;
+    animation: mensagem-privada-pulsar 1s ease-in-out infinite alternate;
+}
+
+@keyframes mensagem-privada-pulsar {
+    to { opacity: 0.35; }
 }
 
 .mensagens-privadas-vazio,
@@ -1564,6 +2049,10 @@ main.container-site {
         min-height: 40px;
         padding-inline: 10px;
         font-size: 0.65rem;
+    }
+
+    .mensagem-privada-audio {
+        width: min(240px, 64vw);
     }
 }
 
@@ -2657,8 +3146,6 @@ main.container-site {
     align-items: start;
     gap: 0 12px;
     padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.025);
-    border-left: 2px solid rgba(70, 70, 70, 0.62);
 }
 
 .conteudo-comentario-post {
@@ -8491,15 +8978,43 @@ textarea:focus-visible {
 }
 
 .card-detalhes-build {
-    width: min(1280px, 100%);
+    width: min(1120px, 100%);
+    border-color: rgba(165, 165, 165, 0.13);
+    border-radius: 12px;
+    background: #0b0b0b;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.card-detalhes-build .card-detalhes-post-header {
+    padding: 16px clamp(18px, 3vw, 32px);
+    background: #0e0e0e;
+}
+
+.card-detalhes-build .link-usuario-detalhe {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.card-detalhes-build .btn-fechar-detalhes-post {
+    width: auto;
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid rgba(165, 165, 165, 0.18);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.card-detalhes-build .btn-fechar-detalhes-post:hover {
+    border-color: rgba(165, 165, 165, 0.34);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 .card-detalhes-build .conteudo-detalhes-build {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
     align-items: start;
-    gap: 24px 32px;
-    padding: 30px clamp(18px, 3vw, 40px) 38px;
+    gap: 24px 28px;
+    padding: 28px clamp(18px, 3vw, 36px) 32px;
 }
 
 .cabecalho-detalhes-build {
@@ -8507,19 +9022,37 @@ textarea:focus-visible {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
-    padding-bottom: 20px;
+    gap: 10px;
+    padding-bottom: 18px;
     border-bottom: 1px solid rgba(165, 165, 165, 0.14);
+}
+
+.cabecalho-detalhes-build .categoria-build {
+    width: fit-content;
+    padding: 4px 9px;
+    border: 1px solid rgba(240, 120, 24, 0.22);
+    border-radius: 999px;
+    background: rgba(240, 120, 24, 0.07);
+    color: #e7a36a;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
 }
 
 .cabecalho-detalhes-build .titulo-detalhes-post {
     max-width: 100%;
-    font-size: 2.15rem;
-    line-height: 1.2;
+    font-size: clamp(1.55rem, 3vw, 2rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
 }
 
 .area-midia-detalhes-build {
-    gap: 10px;
+    gap: 12px;
+}
+
+.card-detalhes-build .item-midia-detalhes {
+    border-color: rgba(165, 165, 165, 0.12);
+    border-radius: 9px;
+    background: #050505;
 }
 
 .area-midia-detalhes-build .midia-detalhes-post {
@@ -8532,68 +9065,128 @@ textarea:focus-visible {
 .painel-dados-detalhes-build {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 14px;
     min-width: 0;
-    padding-top: 2px;
 }
 
 .card-detalhes-build .dados-build-detalhes {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
     margin: 0;
 }
 
 .card-detalhes-build .dados-build-detalhes div {
     min-width: 0;
-    padding: 14px 12px;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(165, 165, 165, 0.13);
-    border-top-color: rgba(240, 120, 24, 0.36);
-    border-radius: 3px;
+    padding: 12px 10px;
+    border: 1px solid rgba(165, 165, 165, 0.12);
+    border-radius: 8px;
+    background: #101010;
 }
 
 .card-detalhes-build .dados-build-detalhes dt {
-    color: rgba(236, 236, 236, 0.5);
-    font-size: 0.68rem;
+    color: rgba(236, 236, 236, 0.52);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.66rem;
 }
 
 .card-detalhes-build .dados-build-detalhes dd {
-    margin-top: 6px;
-    color: #ededed;
-    font-family: 'Cinzel', serif;
-    font-size: 1.05rem;
+    margin: 5px 0 0;
+    color: #f0f0f0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .descricao-build-detalhes {
-    padding-top: 18px;
-    border-top: 1px solid rgba(165, 165, 165, 0.16);
+    padding: 16px;
+    border: 1px solid rgba(165, 165, 165, 0.12);
+    border-radius: 9px;
+    background: #101010;
 }
 
 .descricao-build-detalhes h2 {
-    margin-bottom: 10px;
-    color: rgba(240, 120, 24, 0.88);
+    margin: 0 0 10px;
+    color: #e5e5e5;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-size: 0.84rem;
+    font-weight: 600;
     text-align: left;
-    text-transform: uppercase;
 }
 
 .descricao-build-detalhes p {
-    color: rgba(236, 236, 236, 0.76);
+    margin: 0;
+    color: rgba(236, 236, 236, 0.72);
     font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-    line-height: 1.75;
+    font-size: 0.86rem;
+    line-height: 1.7;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
+
+.card-detalhes-build .area-comentarios-post {
+    padding: 24px clamp(18px, 3vw, 36px) 28px;
+    background: #0e0e0e;
+}
+
+.card-detalhes-build .area-comentarios-post h2 {
+    margin-bottom: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(165, 165, 165, 0.12);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.card-detalhes-build .lista-comentarios-post {
+    gap: 0;
+    margin-top: 4px;
+}
+
+.card-detalhes-build .lista-comentarios-post > .comentario-post {
+    padding: 16px 4px;
+    border-bottom: 1px solid rgba(165, 165, 165, 0.09);
+}
+
+.card-detalhes-build .texto-comentario-post {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.card-detalhes-build .formulario-comentario-post {
+    position: static;
+    margin-top: 18px;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.card-detalhes-build .formulario-comentario-post textarea {
+    min-height: 48px;
+    max-height: 120px;
+    padding: 12px 58px 12px 14px;
+    border-radius: 8px;
+    background: #141414;
 }
 
 @media (max-width: 820px) {
     .card-detalhes-build .conteudo-detalhes-build {
         grid-template-columns: minmax(0, 1fr);
         gap: 20px;
+    }
+
+    .area-midia-detalhes-build {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .card-detalhes-build .item-midia-detalhes {
+        aspect-ratio: auto;
+        max-height: none;
+    }
+
+    .card-detalhes-build .area-midia-detalhes-build .midia-detalhes-post {
+        height: auto;
+        max-height: min(72vh, 720px);
     }
 
     .cabecalho-detalhes-build .titulo-detalhes-post {
@@ -8606,13 +9199,22 @@ textarea:focus-visible {
     }
 
     .painel-dados-detalhes-build {
-        gap: 20px;
+        gap: 12px;
     }
 }
 
 @media (max-width: 480px) {
+    .card-detalhes-build {
+        border-radius: 9px;
+    }
+
+    .card-detalhes-build .card-detalhes-post-header {
+        padding-block: 13px;
+    }
+
     .card-detalhes-build .conteudo-detalhes-build {
-        padding: 22px 16px 28px;
+        gap: 16px;
+        padding: 20px 14px 24px;
     }
 
     .cabecalho-detalhes-build .titulo-detalhes-post {
@@ -8620,43 +9222,89 @@ textarea:focus-visible {
     }
 
     .card-detalhes-build .dados-build-detalhes {
-        gap: 8px;
+        gap: 7px;
     }
 
     .card-detalhes-build .dados-build-detalhes div {
-        padding: 12px 10px;
+        padding: 10px 8px;
+    }
+
+    .card-detalhes-build .area-comentarios-post {
+        padding: 20px 14px 22px;
     }
 }
 
 .card-detalhes-post-layout {
-    width: min(1280px, 100%);
+    width: min(1120px, 100%);
+    border-color: rgba(165, 165, 165, 0.13);
+    border-radius: 12px;
+    background: #0b0b0b;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.card-detalhes-post-layout .card-detalhes-post-header {
+    padding: 16px clamp(18px, 3vw, 32px);
+    background: #0e0e0e;
+}
+
+.card-detalhes-post-layout .link-usuario-detalhe {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.card-detalhes-post-layout .btn-fechar-detalhes-post {
+    width: auto;
+    min-width: 64px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid rgba(165, 165, 165, 0.18);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.card-detalhes-post-layout .btn-fechar-detalhes-post:hover {
+    border-color: rgba(165, 165, 165, 0.34);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 .card-detalhes-post-layout .conteudo-detalhes-post-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
     align-items: start;
-    gap: 24px 32px;
+    gap: 24px 28px;
     min-width: 0;
-    padding: 30px clamp(18px, 3vw, 40px) 38px;
+    padding: 28px clamp(18px, 3vw, 36px) 32px;
 }
 
 .card-detalhes-post-layout .cabecalho-detalhes-post-layout {
     grid-column: 1 / -1;
-    gap: 12px;
-    padding-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 0;
+    padding-bottom: 18px;
     border-bottom: 1px solid rgba(165, 165, 165, 0.14);
+}
+
+.card-detalhes-post-layout .cabecalho-detalhes-post-layout .categoria-post {
+    width: fit-content;
+    padding: 4px 9px;
+    border: 1px solid rgba(240, 120, 24, 0.22);
+    border-radius: 999px;
+    background: rgba(240, 120, 24, 0.07);
+    color: #e7a36a;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
 }
 
 .card-detalhes-post-layout .titulo-detalhes-post {
     max-width: 100%;
-    font-size: 2.15rem;
-    line-height: 1.2;
+    font-size: clamp(1.55rem, 3vw, 2rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
 }
 
 .card-detalhes-post-layout .area-midia-detalhes-layout {
     grid-column: 1 / -1;
-    gap: 10px;
+    gap: 12px;
 }
 
 .card-detalhes-post-layout:has(.descricao-detalhes-post-layout) .area-midia-detalhes-layout {
@@ -8670,25 +9318,87 @@ textarea:focus-visible {
     object-fit: contain;
 }
 
+.card-detalhes-post-layout .item-midia-detalhes {
+    border-color: rgba(165, 165, 165, 0.12);
+    border-radius: 9px;
+    background: #050505;
+}
+
 .card-detalhes-post-layout .descricao-detalhes-post-layout {
     width: auto;
     max-width: none;
     min-width: 0;
     margin: 0;
-    padding: 2px 0 0 22px;
-    border-top: 0;
-    border-left: 1px solid rgba(240, 120, 24, 0.28);
+    padding: 18px;
+    border: 1px solid rgba(165, 165, 165, 0.12);
+    border-radius: 9px;
+    background: #101010;
+}
+
+.card-detalhes-post-layout .cabecalho-descricao-detalhes-post {
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(165, 165, 165, 0.1);
 }
 
 .card-detalhes-post-layout .texto-descricao-detalhes-post {
     display: block;
     width: 100%;
     min-width: 0;
-    font-size: 0.9rem;
-    line-height: 1.75;
+    margin-top: 14px;
+    font-size: 0.88rem;
+    line-height: 1.7;
     overflow-wrap: anywhere;
     word-break: break-word;
     white-space: pre-wrap;
+}
+
+.card-detalhes-post-layout .area-comentarios-post {
+    padding: 24px clamp(18px, 3vw, 36px) 28px;
+    background: #0e0e0e;
+}
+
+.card-detalhes-post-layout .area-comentarios-post h2 {
+    margin-bottom: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(165, 165, 165, 0.12);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.card-detalhes-post-layout .lista-comentarios-post {
+    gap: 0;
+    margin-top: 4px;
+}
+
+.card-detalhes-post-layout .lista-comentarios-post > .comentario-post {
+    padding: 16px 4px;
+    border-bottom: 1px solid rgba(165, 165, 165, 0.09);
+}
+
+.card-detalhes-post-layout .texto-comentario-post {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.card-detalhes-post-layout .formulario-comentario-post {
+    position: static;
+    margin-top: 18px;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.card-detalhes-post-layout .formulario-comentario-post textarea {
+    min-height: 48px;
+    max-height: 120px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #141414;
+    resize: vertical;
+}
+
+.card-detalhes-post-layout .campo-comentario-post textarea {
+    padding-right: 14px;
 }
 
 @media (max-width: 820px) {
@@ -8708,9 +9418,7 @@ textarea:focus-visible {
 
     .card-detalhes-post-layout .descricao-detalhes-post-layout {
         min-width: 0;
-        padding: 18px 0 0;
-        border-top: 1px solid rgba(240, 120, 24, 0.28);
-        border-left: 0;
+        padding: 16px;
     }
 
     .card-detalhes-post-layout .texto-descricao-detalhes-post {
@@ -8724,15 +9432,46 @@ textarea:focus-visible {
     .card-detalhes-post-layout .titulo-detalhes-post {
         font-size: 1.65rem;
     }
+
+    .card-detalhes-post-layout .area-midia-detalhes-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .card-detalhes-post-layout .item-midia-detalhes {
+        aspect-ratio: auto;
+        max-height: none;
+    }
+
+    .card-detalhes-post-layout .botao-imagem-ampliavel {
+        height: auto;
+    }
+
+    .card-detalhes-post-layout .area-midia-detalhes-layout .midia-detalhes-post {
+        height: auto;
+        max-height: min(72vh, 720px);
+    }
 }
 
 @media (max-width: 480px) {
+    .card-detalhes-post-layout {
+        border-radius: 9px;
+    }
+
+    .card-detalhes-post-layout .card-detalhes-post-header {
+        padding-block: 13px;
+    }
+
     .card-detalhes-post-layout .conteudo-detalhes-post-layout {
-        padding: 22px 16px 28px;
+        gap: 16px;
+        padding: 20px 14px 24px;
     }
 
     .card-detalhes-post-layout .titulo-detalhes-post {
         font-size: 1.4rem;
+    }
+
+    .card-detalhes-post-layout .area-comentarios-post {
+        padding: 20px 14px 22px;
     }
 }
 
