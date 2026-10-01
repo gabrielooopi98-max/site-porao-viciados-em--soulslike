@@ -10,6 +10,7 @@ function AudioMensagemChat({ src }) {
     const [tocando, setTocando] = useState(false);
     const [duracao, setDuracao] = useState(0);
     const [tempoAtual, setTempoAtual] = useState(0);
+    const [erroAudio, setErroAudio] = useState('');
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -17,6 +18,10 @@ function AudioMensagemChat({ src }) {
 
         const atualizarDuracao = () => setDuracao(Number.isFinite(audio.duration) ? audio.duration : 0);
         const atualizarTempo = () => setTempoAtual(audio.currentTime);
+        const registrarErro = () => {
+            setTocando(false);
+            setErroAudio('Áudio indisponível ou formato não compatível.');
+        };
         const finalizar = () => {
             setTocando(false);
             setTempoAtual(0);
@@ -25,10 +30,12 @@ function AudioMensagemChat({ src }) {
         audio.addEventListener('loadedmetadata', atualizarDuracao);
         audio.addEventListener('timeupdate', atualizarTempo);
         audio.addEventListener('ended', finalizar);
+        audio.addEventListener('error', registrarErro);
         return () => {
             audio.removeEventListener('loadedmetadata', atualizarDuracao);
             audio.removeEventListener('timeupdate', atualizarTempo);
             audio.removeEventListener('ended', finalizar);
+            audio.removeEventListener('error', registrarErro);
         };
     }, [src]);
 
@@ -37,8 +44,15 @@ function AudioMensagemChat({ src }) {
         if (!audio) return;
 
         if (audio.paused) {
-            await audio.play();
-            setTocando(true);
+            try {
+                setErroAudio('');
+                await audio.play();
+                setTocando(true);
+            } catch (error) {
+                console.error('Erro ao reproduzir áudio do chat:', error);
+                setTocando(false);
+                setErroAudio('Não foi possível reproduzir este áudio.');
+            }
         } else {
             audio.pause();
             setTocando(false);
@@ -64,7 +78,7 @@ function AudioMensagemChat({ src }) {
                     {[38, 58, 30, 70, 44, 84, 52, 66, 36, 76, 48, 62, 34, 72, 42, 56, 30, 68, 46, 78, 38, 60, 32, 52].map((altura, indice) => <i key={indice} style={{ height: `${altura}%` }} />)}
                 </div>
                 <input className="chat-audio-progresso" type="range" min="0" max="100" value={duracao ? (tempoAtual / duracao) * 100 : 0} onChange={alterarProgresso} aria-label="Progresso do áudio" />
-                <span className="chat-audio-tempo">{formatarDuracaoAudio(tocando || tempoAtual ? tempoAtual : duracao)}</span>
+                <span className="chat-audio-tempo">{erroAudio || formatarDuracaoAudio(tocando || tempoAtual ? tempoAtual : duracao)}</span>
             </div>
         </div>
     );
@@ -93,6 +107,9 @@ function ChatGlobal() {
     const gravadorAudioRef = useRef(null);
     const partesAudioRef = useRef([]);
     const arquivoPreviewRef = useRef('');
+    const canalPresencaRef = useRef(null);
+    const statusPresencaRef = useRef({ digitando: false, gravando_audio: false });
+    const timerDigitandoRef = useRef(null);
 
     useEffect(() => () => {
         if (arquivoPreviewRef.current) URL.revokeObjectURL(arquivoPreviewRef.current);
@@ -150,7 +167,7 @@ function ChatGlobal() {
 
         supabase
             .from('mensagens_chat')
-            .select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, criado_em')
+            .select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, criado_em')
             .order('criado_em', { ascending: true })
             .limit(100)
             .then(({ data, error }) => {
@@ -175,23 +192,28 @@ function ChatGlobal() {
         const canalPresenca = supabase.channel('chat-global-presenca', {
             config: { presence: { key: user.id } },
         });
+        canalPresencaRef.current = canalPresenca;
 
         function sincronizarMembrosOnline() {
             if (!ativo) return;
 
             const registros = Object.values(canalPresenca.presenceState()).flat();
-            const unicos = registros.reduce((lista, registro) => {
+            const porAutor = registros.reduce((mapa, registro) => {
                 const autorId = registro.user_id;
-                if (autorId && !lista.some((membro) => membro.autor_id === autorId)) {
-                    lista.push({
-                        autor_id: autorId,
-                        autor_nome: registro.autor_nome || 'Viciado em Souls',
-                        autor_avatar_url: registro.autor_avatar_url || null,
-                    });
-                }
-                return lista;
-            }, []);
-            setMembrosOnline(unicos);
+                if (!autorId) return mapa;
+                const membro = mapa.get(autorId) ?? {
+                    autor_id: autorId,
+                    autor_nome: registro.autor_nome || 'Viciado em Souls',
+                    autor_avatar_url: registro.autor_avatar_url || null,
+                    digitando: false,
+                    gravando_audio: false,
+                };
+                membro.digitando ||= Boolean(registro.digitando);
+                membro.gravando_audio ||= Boolean(registro.gravando_audio);
+                mapa.set(autorId, membro);
+                return mapa;
+            }, new Map());
+            setMembrosOnline(Array.from(porAutor.values()));
         }
 
         canalPresenca
@@ -205,15 +227,91 @@ function ChatGlobal() {
                     user_id: user.id,
                     autor_nome: user.user_metadata?.display_name || 'Viciado em Souls',
                     autor_avatar_url: user.user_metadata?.avatar_url || null,
+                    ...statusPresencaRef.current,
                 });
                 if (error) console.error('Erro ao registrar presença no chat:', error);
             });
 
         return () => {
             ativo = false;
+            canalPresencaRef.current = null;
+            statusPresencaRef.current = { digitando: false, gravando_audio: false };
+            if (timerDigitandoRef.current) window.clearTimeout(timerDigitandoRef.current);
             supabase.removeChannel(canalPresenca);
         };
     }, [user]);
+
+    function atualizarStatusPresenca(alteracoes) {
+        statusPresencaRef.current = { ...statusPresencaRef.current, ...alteracoes };
+        const canal = canalPresencaRef.current;
+        if (!canal || !user) return;
+
+        canal.track({
+            user_id: user.id,
+            autor_nome: user.user_metadata?.display_name || 'Viciado em Souls',
+            autor_avatar_url: user.user_metadata?.avatar_url || null,
+            ...statusPresencaRef.current,
+        }).then(({ error }) => {
+            if (error) console.error('Erro ao atualizar atividade no chat:', error);
+        }).catch((error) => console.error('Erro ao atualizar atividade no chat:', error));
+    }
+
+    function resumirNomes(nomes) {
+        if (nomes.length === 1) return nomes[0];
+        if (nomes.length === 2) return `${nomes[0]} e ${nomes[1]}`;
+        return `${nomes.slice(0, 2).join(', ')} e mais ${nomes.length - 2}`;
+    }
+
+    useEffect(() => {
+        if (!user) return undefined;
+
+        function publicarDigitacao(digitando) {
+            statusPresencaRef.current = { ...statusPresencaRef.current, digitando };
+            const canal = canalPresencaRef.current;
+            if (!canal) return;
+            canal.track({
+                user_id: user.id,
+                autor_nome: user.user_metadata?.display_name || 'Viciado em Souls',
+                autor_avatar_url: user.user_metadata?.avatar_url || null,
+                ...statusPresencaRef.current,
+            }).then(({ error }) => {
+                if (error) console.error('Erro ao publicar digitação no chat:', error);
+            }).catch((error) => console.error('Erro ao publicar digitação no chat:', error));
+        }
+
+        function aoDigitar(evento) {
+            if (evento.target?.id !== 'mensagem-chat-global') return;
+            const digitando = Boolean(evento.target.value.trim());
+            if (!digitando || !statusPresencaRef.current.digitando) {
+                publicarDigitacao(digitando);
+            }
+            if (timerDigitandoRef.current) window.clearTimeout(timerDigitandoRef.current);
+            timerDigitandoRef.current = digitando
+                ? window.setTimeout(() => {
+                    publicarDigitacao(false);
+                    timerDigitandoRef.current = null;
+                }, 1800)
+                : null;
+        }
+
+        document.addEventListener('input', aoDigitar);
+        return () => {
+            document.removeEventListener('input', aoDigitar);
+            if (timerDigitandoRef.current) window.clearTimeout(timerDigitandoRef.current);
+        };
+    }, [user]);
+
+    const pessoasGravandoAudio = membrosOnline
+        .filter((membro) => membro.autor_id !== user?.id && membro.gravando_audio)
+        .map((membro) => membro.autor_nome);
+    const pessoasDigitando = membrosOnline
+        .filter((membro) => membro.autor_id !== user?.id && membro.digitando && !membro.gravando_audio)
+        .map((membro) => membro.autor_nome);
+    const textoAtividadeChat = pessoasGravandoAudio.length
+        ? `${resumirNomes(pessoasGravandoAudio)} ${pessoasGravandoAudio.length === 1 ? 'está gravando áudio' : 'estão gravando áudio'}...`
+        : pessoasDigitando.length
+            ? `${resumirNomes(pessoasDigitando)} ${pessoasDigitando.length === 1 ? 'está digitando' : 'estão digitando'}...`
+            : '';
 
     useEffect(() => {
         const container = mensagensRef.current;
@@ -256,6 +354,10 @@ function ChatGlobal() {
         const mensagem = texto.trim();
         if (!user || (!mensagem && !arquivoSelecionado) || enviando) return;
 
+        if (timerDigitandoRef.current) window.clearTimeout(timerDigitandoRef.current);
+        timerDigitandoRef.current = null;
+        atualizarStatusPresenca({ digitando: false });
+
         if (envioBloqueadoRef.current) {
             setErro('Aguarde um instante antes de enviar outra mensagem.');
             return;
@@ -293,8 +395,10 @@ function ChatGlobal() {
                     ...dadosMidia,
                     resposta_mensagem_id: respondendoA?.id || null,
                     resposta_autor_nome: respondendoA?.autor_nome || null,
-                    resposta_texto: respondendoA?.texto || null,
-                }).select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, criado_em').single();
+                    resposta_texto: respondendoA ? textoDeResposta(respondendoA) : null,
+                    resposta_midia_tipo: respondendoA?.midia_tipo || null,
+                    resposta_midia_nome: respondendoA?.midia_nome || null,
+                }).select('id, autor_id, autor_nome, autor_avatar_url, texto, midia_url, midia_tipo, midia_nome, resposta_mensagem_id, resposta_autor_nome, resposta_texto, resposta_midia_tipo, resposta_midia_nome, criado_em').single();
 
             if (resultado.error) throw resultado.error;
 
@@ -325,7 +429,25 @@ function ChatGlobal() {
 
     function iniciarResposta(mensagem) {
         setEditandoId(null);
-        setRespondendoA(mensagem);
+        setRespondendoA({ ...mensagem, texto: textoDeResposta(mensagem) });
+    }
+
+    function irParaMensagemOriginal(mensagemId) {
+        if (!mensagemId) return;
+        const mensagemOriginal = Array.from(document.querySelectorAll('[data-chat-mensagem-id]'))
+            .find((elemento) => elemento.dataset.chatMensagemId === mensagemId);
+        if (!mensagemOriginal) {
+            setErro('A mensagem original não está no histórico carregado.');
+            return;
+        }
+
+        usuarioNoFimRef.current = false;
+        mensagemOriginal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        mensagemOriginal.classList.remove('chat-mensagem-destacada');
+        requestAnimationFrame(() => {
+            mensagemOriginal.classList.add('chat-mensagem-destacada');
+            window.setTimeout(() => mensagemOriginal.classList.remove('chat-mensagem-destacada'), 1800);
+        });
     }
 
     function selecionarArquivo(evento) {
@@ -380,7 +502,13 @@ function ChatGlobal() {
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const gravador = new MediaRecorder(stream);
+            const formatosAudio = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'];
+            const formatoAudio = typeof MediaRecorder.isTypeSupported === 'function'
+                ? formatosAudio.find((formato) => MediaRecorder.isTypeSupported(formato))
+                : '';
+            const gravador = formatoAudio
+                ? new MediaRecorder(stream, { mimeType: formatoAudio })
+                : new MediaRecorder(stream);
             partesAudioRef.current = [];
             gravadorAudioRef.current = gravador;
 
@@ -388,24 +516,29 @@ function ChatGlobal() {
                 if (evento.data.size > 0) partesAudioRef.current.push(evento.data);
             };
             gravador.onstop = () => {
-                const audio = new Blob(partesAudioRef.current, { type: gravador.mimeType || 'audio/webm' });
+                const tipoAudio = gravador.mimeType || formatoAudio || 'audio/webm';
+                const extensaoAudio = tipoAudio.includes('mp4') ? 'm4a' : 'webm';
+                const audio = new Blob(partesAudioRef.current, { type: tipoAudio });
                 limparArquivoSelecionado();
-                setArquivoSelecionado(new File([audio], `audio-chat-${gerarIdUnico()}.webm`, { type: audio.type }));
+                setArquivoSelecionado(new File([audio], `audio-chat-${gerarIdUnico()}.${extensaoAudio}`, { type: audio.type }));
                 requestAnimationFrame(() => document.getElementById('mensagem-chat-global')?.focus());
                 stream.getTracks().forEach((track) => track.stop());
                 gravadorAudioRef.current = null;
                 setGravandoAudio(false);
+                atualizarStatusPresenca({ gravando_audio: false });
             };
             gravador.onerror = () => {
                 stream.getTracks().forEach((track) => track.stop());
                 gravadorAudioRef.current = null;
                 setGravandoAudio(false);
+                atualizarStatusPresenca({ gravando_audio: false });
                 setErro('Não foi possível gravar o áudio.');
             };
 
             gravador.start();
             setErro('');
             setGravandoAudio(true);
+            atualizarStatusPresenca({ digitando: false, gravando_audio: true });
         } catch (error) {
             console.error('Erro ao iniciar gravação de áudio:', error);
             setErro('Autorize o microfone para gravar um áudio.');
@@ -514,7 +647,7 @@ function ChatGlobal() {
                                     ) : mensagens.map((mensagem) => {
                                         const propria = mensagem.autor_id === user?.id;
                                         return (
-                                            <div key={mensagem.id} className={`chat-mensagem-item ${propria ? 'chat-mensagem-item-propria' : 'chat-mensagem-item-outra'}`}>
+                                            <div key={mensagem.id} data-chat-mensagem-id={mensagem.id} className={`chat-mensagem-item ${propria ? 'chat-mensagem-item-propria' : 'chat-mensagem-item-outra'}`}>
                                                 <article className={`chat-mensagem ${propria ? 'chat-mensagem-propria' : 'chat-mensagem-outra'}`}>
                                                     <div className="chat-mensagem-cabecalho">
                                                         <button className="chat-global-profile-avatar" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)} aria-label={`Abrir perfil de ${mensagem.autor_nome || 'Viciado em Souls'}`}>
@@ -523,7 +656,7 @@ function ChatGlobal() {
                                                         <button className="chat-global-profile-name" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)}>{mensagem.autor_nome || 'Viciado em Souls'}</button>
                                                         <time>{new Date(mensagem.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time>
                                                     </div>
-                                                    {mensagem.resposta_texto && <div className="chat-mensagem-resposta"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong><span>{mensagem.resposta_texto}</span></div>}
+                                                    {(mensagem.resposta_texto || mensagem.resposta_midia_tipo) && <button className={`chat-mensagem-resposta${mensagem.resposta_midia_tipo?.startsWith('audio/') ? ' chat-mensagem-resposta-audio' : ''}`} type="button" onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)} disabled={!mensagem.resposta_mensagem_id} aria-label="Ir para a mensagem respondida"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>{mensagem.resposta_midia_tipo?.startsWith('audio/') ? <span className="chat-mensagem-resposta-audio-preview"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg><span>Áudio</span><span className="chat-mensagem-resposta-onda" aria-hidden="true">{[35, 65, 45, 80, 50, 70, 35, 90, 52, 68, 42, 76].map((altura, indice) => <i key={indice} style={{ height: `${altura}%` }} />)}</span></span> : <span>{mensagem.resposta_texto}</span>}</button>}
                                                     {mensagem.midia_url && (
                                                         <div className="chat-mensagem-midia">
                                                             {mensagem.midia_tipo?.startsWith('image/') && <button className="chat-mensagem-imagem-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Ampliar imagem"><img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada no chat'} loading="lazy" /></button>}
@@ -541,6 +674,7 @@ function ChatGlobal() {
                                     })}
                                     {novasMensagens > 0 && <button className="chat-global-novas-mensagens" type="button" onClick={irParaNovasMensagens}>{novasMensagens} {novasMensagens === 1 ? 'nova mensagem' : 'novas mensagens'} <span>↓</span></button>}
                                 </div>
+                                {textoAtividadeChat && <div className="chat-global-typing-status" role="status"><span className={pessoasGravandoAudio.length ? 'gravando' : ''} />{textoAtividadeChat}</div>}
                                 {editandoId && <div className="chat-global-editando" role="status"><span>Editando mensagem</span><button type="button" onClick={() => { setEditandoId(null); setTexto(''); }}>Cancelar</button></div>}
                                 <form className="chat-global-composer" onSubmit={enviarMensagem}>
                                     <div className="chat-global-input-wrap">{respondendoA && <div className="chat-global-resposta-ativa"><div><strong>Respondendo a {respondendoA.autor_nome || 'Viciado em Souls'}</strong><span>{respondendoA.texto}</span></div><button type="button" onClick={() => setRespondendoA(null)} aria-label="Cancelar resposta">×</button></div>}{arquivoSelecionado && <div className="chat-global-arquivo-ativo">{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('image/') && <img src={arquivoPreviewUrl} alt="Prévia do anexo" />}{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('video/') && <video src={arquivoPreviewUrl} muted />}{!arquivoPreviewUrl && <span className="chat-global-arquivo-icone">♫</span>}<span>{arquivoSelecionado.name}</span><button type="button" onClick={limparArquivoSelecionado} aria-label="Remover arquivo anexado">×</button></div>}<div className="chat-global-textarea-wrap"><textarea id="mensagem-chat-global" rows="1" value={texto} onChange={(evento) => setTexto(evento.target.value)} onKeyDown={(evento) => { if (evento.key === 'Enter' && !evento.shiftKey) enviarMensagem(evento); }} placeholder="Conversar em #geral" maxLength={500} /><input id="arquivo-chat-global" className="chat-global-file-input" type="file" accept="image/*,video/*,audio/*" onChange={selecionarArquivo} disabled={enviando || gravandoAudio} /><button type="button" className="btn-enviar-arquivos-chat-global" aria-label="Anexar imagem, vídeo ou áudio" onClick={() => document.getElementById('arquivo-chat-global')?.click()} disabled={enviando || gravandoAudio}>+</button><button type="button" className={`btn-gravar-audio-chat-global${gravandoAudio ? ' gravando' : ''}`} aria-label={gravandoAudio ? 'Parar gravação de áudio' : 'Gravar áudio'} aria-pressed={gravandoAudio} onClick={alternarGravacaoAudio} disabled={enviando}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg></button></div></div>
@@ -580,6 +714,14 @@ function formatarDuracaoAudio(segundos) {
     const minutos = Math.floor(segundos / 60);
     const segundosRestantes = Math.floor(segundos % 60).toString().padStart(2, '0');
     return `${minutos}:${segundosRestantes}`;
+}
+
+function textoDeResposta(mensagem) {
+    if (mensagem.texto?.trim()) return mensagem.texto.trim();
+    if (mensagem.midia_tipo?.startsWith('audio/')) return '♫ Áudio enviado';
+    if (mensagem.midia_tipo?.startsWith('image/')) return '▧ Foto enviada';
+    if (mensagem.midia_tipo?.startsWith('video/')) return '▶ Vídeo enviado';
+    return 'Mídia enviada';
 }
 
 const emojisChat = ['😀', '😂', '😍', '😎', '🔥', '⚔️', '🛡️', '💀', '🎮', '👏', '❤️', '👍', '👀', '😭', '😡', '🤝', '🙌', '✨', '🏆', '☠️'];
