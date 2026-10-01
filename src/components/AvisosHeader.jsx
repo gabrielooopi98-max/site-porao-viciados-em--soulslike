@@ -29,6 +29,8 @@ function AvisosHeader() {
   const [notificacoes, setNotificacoes] = useState([]);
   const [amizadesRespondidas, setAmizadesRespondidas] = useState({});
   const [processandoAmizade, setProcessandoAmizade] = useState(null);
+  const [avisoExcluindo, setAvisoExcluindo] = useState(null);
+  const [limpandoAvisos, setLimpandoAvisos] = useState(false);
   const [erroAmizade, setErroAmizade] = useState('');
 
   useEffect(() => {
@@ -145,6 +147,60 @@ function AvisosHeader() {
     }
   }
 
+  async function excluirAviso(notificacao) {
+    if (avisoExcluindo || limpandoAvisos) return;
+    setAvisoExcluindo(notificacao.id);
+    setErroAmizade('');
+    try {
+      const { data, error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .eq('id', notificacao.id)
+        .eq('destinatario_id', user.id)
+        .select('id')
+        .maybeSingle();
+
+      if (error || !data) {
+        if (error) console.error('Erro ao excluir aviso:', error);
+        setErroAmizade('Não foi possível excluir este aviso. Tente novamente.');
+        return;
+      }
+      setNotificacoes((atuais) => atuais.filter((item) => item.id !== notificacao.id));
+    } catch (error) {
+      console.error('Erro ao excluir aviso:', error);
+      setErroAmizade('Não foi possível excluir este aviso. Confira sua conexão e tente novamente.');
+    } finally {
+      setAvisoExcluindo(null);
+    }
+  }
+
+  async function limparAvisos() {
+    if (!notificacoes.length || avisoExcluindo || limpandoAvisos) return;
+    if (!window.confirm('Tem certeza que deseja apagar todos os avisos?')) return;
+
+    setLimpandoAvisos(true);
+    setErroAmizade('');
+    try {
+      const { error } = await supabase
+        .from('notificacoes')
+        .delete()
+        .eq('destinatario_id', user.id);
+
+      if (error) {
+        console.error('Erro ao limpar avisos:', error);
+        setErroAmizade('Não foi possível limpar os avisos. Tente novamente.');
+        return;
+      }
+      setNotificacoes([]);
+      setAmizadesRespondidas({});
+    } catch (error) {
+      console.error('Erro ao limpar avisos:', error);
+      setErroAmizade('Não foi possível limpar os avisos. Confira sua conexão e tente novamente.');
+    } finally {
+      setLimpandoAvisos(false);
+    }
+  }
+
   return (
     <div className="avisos-header">
       <button
@@ -194,7 +250,14 @@ function AvisosHeader() {
             <section id="conteudo-avisos" className="avisos-menu-conteudo" role="tabpanel" aria-labelledby="aba-avisos">
               <div className="avisos-menu-cabecalho">
                 <strong>Avisos</strong>
-                <span>{notificacoes.length ? `${notificacoes.length} recentes` : 'Nenhum aviso'}</span>
+                {notificacoes.length ? (
+                  <div className="avisos-menu-acoes">
+                    <span>{`${notificacoes.length} recentes`}</span>
+                    <button type="button" disabled={limpandoAvisos || Boolean(avisoExcluindo)} onClick={limparAvisos}>
+                      {limpandoAvisos ? 'Limpando...' : 'Limpar avisos'}
+                    </button>
+                  </div>
+                ) : <span>Nenhum aviso</span>}
               </div>
 
               {notificacoes.length ? (
@@ -216,6 +279,15 @@ function AvisosHeader() {
                           </div>
                         )
                       )}
+                      <button className="aviso-item-excluir" type="button" aria-label={`Excluir aviso de ${notificacao.ator_nome || 'Alguém'}`} title="Excluir aviso" disabled={limpandoAvisos || avisoExcluindo === notificacao.id} onClick={() => excluirAviso(notificacao)}>
+                        {avisoExcluindo === notificacao.id ? (
+                          <span className="aviso-excluir-carregando" role="status">...</span>
+                        ) : (
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4h6v3" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   ))}
                 </div>

@@ -204,6 +204,33 @@ h2 {
     border-bottom: 1px solid rgba(150, 150, 150, 0.16);
 }
 
+.avisos-menu-acoes {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.avisos-menu-acoes button {
+    padding: 4px 7px;
+    color: rgba(240, 240, 240, 0.68);
+    font: 600 0.6rem 'Poppins', sans-serif;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(220, 220, 220, 0.14);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.avisos-menu-acoes button:hover:not(:disabled) {
+    color: #ffffff;
+    background: rgba(240, 120, 24, 0.15);
+}
+
+.avisos-menu-acoes button:disabled,
+.aviso-item-excluir:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
 .avisos-menu-cabecalho strong {
     color: var(--souls-osso);
     font: 700 0.95rem 'Cinzel', serif;
@@ -223,6 +250,7 @@ h2 {
 .aviso-item {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     gap: 5px;
     width: 100%;
     color: rgba(240, 240, 240, 0.78);
@@ -305,6 +333,40 @@ h2 {
     padding: 0 16px 10px;
     color: rgba(240, 240, 240, 0.56);
     font: 0.68rem 'Poppins', sans-serif;
+}
+
+.aviso-item-excluir {
+    display: grid;
+    width: 29px;
+    height: 27px;
+    place-items: center;
+    align-self: flex-end;
+    margin: 0 12px 8px;
+    padding: 4px;
+    color: rgba(240, 240, 240, 0.48);
+    background: transparent;
+    border: 1px solid rgba(220, 220, 220, 0.12);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.aviso-item-excluir svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+}
+
+.aviso-excluir-carregando {
+    font: 600 0.75rem 'Poppins', sans-serif;
+}
+
+.aviso-item-excluir:hover:not(:disabled) {
+    color: #ffaaa0;
+    border-color: rgba(255, 170, 160, 0.4);
 }
 
 .avisos-erro {
