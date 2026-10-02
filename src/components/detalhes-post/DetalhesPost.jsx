@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { gerarIdUnico } from '../../gerarIdUnico';
@@ -6,6 +6,8 @@ import MidiasPublicacao from '../MidiasPublicacao';
 import ListaComentarios from '../ListaComentarios';
 import { criarNotificacao } from '../../services/notificacoes';
 import { useAuth } from '../../contexts/useAuth';
+import { inserirComentario } from '../../services/comentarios';
+import './DetalhesPost.css';
 
 function DetalhesPost({ post, fecharDetalhesPost }) {
     const navigate = useNavigate();
@@ -32,6 +34,7 @@ function DetalhesPost({ post, fecharDetalhesPost }) {
     const [comentariosInteragindo, setComentariosInteragindo] = useState({});
     const [carregandoComentarios, setCarregandoComentarios] = useState(true);
     const [enviandoComentario, setEnviandoComentario] = useState(false);
+    const campoComentarioRef = useRef(null);
 
     useEffect(() => {
         let consultaAtiva = true;
@@ -179,18 +182,14 @@ function DetalhesPost({ post, fecharDetalhesPost }) {
         setEnviandoComentario(true);
 
         try {
-            const { data, error } = await supabase
-                .from('comentarios')
-                .insert({
-                    post_id: post.id,
-                    comentario_pai_id: comentarioRespondendo?.id ?? null,
-                    visitante_id: visitanteId,
-                    autor_id: user?.id ?? null,
-                    nome_usuario: user?.user_metadata?.display_name || 'Alguém',
-                    texto,
-                })
-                .select()
-                .single();
+            const { data, error } = await inserirComentario('comentarios', {
+                post_id: post.id,
+                comentario_pai_id: comentarioRespondendo?.id ?? null,
+                visitante_id: visitanteId,
+                autor_id: user?.id ?? null,
+                nome_usuario: user?.user_metadata?.display_name || 'Alguém',
+                texto,
+            }, user);
 
             if (error) {
                 console.error('Erro ao salvar comentário:', error);
@@ -270,140 +269,251 @@ function DetalhesPost({ post, fecharDetalhesPost }) {
         });
     }
 
+    const nomeAutor = post.autor_nome || 'Viciado em Souls';
+    const midias = post.midias?.length ? post.midias : post.midia_url ? [post] : [];
+    const visualizacoes = (post.visualizacoes ?? 0).toLocaleString('pt-BR');
+    const avatarUsuario = user?.user_metadata?.avatar_url;
+    const nomeUsuario = user?.user_metadata?.display_name || user?.email || '';
+
+    function abrirPerfilAutor() {
+        if (post.autor_id) navigate(`/perfil/${post.autor_id}`);
+    }
+
+    function responderComentario(comentario) {
+        setComentarioRespondendo(comentario);
+        window.requestAnimationFrame(() => {
+            campoComentarioRef.current?.focus();
+            campoComentarioRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+
+    function avatarAutor(tamanhoClasse) {
+        return post.autor_avatar_url ? (
+            <img
+                className={tamanhoClasse}
+                src={post.autor_avatar_url}
+                alt=""
+                style={{
+                    objectPosition: `${post.autor_avatar_pos_x ?? 50}% ${post.autor_avatar_pos_y ?? 50}%`,
+                    transform: `scale(${post.autor_avatar_zoom ?? 1})`,
+                }}
+            />
+        ) : (
+            <span className={tamanhoClasse} aria-hidden="true">{nomeAutor.trim().charAt(0).toUpperCase()}</span>
+        );
+    }
+
     return (
-        <article className="card-detalhes-post card-detalhes-post-layout">
-            <header className="card-detalhes-post-header">
-                <div className="lado-esquerdo-header-detalhes-post">
-                    <div className="area-foto-usuario-post">
-                        <button
-                            className="link-avatar-card"
-                            type="button"
-                            aria-label={`Abrir perfil de ${post.autor_nome || 'Viciado em Souls'}`}
-                            onClick={() => { if (post.autor_id) navigate(`/perfil/${post.autor_id}`); }}
-                        >
-                            {post.autor_avatar_url ? (
-                                <img
-                                    className="perfil-usuario-post perfil-usuario-post-imagem"
-                                    src={post.autor_avatar_url}
-                                    alt={`Foto de ${post.autor_nome || 'Viciado em Souls'}`}
-                                    style={{
-                                        objectPosition: `${post.autor_avatar_pos_x ?? 50}% ${post.autor_avatar_pos_y ?? 50}%`,
-                                        transform: `scale(${post.autor_avatar_zoom ?? 1})`,
-                                    }}
-                                />
-                            ) : (
-                                <div className="perfil-usuario-post"></div>
-                            )}
-                        </button>
-                    </div>
-
-                    <div className="info-usuario-post">
-                        <button className="link-usuario-card link-usuario-detalhe" type="button" onClick={() => { if (post.autor_id) navigate(`/perfil/${post.autor_id}`); }}>
-                            {post.autor_nome || 'Viciado em Souls'}
-                        </button>
-                        <p className="tempo-post">{formatarTempo(post.criado_em)}</p>
-                    </div>
-                </div>
-
-                <div className="lado-direito-header-detalhes-post">
-                    <button
-                        className="btn-fechar-detalhes-post"
-                        type="button"
-                        onClick={fecharDetalhesPost}>
-                        Sair
-                    </button>
-                </div>
-            </header>
-
-            <div className="conteudo-detalhes-post conteudo-detalhes-post-layout">
-                <div className="cabecalho-conteudo-detalhes-post cabecalho-detalhes-post-layout">
-                    {post.categoria && (
-                        <span className="categoria-post">{post.categoria}</span>
-                    )}
-                    <h1 className="titulo-detalhes-post">{post.titulo}</h1>
-                </div>
-
-                <div className="area-midia-detalhes-post area-midia-detalhes-layout">
-                    <MidiasPublicacao
-                        publicacao={post}
-                        itemClassName="item-midia-detalhes"
-                        mediaClassName="midia-detalhes-post"
-                        permitirAmpliar
-                    />
-                </div>
-
-                {post.descricao?.trim() && (
-                    <section className="descricao-detalhes-post descricao-detalhes-post-layout" aria-label="Descrição do autor">
-                        <div className="cabecalho-descricao-detalhes-post">
-                            <div className="avatar-descricao-detalhes-post" aria-hidden="true">
-                                <img src="/svg-animado/icone-usuario.svg" alt="" />
-                            </div>
-                            <div className="identidade-descricao-detalhes-post">
-                                <strong>{post.autor_nome || 'Viciado em Souls'}</strong>
-                                <span>Autor do post</span>
-                            </div>
-                        </div>
-                        <p className="texto-descricao-detalhes-post">{post.descricao}</p>
-                    </section>
-                )}
+        <div className="detalhe-post">
+            <div className="detalhe-post-barra">
+                <button className="detalhe-post-voltar" type="button" onClick={fecharDetalhesPost}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+                    Voltar
+                </button>
+                <nav className="detalhe-post-trilha" aria-label="Você está em">
+                    <span>Comunidade</span>
+                    <span aria-hidden="true">/</span>
+                    <span>{post.categoria || 'Posts'}</span>
+                </nav>
             </div>
 
-            <section className="area-comentarios-post" aria-labelledby="titulo-comentarios-post">
-                <h2 id="titulo-comentarios-post">Comentários ({comentarios.length})</h2>
+            <div className="detalhe-post-grade">
+                <div className="detalhe-post-principal">
+                    <article className="detalhe-post-artigo">
+                        <header className="detalhe-post-autor">
+                            <button
+                                className="detalhe-post-avatar"
+                                type="button"
+                                aria-label={`Abrir perfil de ${nomeAutor}`}
+                                onClick={abrirPerfilAutor}
+                                disabled={!post.autor_id}
+                            >
+                                {avatarAutor('detalhe-post-avatar-conteudo')}
+                            </button>
+                            <div className="detalhe-post-autor-texto">
+                                <button
+                                    className="detalhe-post-autor-nome"
+                                    type="button"
+                                    onClick={abrirPerfilAutor}
+                                    disabled={!post.autor_id}
+                                >
+                                    {nomeAutor}
+                                </button>
+                                <span>
+                                    publicou <time dateTime={post.criado_em}>{formatarTempo(post.criado_em)}</time>
+                                </span>
+                            </div>
+                            {post.categoria && <span className="detalhe-post-jogo">{post.categoria}</span>}
+                        </header>
 
-                <div className="lista-comentarios-post">
-                    <ListaComentarios
-                        comentarios={comentarios}
-                        carregandoComentarios={carregandoComentarios}
-                        reacoesComentarios={reacoesComentarios}
-                        comentariosInteragindo={comentariosInteragindo}
-                        visitanteId={visitanteId}
-                        alternarReacaoComentario={alternarReacaoComentario}
-                        aoResponder={setComentarioRespondendo}
-                        aoEditar={editarComentario}
-                        aoApagar={apagarComentario}
-                    />
+                        <h1 className="detalhe-post-titulo">{post.titulo}</h1>
+
+                        {post.descricao?.trim() && (
+                            <p className="detalhe-post-texto">{post.descricao}</p>
+                        )}
+
+                        {midias.length > 0 && (
+                            <div className={`detalhe-post-midia${midias.length > 1 ? ' detalhe-post-midia-varias' : ''}`}>
+                                <MidiasPublicacao
+                                    publicacao={post}
+                                    itemClassName="detalhe-post-midia-item"
+                                    mediaClassName="detalhe-post-midia-arquivo"
+                                    permitirAmpliar
+                                />
+                            </div>
+                        )}
+
+                        <footer className="detalhe-post-numeros">
+                            <a href="#comentarios">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 2v-4.2A7.5 7.5 0 1 1 20 11.5Z" />
+                                </svg>
+                                {comentarios.length} {comentarios.length === 1 ? 'comentário' : 'comentários'}
+                            </a>
+                            <span>
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                {visualizacoes} visualizações
+                            </span>
+                        </footer>
+                    </article>
+
+                    <section className="detalhe-comentarios" id="comentarios" aria-labelledby="titulo-comentarios-post">
+                        <header className="detalhe-comentarios-topo">
+                            <h2 id="titulo-comentarios-post">Comentários</h2>
+                            <span className="detalhe-comentarios-contador">{comentarios.length}</span>
+                        </header>
+
+                        {user ? (
+                            <form className="detalhe-comentar" onSubmit={enviarComentario}>
+                                <span className="detalhe-comentar-avatar" aria-hidden="true">
+                                    {avatarUsuario ? <img src={avatarUsuario} alt="" /> : nomeUsuario.trim().charAt(0).toUpperCase() || '?'}
+                                </span>
+                                <div className="detalhe-comentar-caixa">
+                                    {comentarioRespondendo && (
+                                        <div className="detalhe-respondendo">
+                                            <div className="detalhe-respondendo-conteudo">
+                                                <span className="detalhe-respondendo-rotulo">
+                                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+                                                    Respondendo a <strong>{comentarioRespondendo.nome_usuario}</strong>
+                                                </span>
+                                                <span className="detalhe-respondendo-trecho">{comentarioRespondendo.texto}</span>
+                                            </div>
+                                            <button
+                                                className="detalhe-respondendo-fechar"
+                                                type="button"
+                                                onClick={() => setComentarioRespondendo(null)}
+                                                disabled={enviandoComentario}
+                                                aria-label="Cancelar resposta"
+                                                title="Cancelar (Esc)"
+                                            >
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                                            </button>
+                                        </div>
+                                    )}
+                                    <label htmlFor="comentario-post" className="sr-only">
+                                        {comentarioRespondendo
+                                            ? `Responder a ${comentarioRespondendo.nome_usuario}`
+                                            : 'Escreva um comentário'}
+                                    </label>
+                                    <textarea
+                                        ref={campoComentarioRef}
+                                        id="comentario-post"
+                                        name="comentario-post"
+                                        rows={3}
+                                        value={textoComentario}
+                                        onChange={(evento) => setTextoComentario(evento.target.value)}
+                                        onKeyDown={(evento) => {
+                                            if (evento.key === 'Enter' && !evento.shiftKey) {
+                                                evento.preventDefault();
+                                                enviarComentario(evento);
+                                            }
+                                            if (evento.key === 'Escape') setComentarioRespondendo(null);
+                                        }}
+                                        placeholder={comentarioRespondendo
+                                            ? `Escreva sua resposta para ${comentarioRespondendo.nome_usuario}...`
+                                            : 'O que você achou? Conta pra galera...'}
+                                        disabled={enviandoComentario}
+                                        maxLength={2000}
+                                    ></textarea>
+                                    <div className="detalhe-comentar-rodape">
+                                        <span>Enter envia · Shift + Enter quebra a linha</span>
+                                        <button
+                                            type="submit"
+                                            className="btn-criar-post"
+                                            disabled={!textoComentario.trim() || enviandoComentario}
+                                        >
+                                            {enviandoComentario ? 'Enviando...' : comentarioRespondendo ? 'Responder' : 'Comentar'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        ) : (
+                            <div className="detalhe-comentar-convite">
+                                <div>
+                                    <strong>Participe da conversa</strong>
+                                    <span>Entre na sua conta para comentar e responder a galera.</span>
+                                </div>
+                                <button type="button" className="btn-criar-post" onClick={() => navigate('/login')}>
+                                    Entrar
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="detalhe-comentarios-lista">
+                            <ListaComentarios
+                                comentarios={comentarios}
+                                carregandoComentarios={carregandoComentarios}
+                                reacoesComentarios={reacoesComentarios}
+                                comentariosInteragindo={comentariosInteragindo}
+                                visitanteId={visitanteId}
+                                alternarReacaoComentario={alternarReacaoComentario}
+                                aoResponder={responderComentario}
+                                respondendoId={comentarioRespondendo?.id}
+                                aoEditar={editarComentario}
+                                aoApagar={apagarComentario}
+                            />
+                        </div>
+                    </section>
                 </div>
 
-                <form className="formulario-comentario-post" onSubmit={enviarComentario}>
-                    {comentarioRespondendo && (
-                        <div className="destino-resposta-comentario">
-                            <span>Respondendo a <strong>{comentarioRespondendo.nome_usuario}</strong></span>
-                            <button
-                                type="button"
-                                onClick={() => setComentarioRespondendo(null)}
-                                disabled={enviandoComentario}
-                            >
-                                Cancelar
+                <aside className="detalhe-post-lateral">
+                    <section className="detalhe-lateral-cartao detalhe-lateral-autor">
+                        <span className="detalhe-lateral-avatar">{avatarAutor('detalhe-post-avatar-conteudo')}</span>
+                        <strong>{nomeAutor}</strong>
+                        <span>Autor do post</span>
+                        {post.autor_id && (
+                            <button className="btn-filtro" type="button" onClick={abrirPerfilAutor}>
+                                Ver perfil
                             </button>
-                        </div>
-                    )}
-                    <label htmlFor="comentario-post">
-                        {comentarioRespondendo
-                            ? `Responder a ${comentarioRespondendo.nome_usuario}`
-                            : 'Deixe seu comentário'}
-                    </label>
-                    <div className="campo-comentario-post">
-                        <textarea
-                            id="comentario-post"
-                            name="comentario-post"
-                            value={textoComentario}
-                            onChange={(evento) => setTextoComentario(evento.target.value)}
-                            onKeyDown={(evento) => {
-                                if (evento.key === 'Enter' && !evento.shiftKey) {
-                                    evento.preventDefault();
-                                    enviarComentario(evento);
-                                }
-                            }}
-                            placeholder={comentarioRespondendo
-                                ? `Responder a ${comentarioRespondendo.nome_usuario}...`
-                                : 'comente o que você achou...'}
-                            disabled={!user || enviandoComentario}
-                        ></textarea>
-                    </div>
-                </form>
-            </section>
-        </article>
+                        )}
+                    </section>
+
+                    <section className="detalhe-lateral-cartao">
+                        <h2>Sobre o post</h2>
+                        <dl className="detalhe-lateral-dados">
+                            {post.categoria && (
+                                <div><dt>Jogo</dt><dd>{post.categoria}</dd></div>
+                            )}
+                            <div><dt>Publicado</dt><dd>{formatarTempo(post.criado_em)}</dd></div>
+                            <div><dt>Comentários</dt><dd>{comentarios.length}</dd></div>
+                            <div><dt>Visualizações</dt><dd>{visualizacoes}</dd></div>
+                        </dl>
+                    </section>
+
+                    <section className="detalhe-lateral-cartao detalhe-lateral-regras">
+                        <h2>Antes de comentar</h2>
+                        <ul>
+                            <li>Respeito é essencial: nada de ataques ou ofensas.</li>
+                            <li>Sem spam, correntes ou divulgação.</li>
+                            <li>Nada de conteúdo +18, pirataria ou links suspeitos.</li>
+                        </ul>
+                    </section>
+                </aside>
+            </div>
+        </div>
     )
 }
 

@@ -4,6 +4,7 @@ import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/useAuth';
 import { criarNotificacao } from '../../services/notificacoes';
 import VisualizadorAvatar from '../VisualizadorAvatar';
+import './Perfil.css';
 
 function PaginaPerfilPublico() {
   const { id } = useParams();
@@ -176,7 +177,7 @@ function PaginaPerfilPublico() {
       return;
     }
     if (user.id === id) {
-      navigate('/perfil');
+      navigate('/configurar-perfil');
       return;
     }
 
@@ -203,14 +204,14 @@ function PaginaPerfilPublico() {
           </div>
         </div>
       </header>
-      <main className="perfil-page">
+      <main className="perfil-page perfil-organizado">
         <section className="perfil-painel" aria-labelledby="titulo-perfil-publico">
           <div className="perfil-cabecalho">
             {perfil.avatar ? <VisualizadorAvatar className="perfil-avatar-grande" src={perfil.avatar} alt={`Foto de ${perfil.nome}`} style={{ objectPosition: `${perfil.avatarPosX}% ${perfil.avatarPosY}%`, transform: `scale(${perfil.avatarZoom})` }} /> : <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>}
             <div>
               <span className="banner-kicker">Perfil da comunidade</span>
               <h1 id="titulo-perfil-publico">{perfil.nome}</h1>
-              <p>Perfil público</p>
+              <p>Faça conexões e acompanhe a participação deste jogador.</p>
             </div>
           </div>
           <div className="perfil-estatisticas">
@@ -219,7 +220,8 @@ function PaginaPerfilPublico() {
             <div><strong>{perfil.seguidores}</strong><span>Seguidores</span></div>
           </div>
           <div className="perfil-acoes">
-            <button className="btn-criar-post" type="button" onClick={alternarSeguir}>
+            <button className={`btn-criar-post${user?.id === id ? ' perfil-editar' : ''}`} type="button" onClick={alternarSeguir}>
+              {user?.id === id && <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6ZM14 5l5 5" /></svg>}
               {user?.id === id ? 'Editar perfil' : seguindo ? 'Seguindo' : 'Seguir'}
             </button>
             {user?.id !== id && (

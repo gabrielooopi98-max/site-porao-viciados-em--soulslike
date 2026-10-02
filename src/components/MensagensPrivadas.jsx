@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { supabase } from '../services/supabase';
 import { gerarIdUnico } from '../gerarIdUnico';
+import TextoMensagemPrivada from './TextoMensagemPrivada';
+import { consultarAmizadesAceitas, obterAmigos } from '../services/amizades';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -213,12 +215,7 @@ function MensagensPrivadas() {
   useEffect(() => {
     if (!usuarioId) return undefined;
     let ativo = true;
-    supabase
-      .from('amizades')
-      .select('id, solicitante_id, destinatario_id, solicitante_nome, solicitante_avatar_url, destinatario_nome, destinatario_avatar_url')
-      .eq('status', 'aceita')
-      .or(`solicitante_id.eq.${usuarioId},destinatario_id.eq.${usuarioId}`)
-      .order('criado_em', { ascending: false })
+    consultarAmizadesAceitas(usuarioId)
       .then(({ data, error: erroConsulta }) => {
         if (!ativo) return;
         if (erroConsulta) {
@@ -239,11 +236,7 @@ function MensagensPrivadas() {
     return () => { ativo = false; };
   }, [usuarioId]);
 
-  const amigos = useMemo(() => !usuarioId ? [] : amizades.map((amizade) => (
-    amizade.solicitante_id === usuarioId
-      ? { id: amizade.destinatario_id, nome: amizade.destinatario_nome, avatar: amizade.destinatario_avatar_url }
-      : { id: amizade.solicitante_id, nome: amizade.solicitante_nome, avatar: amizade.solicitante_avatar_url }
-  )), [amizades, usuarioId]);
+  const amigos = useMemo(() => obterAmigos(amizades, usuarioId), [amizades, usuarioId]);
   const amigoSelecionado = amigos.find((amigo) => amigo.id === pessoaId) ?? null;
   const figurinhasFiltradas = useMemo(() => {
     const busca = buscaFigurinha.trim().toLocaleLowerCase('pt-BR');
@@ -1017,7 +1010,7 @@ function MensagensPrivadas() {
                         mensagem.figurinha?.midia_url
                           ? <img className="mensagem-privada-figurinha" src={mensagem.figurinha.midia_url} alt={mensagem.figurinha.midia_nome || 'Figurinha'} loading="lazy" />
                           : <p className="mensagem-privada-audio-erro">Figurinha indisponível.</p>
-                      ) : <p>{mensagem.texto}</p>}
+                      ) : <TextoMensagemPrivada texto={mensagem.texto} />}
                       <footer>
                         <time dateTime={mensagem.criado_em}>{formatarHora(mensagem.criado_em)}</time>
                         {mensagem.editada && <span className="mensagem-privada-editada">editada</span>}

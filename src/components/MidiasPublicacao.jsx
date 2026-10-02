@@ -35,7 +35,8 @@ function VideoPublicacao({ src, type, className, label, modoPreviaVideo }) {
             tabIndex={modoPreviaVideo ? -1 : undefined}
             disablePictureInPicture={modoPreviaVideo}
         >
-            <source src={src} type={type} />
+            {/* O fragmento de tempo faz o navegador pintar o primeiro quadro em vez de uma tela preta. */}
+            <source src={src.includes('#') ? src : `${src}#t=0.1`} type={type} />
         </video>
     );
 }

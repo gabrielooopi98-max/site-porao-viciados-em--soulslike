@@ -4,6 +4,7 @@ import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/useAuth';
 import { gerarIdUnico } from '../gerarIdUnico';
 import ImagemDecorativaAdiada from './ImagemDecorativaAdiada';
+import './ChatGlobal.css';
 
 function AudioMensagemChat({ src }) {
     const audioRef = useRef(null);
@@ -137,6 +138,49 @@ function obterFigurinha(texto) {
     return marcadorAntigo ? { emojiAntigo: figurinhasAntigas[marcadorAntigo] } : null;
 }
 
+const INTERVALO_AGRUPAMENTO_MS = 5 * 60 * 1000;
+
+function chaveDoDia(data) {
+    return new Date(data).toDateString();
+}
+
+function rotuloDoDia(data) {
+    const dia = new Date(data);
+    const hoje = new Date();
+    const ontem = new Date();
+    ontem.setDate(hoje.getDate() - 1);
+
+    if (dia.toDateString() === hoje.toDateString()) return 'Hoje';
+    if (dia.toDateString() === ontem.toDateString()) return 'Ontem';
+
+    return dia.toLocaleDateString('pt-BR', {
+        day: 'numeric',
+        month: 'long',
+        ...(dia.getFullYear() !== hoje.getFullYear() && { year: 'numeric' }),
+    });
+}
+
+function formatarHora(data) {
+    return new Date(data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function inicialDoNome(nome) {
+    return (nome || 'V').trim().charAt(0).toUpperCase();
+}
+
+// Marca separadores de dia e agrupa mensagens seguidas do mesmo autor, como no Discord.
+function organizarMensagens(mensagens) {
+    return mensagens.map((mensagem, indice) => {
+        const anterior = mensagens[indice - 1];
+        const novoDia = !anterior || chaveDoDia(anterior.criado_em) !== chaveDoDia(mensagem.criado_em);
+        const agrupada = !novoDia
+            && anterior.autor_id === mensagem.autor_id
+            && new Date(mensagem.criado_em) - new Date(anterior.criado_em) < INTERVALO_AGRUPAMENTO_MS;
+
+        return { mensagem, novoDia, agrupada };
+    });
+}
+
 function aplicarEventoMensagem(mensagensAtuais, payload) {
     if (payload.eventType === 'INSERT') {
         if (mensagensAtuais.some((mensagem) => mensagem.id === payload.new.id)) return mensagensAtuais;
@@ -181,6 +225,7 @@ function ChatGlobal() {
     const [membrosAbertos, setMembrosAbertos] = useState(false);
     const [novasMensagens, setNovasMensagens] = useState(0);
     const mensagensRef = useRef(null);
+    const campoMensagemRef = useRef(null);
     const gravadorAudioRef = useRef(null);
     const partesAudioRef = useRef([]);
     const arquivoPreviewRef = useRef('');
@@ -191,6 +236,14 @@ function ChatGlobal() {
     useEffect(() => () => {
         if (arquivoPreviewRef.current) URL.revokeObjectURL(arquivoPreviewRef.current);
     }, []);
+
+    // O campo de mensagem cresce com o texto até um limite, como nos apps de mensagem.
+    useEffect(() => {
+        const campo = campoMensagemRef.current;
+        if (!campo) return;
+        campo.style.height = 'auto';
+        campo.style.height = `${Math.min(campo.scrollHeight, 160)}px`;
+    }, [texto]);
 
     useEffect(() => {
         if (midiaAmpliadaIndex === null) return undefined;
@@ -460,12 +513,30 @@ function ChatGlobal() {
         historicoCarregadoRef.current = true;
     }, [carregando, mensagens]);
 
+    // A área de mensagens encolhe quando a barra de digitação cresce (resposta, anexo, texto longo).
+    useEffect(() => {
+        const container = mensagensRef.current;
+        if (!container || typeof ResizeObserver === 'undefined') return undefined;
+
+        const observador = new ResizeObserver(() => {
+            if (usuarioNoFimRef.current) container.scrollTop = container.scrollHeight;
+        });
+        observador.observe(container);
+        return () => observador.disconnect();
+    }, [user, carregando]);
+
     function acompanharRolagemMensagens(evento) {
         const container = evento.currentTarget;
         const distanciaAteOFim = container.scrollHeight - container.scrollTop - container.clientHeight;
         const chegouAoFim = distanciaAteOFim <= 36;
         usuarioNoFimRef.current = chegouAoFim;
         if (chegouAoFim) setNovasMensagens(0);
+    }
+
+    // Imagens e vídeos mudam a altura da conversa ao carregar; se a pessoa está no fim, continua no fim.
+    function manterNoFim() {
+        const container = mensagensRef.current;
+        if (container && usuarioNoFimRef.current) container.scrollTop = container.scrollHeight;
     }
 
     function irParaNovasMensagens() {
@@ -757,6 +828,7 @@ function ChatGlobal() {
     }
 
     async function excluirMensagem(mensagem) {
+        if (!window.confirm('Excluir esta mensagem para todos?')) return;
         const { error } = await supabase.from('mensagens_chat').delete().eq('id', mensagem.id).eq('autor_id', user.id);
         if (error) {
             setErro('Não foi possível excluir a mensagem.');
@@ -783,174 +855,510 @@ function ChatGlobal() {
         });
     }
 
-    return (
-        <>
-            <header className="area-header chat-global-header">
-                <div className="barra-menu">
-                    <div className="lado-esquerdo"><div className="area-logo-site"><p>Viciados Em Souls</p></div></div>
-                    <div className="lado-direito">
-                        <button className="btn-filtro" type="button" onClick={() => navigate('/')}>Voltar à comunidade</button>
-                    </div>
-                </div>
-            </header>
+    const nomeUsuario = user?.user_metadata?.display_name || 'Viciado em Souls';
+    const avatarUsuario = user?.user_metadata?.avatar_url || null;
 
-            <main className="chat-global-page">
-                <section className={`chat-global-room ${!carregandoAuth && !user ? 'chat-global-visitante' : ''} ${membrosAbertos ? 'chat-global-membros-ativos' : ''}`} aria-label="Chat global">
-                    {!carregandoAuth && !user ? (
-                        <>
-                            <div className="area-svg chat-global-visitor-art" aria-hidden="true">
-                                <ImagemDecorativaAdiada
-                                    src="/svg-animado/lua-bloodborne-banner-1760x575.svg"
-                                    alt=""
-                                    className="lua-pixel-art-banner"
-                                />
-                            </div>
-                            <div className="chat-global-login">
-                                <span className="chat-global-login-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 48 48" fill="none">
-                                        <path d="M8 10.5h32v22H25l-10 7v-7H8v-22Z" />
-                                        <path d="M16 19h16M16 25h11" />
-                                    </svg>
-                                </span>
-                                <span className="chat-global-login-kicker">Chat da comunidade · #geral</span>
-                                <h2>A conversa começa aqui</h2>
-                                <p>Troque ideias sobre seus jogos, compartilhe suas builds e converse com a comunidade.</p>
-                                <button className="chat-global-login-cta" type="button" onClick={() => navigate('/login', { state: { returnTo: '/chat' } })}>
-                                    Entrar ou criar conta
-                                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12M10 4l6 6-6 6" /></svg>
-                                </button>
-                                <span className="chat-global-login-note">É preciso ter uma conta para enviar mensagens.</span>
-                            </div>
-                        </>
+    // Você sempre aparece na lista, mesmo antes da presença sincronizar.
+    const membrosVisiveis = user && !membrosOnline.some((membro) => membro.autor_id === user.id)
+        ? [{ autor_id: user.id, autor_nome: nomeUsuario, autor_avatar_url: avatarUsuario }, ...membrosOnline]
+        : membrosOnline;
+    const itensMensagens = organizarMensagens(mensagens);
+
+    function abrirPerfil(autorId) {
+        if (autorId) navigate(`/perfil/${autorId}`);
+    }
+
+    function cancelarComposicao() {
+        setRespondendoA(null);
+        if (editandoId) {
+            setEditandoId(null);
+            setTexto('');
+        }
+    }
+
+    function renderAvatar(url, nome, classe) {
+        return url
+            ? <img className={classe} src={url} alt="" />
+            : <span className={`${classe} cg-avatar-inicial`} aria-hidden="true">{inicialDoNome(nome)}</span>;
+    }
+
+    if (!carregandoAuth && !user) {
+        return (
+            <div className="cg-app cg-app-visitante">
+                <div className="cg-visitante-arte" aria-hidden="true">
+                    <ImagemDecorativaAdiada
+                        src="/svg-animado/lua-bloodborne-banner-1760x575.svg"
+                        alt=""
+                        className="cg-visitante-arte-imagem"
+                    />
+                </div>
+                <button className="cg-voltar cg-visitante-voltar" type="button" onClick={() => navigate('/')}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+                    Comunidade
+                </button>
+                <section className="cg-visitante-cartao" aria-labelledby="cg-visitante-titulo">
+                    <span className="cg-visitante-icone" aria-hidden="true">#</span>
+                    <span className="cg-visitante-canal">Chat da comunidade · #geral</span>
+                    <h1 id="cg-visitante-titulo">A conversa começa aqui</h1>
+                    <p>Troque ideias sobre seus jogos, compartilhe suas builds e converse com a comunidade em tempo real.</p>
+                    <button className="cg-botao-primario" type="button" onClick={() => navigate('/login', { state: { returnTo: '/chat' } })}>
+                        Entrar ou criar conta
+                    </button>
+                    <span className="cg-visitante-nota">É preciso ter uma conta para enviar mensagens.</span>
+                </section>
+            </div>
+        );
+    }
+
+    return (
+        <div className={`cg-app${membrosAbertos ? ' cg-membros-abertos' : ''}`}>
+            <nav className="cg-lateral" aria-label="Navegação do chat">
+                <div className="cg-lateral-marca">Viciados em Souls</div>
+
+                <div className="cg-lateral-secao">
+                    <span className="cg-lateral-titulo">Canais</span>
+                    <button className="cg-canal ativo" type="button" aria-current="page">
+                        <span aria-hidden="true">#</span>geral
+                    </button>
+                </div>
+
+                <div className="cg-lateral-secao">
+                    <span className="cg-lateral-titulo">Atalhos</span>
+                    <button className="cg-canal" type="button" onClick={() => navigate('/mensagens')}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3.5V5Z" /></svg>
+                        Mensagens privadas
+                    </button>
+                    <button className="cg-canal" type="button" onClick={() => navigate('/')}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h13V9.5" /></svg>
+                        Voltar à comunidade
+                    </button>
+                </div>
+
+                {user && (
+                    <button className="cg-eu" type="button" onClick={() => navigate('/perfil')}>
+                        <span className="cg-avatar-com-status">
+                            {renderAvatar(avatarUsuario, nomeUsuario, 'cg-avatar cg-avatar-p')}
+                            <i className="cg-status-online" aria-hidden="true" />
+                        </span>
+                        <span className="cg-eu-texto">
+                            <strong>{nomeUsuario}</strong>
+                            <span>Online</span>
+                        </span>
+                    </button>
+                )}
+            </nav>
+
+            <main className="cg-conversa" aria-label="Chat global">
+                <header className="cg-conversa-topo">
+                    <button className="cg-voltar cg-voltar-compacto" type="button" onClick={() => navigate('/')} aria-label="Voltar à comunidade">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+                    </button>
+                    <span className="cg-hash" aria-hidden="true">#</span>
+                    <div className="cg-conversa-titulo">
+                        <h1>geral</h1>
+                        <p>Conversa da comunidade em um só lugar</p>
+                    </div>
+                    <button
+                        className="cg-online"
+                        type="button"
+                        onClick={() => setMembrosAbertos((abertos) => !abertos)}
+                        aria-label="Mostrar membros"
+                        aria-expanded={membrosAbertos}
+                    >
+                        <i className="cg-status-online" aria-hidden="true" />
+                        {membrosVisiveis.length} online
+                    </button>
+                </header>
+
+                <div
+                    className="cg-mensagens"
+                    ref={mensagensRef}
+                    onScroll={acompanharRolagemMensagens}
+                    role="log"
+                    aria-live="polite"
+                >
+                    {carregando ? (
+                        <div className="cg-carregando" role="status" aria-label="Carregando mensagens">
+                            {Array.from({ length: 5 }, (_, indice) => (
+                                <div key={indice} className={`cg-carregando-linha${indice % 2 ? ' cg-carregando-propria' : ''}`}>
+                                    <span className="cg-carregando-avatar" />
+                                    <span className="cg-carregando-bolha" style={{ width: `${40 + ((indice * 17) % 35)}%` }} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : mensagens.length === 0 ? (
+                        <div className="cg-vazio">
+                            <span className="cg-vazio-icone" aria-hidden="true">#</span>
+                            <h2>Bem-vindo ao #geral</h2>
+                            <p>Ninguém falou nada ainda. Mande a primeira mensagem e puxe assunto com a comunidade.</p>
+                        </div>
                     ) : (
                         <>
-                            <div className="chat-global-main">
-                                <header className="chat-global-channel-heading">
-                                    <div className="chat-global-channel-title"><span>#</span><div><h1>geral</h1><p>Conversa da comunidade em um só lugar.</p></div></div>
-                                    <div className="chat-global-channel-meta"><span className="chat-global-online-dot" />{membrosOnline.length} online<button className="chat-global-side-toggle chat-global-side-toggle-membros" type="button" onClick={() => setMembrosAbertos((abertos) => !abertos)} aria-label="Abrir membros" aria-expanded={membrosAbertos}>Membros</button></div>
-                                </header>
-                                <div className={`chat-global-messages${mensagens.length === 0 && !carregando ? ' chat-global-messages-vazio' : ''}`} ref={mensagensRef} onScroll={acompanharRolagemMensagens} role="log" aria-live="polite">
-                                    {carregando ? (
-                                        <p className="chat-global-loading">Carregando mensagens...</p>
-                                    ) : mensagens.length === 0 ? (
-                                        <div className="chat-global-empty">
-                                            <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10.5h32v22H25l-10 7v-7H8v-22Z" /><path d="M16 19h16M16 25h11" /></svg>
-                                            <h2>O chat está vazio</h2>
-                                            <p>Seja a primeira pessoa a conversar com a comunidade.</p>
-                                        </div>
-                                    ) : mensagens.map((mensagem) => {
-                                        const propria = mensagem.autor_id === user?.id;
-                                        const figurinha = obterFigurinha(mensagem.texto);
-                                        return (
-                                            <div key={mensagem.id} data-chat-mensagem-id={mensagem.id} className={`chat-mensagem-item ${propria ? 'chat-mensagem-item-propria' : 'chat-mensagem-item-outra'}`}>
-                                                <article className={`chat-mensagem ${propria ? 'chat-mensagem-propria' : 'chat-mensagem-outra'}${figurinha ? ' chat-mensagem-com-figurinha' : ''}`}>
-                                                    <div className="chat-mensagem-cabecalho">
-                                                        <button className="chat-global-profile-avatar" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)} aria-label={`Abrir perfil de ${mensagem.autor_nome || 'Viciado em Souls'}`}>
-                                                            {mensagem.autor_avatar_url ? <img src={mensagem.autor_avatar_url} alt="" /> : <span className="chat-mensagem-avatar-vazio" aria-hidden="true">?</span>}
+                            <div className="cg-inicio-canal">
+                                <span className="cg-vazio-icone" aria-hidden="true">#</span>
+                                <h2>Bem-vindo ao #geral</h2>
+                                <p>Este é o começo das últimas mensagens do canal. Respeito em primeiro lugar.</p>
+                            </div>
+                            {itensMensagens.map(({ mensagem, novoDia, agrupada }) => {
+                                const propria = mensagem.autor_id === user?.id;
+                                const figurinha = obterFigurinha(mensagem.texto);
+                                const nomeAutor = mensagem.autor_nome || 'Viciado em Souls';
+                                const temTexto = !figurinha && mensagem.texto?.trim();
+                                const soMidia = Boolean(mensagem.midia_url && !figurinha && !temTexto && !mensagem.midia_tipo?.startsWith('audio/'));
+                                const temResposta = Boolean(mensagem.resposta_texto || mensagem.resposta_midia_tipo);
+
+                                return (
+                                    <div key={mensagem.id} className="cg-mensagem-bloco">
+                                        {novoDia && (
+                                            <div className="cg-dia" role="separator">
+                                                <span>{rotuloDoDia(mensagem.criado_em)}</span>
+                                            </div>
+                                        )}
+                                        <div
+                                            data-chat-mensagem-id={mensagem.id}
+                                            className={`cg-msg${propria ? ' cg-msg-propria' : ''}${agrupada ? ' cg-msg-agrupada' : ''}${respondendoA?.id === mensagem.id ? ' cg-msg-sendo-respondida' : ''}`}
+                                            tabIndex={0}
+                                        >
+                                            {!propria && (
+                                                agrupada ? (
+                                                    <span className="cg-msg-avatar-espaco" aria-hidden="true" />
+                                                ) : (
+                                                    <button
+                                                        className="cg-msg-avatar"
+                                                        type="button"
+                                                        onClick={() => abrirPerfil(mensagem.autor_id)}
+                                                        aria-label={`Abrir perfil de ${nomeAutor}`}
+                                                    >
+                                                        {renderAvatar(mensagem.autor_avatar_url, nomeAutor, 'cg-avatar')}
+                                                    </button>
+                                                )
+                                            )}
+
+                                            <div className="cg-msg-corpo">
+                                                {!propria && !agrupada && (
+                                                    <button className="cg-msg-autor" type="button" onClick={() => abrirPerfil(mensagem.autor_id)}>
+                                                        {nomeAutor}
+                                                    </button>
+                                                )}
+
+                                                <div className={`cg-bolha${figurinha ? ' cg-bolha-figurinha' : ''}${soMidia ? ' cg-bolha-midia' : ''}`}>
+                                                    {temResposta && (
+                                                        <button
+                                                            className="cg-citacao"
+                                                            type="button"
+                                                            onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)}
+                                                            disabled={!mensagem.resposta_mensagem_id}
+                                                            aria-label="Ir para a mensagem respondida"
+                                                        >
+                                                            <strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>
+                                                            {mensagem.resposta_midia_tipo
+                                                                ? <PreviewMidiaRespondida tipo={mensagem.resposta_midia_tipo} url={mensagem.resposta_midia_url} texto={mensagem.resposta_texto} />
+                                                                : <span>{mensagem.resposta_texto}</span>}
                                                         </button>
-                                                        <button className="chat-global-profile-name" type="button" onClick={() => mensagem.autor_id && navigate(`/perfil/${mensagem.autor_id}`)}>{mensagem.autor_nome || 'Viciado em Souls'}</button>
-                                                        {mensagem.editada && <span className="chat-mensagem-editada">Editada</span>}
-                                                    </div>
-                                                    {(mensagem.resposta_texto || mensagem.resposta_midia_tipo) && <button className="chat-mensagem-resposta" type="button" onClick={() => irParaMensagemOriginal(mensagem.resposta_mensagem_id)} disabled={!mensagem.resposta_mensagem_id} aria-label="Ir para a mensagem respondida"><strong>{mensagem.resposta_autor_nome || 'Mensagem respondida'}</strong>{mensagem.resposta_midia_tipo ? <PreviewMidiaRespondida tipo={mensagem.resposta_midia_tipo} url={mensagem.resposta_midia_url} texto={mensagem.resposta_texto} /> : <span>{mensagem.resposta_texto}</span>}</button>}
-                                                    {figurinha && mensagem.midia_url && <button className="chat-mensagem-sticker" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Ampliar figurinha"><img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Figurinha enviada no chat'} loading="lazy" /></button>}
+                                                    )}
+
+                                                    {figurinha && mensagem.midia_url && (
+                                                        <button
+                                                            className="cg-figurinha"
+                                                            type="button"
+                                                            onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))}
+                                                            aria-label="Ampliar figurinha"
+                                                        >
+                                                            <img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Figurinha enviada no chat'} loading="lazy" onLoad={manterNoFim} />
+                                                        </button>
+                                                    )}
+
                                                     {mensagem.midia_url && !figurinha && (
-                                                        <div className="chat-mensagem-midia">
-                                                            {mensagem.midia_tipo?.startsWith('image/') && <button className="chat-mensagem-imagem-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Ampliar imagem"><img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada no chat'} loading="lazy" /></button>}
-                                                            {mensagem.midia_tipo?.startsWith('video/') && <button className="chat-mensagem-video-botao" type="button" onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))} aria-label="Abrir vídeo em tela cheia"><video src={mensagem.midia_url} muted playsInline preload="metadata" /><span aria-hidden="true">▶</span></button>}
+                                                        <div className="cg-midia">
+                                                            {mensagem.midia_tipo?.startsWith('image/') && (
+                                                                <button
+                                                                    className="cg-midia-botao"
+                                                                    type="button"
+                                                                    onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))}
+                                                                    aria-label="Ampliar imagem"
+                                                                >
+                                                                    <img src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada no chat'} loading="lazy" onLoad={manterNoFim} />
+                                                                </button>
+                                                            )}
+                                                            {mensagem.midia_tipo?.startsWith('video/') && (
+                                                                <button
+                                                                    className="cg-midia-botao cg-midia-video"
+                                                                    type="button"
+                                                                    onClick={() => setMidiaAmpliadaIndex(midiasGaleria.findIndex((midia) => midia.id === mensagem.id))}
+                                                                    aria-label="Abrir vídeo em tela cheia"
+                                                                >
+                                                                    <video src={`${mensagem.midia_url}#t=0.1`} muted playsInline preload="metadata" onLoadedMetadata={manterNoFim} />
+                                                                    <span aria-hidden="true">
+                                                                        <svg viewBox="0 0 16 16"><path d="M5 3.5v9l7-4.5-7-4.5Z" fill="currentColor" /></svg>
+                                                                    </span>
+                                                                </button>
+                                                            )}
                                                             {mensagem.midia_tipo?.startsWith('audio/') && <AudioMensagemChat src={mensagem.midia_url} />}
                                                         </div>
                                                     )}
-                                                    {figurinha?.emojiAntigo && <span className="chat-mensagem-figurinha-antiga" role="img" aria-label="Figurinha antiga">{figurinha.emojiAntigo}</span>}
-                                                    {!figurinha && mensagem.texto?.trim() && <p>{mensagem.texto}</p>}
-                                                    <time dateTime={mensagem.criado_em}>
-                                                        {new Date(mensagem.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                                    </time>
-                                                </article>
-                                                <div className="chat-mensagem-acoes">
-                                                    {propria
-                                                        ? <>{!figurinha && <button type="button" onClick={() => iniciarEdicao(mensagem)}>Editar</button>}<button type="button" onClick={() => excluirMensagem(mensagem)}>Excluir</button></>
-                                                        : <button type="button" onClick={() => iniciarResposta(mensagem)}>Responder</button>}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {novasMensagens > 0 && <button className="chat-global-novas-mensagens" type="button" onClick={irParaNovasMensagens}>{novasMensagens} {novasMensagens === 1 ? 'nova mensagem' : 'novas mensagens'} <span>↓</span></button>}
-                                </div>
-                                {enviando ? <div className="chat-global-typing-status chat-global-envio-status" role="status"><span aria-hidden="true" />{statusEnvio || 'Enviando mensagem...'}</div> : textoAtividadeChat && <div className="chat-global-typing-status" role="status"><span className={pessoasGravandoAudio.length ? 'gravando' : ''} />{textoAtividadeChat}</div>}
-                                {editandoId && <div className="chat-global-editando" role="status"><span>Editando mensagem</span><button type="button" onClick={() => { setEditandoId(null); setTexto(''); }}>Cancelar</button></div>}
-                                <form className="chat-global-composer" onSubmit={enviarMensagem}>
-                                    <div className="chat-global-input-wrap">{respondendoA && <div className="chat-global-resposta-ativa"><div><strong>Respondendo a {respondendoA.autor_nome || 'Viciado em Souls'}</strong><span>{respondendoA.texto}</span></div><button type="button" onClick={() => setRespondendoA(null)} aria-label="Cancelar resposta">×</button></div>}{arquivoSelecionado && <div className="chat-global-arquivo-ativo">{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('image/') && <img src={arquivoPreviewUrl} alt="Prévia do anexo" />}{arquivoPreviewUrl && arquivoSelecionado.type.startsWith('video/') && <video src={arquivoPreviewUrl} muted />}{!arquivoPreviewUrl && <span className="chat-global-arquivo-icone">♫</span>}<span>{arquivoSelecionado.name}</span><button type="button" onClick={limparArquivoSelecionado} aria-label="Remover arquivo anexado">×</button></div>}<div className="chat-global-textarea-wrap"><textarea id="mensagem-chat-global" rows="1" value={texto} onChange={(evento) => setTexto(evento.target.value)} onKeyDown={(evento) => { if (evento.key === 'Enter' && !evento.shiftKey) enviarMensagem(evento); }} placeholder="Conversar em #geral" maxLength={500} /><input id="arquivo-chat-global" className="chat-global-file-input" type="file" accept="image/*,video/*,audio/*" onChange={selecionarArquivo} disabled={enviando || gravandoAudio} /><button type="button" className="btn-enviar-arquivos-chat-global" aria-label="Anexar imagem, vídeo ou áudio" onClick={() => document.getElementById('arquivo-chat-global')?.click()} disabled={enviando || gravandoAudio}>+</button><button type="button" className={`btn-gravar-audio-chat-global${gravandoAudio ? ' gravando' : ''}`} aria-label={gravandoAudio ? 'Parar gravação de áudio' : 'Gravar áudio'} aria-pressed={gravandoAudio} onClick={alternarGravacaoAudio} disabled={enviando}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg></button></div></div>
-                                    <button type="submit" className="btn-enviar-mensagem-chat-global" disabled={(!texto.trim() && !arquivoSelecionado) || enviando} aria-label={editandoId ? 'Salvar edição' : 'Enviar mensagem'}>{editandoId ? 'Salvar' : 'Enviar'}</button>
-                                </form>
-                                <div className="chat-global-sticker-area">
-                                    {figurinhasAbertas && (
-                                        <div className="chat-global-sticker-picker" role="dialog" aria-label="Minhas figurinhas">
-                                            <div className="chat-global-sticker-picker-header">
-                                                <strong>Figurinhas</strong>
-                                                <label className="chat-global-sticker-add">
-                                                    <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" onChange={adicionarFigurinha} disabled={adicionandoFigurinha || figurinhasDoUsuario.length >= 100} />
-                                                    {adicionandoFigurinha ? 'Adicionando...' : '+ Adicionar'}
-                                                </label>
-                                            </div>
-                                            <label className="chat-global-sticker-search">
-                                                <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
-                                                <input type="search" value={buscaFigurinha} onChange={(evento) => setBuscaFigurinha(evento.target.value)} placeholder="Pesquisar nas minhas figurinhas" aria-label="Pesquisar nas minhas figurinhas" />
-                                            </label>
-                                            {carregandoFigurinhas ? (
-                                                <p className="chat-global-sticker-empty">Carregando sua coleção...</p>
-                                            ) : figurinhasFiltradas.length ? (
-                                                <div className="chat-global-stickers-grid">
-                                                    {figurinhasFiltradas.map((figurinha) => (
-                                                        <button key={figurinha.id} type="button" title={figurinha.midia_nome} aria-label={`Enviar figurinha: ${figurinha.midia_nome}`} disabled={enviando} onClick={() => { setFigurinhasAbertas(false); enviarMensagem(null, figurinha); }}>
-                                                            <img src={figurinha.midia_url} alt="" loading="lazy" />
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="chat-global-sticker-empty">{buscaFigurinha ? 'Nenhuma figurinha encontrada.' : 'Sua coleção está vazia. Adicione uma imagem ou GIF para começar.'}</p>
-                                            )}
-                                        </div>
-                                    )}
-                                    <button className="chat-global-sticker-toggle" type="button" onClick={() => setFigurinhasAbertas((aberto) => !aberto)} aria-label="Abrir figurinhas" aria-expanded={figurinhasAbertas}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h10l4 4v13H5z" /><path d="M14.5 3.5v5h4.5M8 12h8M8 16h5" /></svg></button>
-                                </div>
-                                {erro && <p className="chat-global-erro" role="alert">{erro}</p>}
-                            </div>
 
-                            <aside className="chat-global-members">
-                                <div className="chat-global-members-heading">
-                                    <div><span className="chat-global-members-label">Comunidade</span><strong>Membros online · {membrosOnline.length}</strong></div>
-                                    <button className="chat-global-panel-close" type="button" onClick={() => setMembrosAbertos(false)} aria-label="Fechar membros">×</button>
-                                </div>
-                                {membrosOnline.map((membro) => (
-                                    <button className="chat-global-member chat-global-member-link" type="button" key={membro.autor_id} onClick={() => navigate(`/perfil/${membro.autor_id}`)}>
-                                        {membro.autor_avatar_url ? <img src={membro.autor_avatar_url} alt="" /> : <span className="chat-mensagem-avatar-vazio" aria-hidden="true">?</span>}
-                                        <span className="chat-global-member-info"><strong>{membro.autor_nome || 'Viciado em Souls'}</strong><span>{membro.autor_id === user.id ? 'você' : 'online agora'}</span></span>
-                                        <i className="chat-global-online-dot" />
-                                    </button>
-                                ))}
-                            </aside>
+                                                    {figurinha?.emojiAntigo && (
+                                                        <span className="cg-figurinha-antiga" role="img" aria-label="Figurinha antiga">{figurinha.emojiAntigo}</span>
+                                                    )}
+
+                                                    {temTexto && <p className="cg-texto">{mensagem.texto}</p>}
+
+                                                    <span className="cg-bolha-meta">
+                                                        {mensagem.editada && <span>editada</span>}
+                                                        <time dateTime={mensagem.criado_em}>{formatarHora(mensagem.criado_em)}</time>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="cg-msg-acoes" role="toolbar" aria-label="Ações da mensagem">
+                                                <button type="button" onClick={() => iniciarResposta(mensagem)} aria-label="Responder" title="Responder">
+                                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+                                                </button>
+                                                {propria && !figurinha && (
+                                                    <button type="button" onClick={() => iniciarEdicao(mensagem)} aria-label="Editar" title="Editar">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" /><path d="m13.5 6.5 4 4" /></svg>
+                                                    </button>
+                                                )}
+                                                {propria && (
+                                                    <button className="cg-acao-perigo" type="button" onClick={() => excluirMensagem(mensagem)} aria-label="Excluir" title="Excluir">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </>
                     )}
-                    {midiaAmpliada && (
-                        <div className="chat-global-image-viewer" role="dialog" aria-modal="true" aria-label="Galeria de mídias do chat" onClick={() => setMidiaAmpliadaIndex(null)}>
-                            <button type="button" className="chat-global-image-viewer-close" onClick={() => setMidiaAmpliadaIndex(null)} aria-label="Fechar visualizador">×</button>
-                            <button type="button" className="chat-global-image-viewer-prev" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(-1); }} aria-label="Mídia anterior">‹</button>
-                            {midiaAmpliada.tipo?.startsWith('video/')
-                                ? <video className="chat-global-image-viewer-media chat-global-image-viewer-video" src={midiaAmpliada.url} controls playsInline muted={false} preload="auto" onClick={(evento) => evento.stopPropagation()} />
-                                : <img className="chat-global-image-viewer-media" src={midiaAmpliada.url} alt={midiaAmpliada.nome} onClick={(evento) => evento.stopPropagation()} />}
-                            <button type="button" className="chat-global-image-viewer-next" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(1); }} aria-label="Próxima mídia">›</button>
-                            <div className="chat-global-image-thumbnails" onClick={(evento) => evento.stopPropagation()}>
-                                {midiasGaleria.map((midia, indice) => (
-                                    <button className={indice === midiaAmpliadaIndex ? 'ativo' : ''} type="button" key={midia.id} onClick={() => setMidiaAmpliadaIndex(indice)} aria-label={`Abrir ${midia.tipo?.startsWith('video/') ? 'vídeo' : 'imagem'} ${indice + 1}`}>
-                                        {midia.tipo?.startsWith('video/') ? <video src={midia.url} muted playsInline preload="metadata" /> : <img src={midia.url} alt="" />}
-                                    </button>
-                                ))}
+                </div>
+
+                {novasMensagens > 0 && (
+                    <button className="cg-novas" type="button" onClick={irParaNovasMensagens}>
+                        {novasMensagens} {novasMensagens === 1 ? 'nova mensagem' : 'novas mensagens'}
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
+                    </button>
+                )}
+
+                <div className="cg-rodape">
+                    <div className="cg-atividade" role="status">
+                        {enviando ? (
+                            <><span className="cg-girando" aria-hidden="true" />{statusEnvio || 'Enviando mensagem...'}</>
+                        ) : textoAtividadeChat ? (
+                            <><span className={`cg-pontinhos${pessoasGravandoAudio.length ? ' gravando' : ''}`} aria-hidden="true"><i /><i /><i /></span>{textoAtividadeChat}</>
+                        ) : null}
+                    </div>
+
+                    <form className="cg-composer" onSubmit={enviarMensagem}>
+                        {editandoId && (
+                            <div className="cg-faixa">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" /></svg>
+                                <div><strong>Editando mensagem</strong><span>Esc para cancelar</span></div>
+                                <button type="button" onClick={cancelarComposicao} aria-label="Cancelar edição">×</button>
                             </div>
+                        )}
+                        {respondendoA && (
+                            <div className="cg-respondendo">
+                                <div className="cg-respondendo-conteudo">
+                                    <span className="cg-respondendo-rotulo">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+                                        Respondendo a <strong>{respondendoA.autor_id === user?.id ? 'você mesmo' : respondendoA.autor_nome || 'Viciado em Souls'}</strong>
+                                    </span>
+                                    <span className="cg-respondendo-trecho">{resumoDaResposta(respondendoA)}</span>
+                                </div>
+                                {respondendoA.midia_url && (respondendoA.midia_tipo?.startsWith('image/') || respondendoA.midia_tipo?.startsWith('video/')) && (
+                                    respondendoA.midia_tipo.startsWith('video/')
+                                        ? <video className="cg-respondendo-miniatura" src={`${respondendoA.midia_url}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true" />
+                                        : <img className="cg-respondendo-miniatura" src={respondendoA.midia_url} alt="" />
+                                )}
+                                <button className="cg-respondendo-fechar" type="button" onClick={() => setRespondendoA(null)} aria-label="Cancelar resposta" title="Cancelar (Esc)">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                                </button>
+                            </div>
+                        )}
+                        {arquivoSelecionado && (
+                            <div className="cg-faixa cg-faixa-anexo">
+                                {arquivoPreviewUrl && arquivoSelecionado.type.startsWith('image/') && <img src={arquivoPreviewUrl} alt="Prévia do anexo" />}
+                                {arquivoPreviewUrl && arquivoSelecionado.type.startsWith('video/') && <video src={arquivoPreviewUrl} muted />}
+                                {!arquivoPreviewUrl && (
+                                    <span className="cg-faixa-anexo-icone" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
+                                    </span>
+                                )}
+                                <div>
+                                    <strong>{arquivoSelecionado.type.startsWith('audio/') ? 'Áudio pronto para enviar' : 'Anexo'}</strong>
+                                    <span>{arquivoSelecionado.name}</span>
+                                </div>
+                                <button type="button" onClick={limparArquivoSelecionado} aria-label="Remover arquivo anexado">×</button>
+                            </div>
+                        )}
+
+                        <div className="cg-composer-linha">
+                            <input
+                                id="arquivo-chat-global"
+                                className="cg-arquivo-oculto"
+                                type="file"
+                                accept="image/*,video/*,audio/*"
+                                onChange={selecionarArquivo}
+                                disabled={enviando || gravandoAudio}
+                            />
+                            <button
+                                type="button"
+                                className="cg-icone-botao"
+                                aria-label="Anexar imagem, vídeo ou áudio"
+                                title="Anexar"
+                                onClick={() => document.getElementById('arquivo-chat-global')?.click()}
+                                disabled={enviando || gravandoAudio}
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                            </button>
+
+                            <label htmlFor="mensagem-chat-global" className="cg-sr">Mensagem para #geral</label>
+                            <textarea
+                                ref={campoMensagemRef}
+                                id="mensagem-chat-global"
+                                rows="1"
+                                value={texto}
+                                onChange={(evento) => setTexto(evento.target.value)}
+                                onKeyDown={(evento) => {
+                                    if (evento.key === 'Enter' && !evento.shiftKey) enviarMensagem(evento);
+                                    if (evento.key === 'Escape') cancelarComposicao();
+                                }}
+                                placeholder={gravandoAudio ? 'Gravando áudio... toque no microfone para parar' : 'Conversar em #geral'}
+                                maxLength={500}
+                                disabled={gravandoAudio}
+                            />
+
+                            <div className="cg-figurinhas">
+                                {figurinhasAbertas && (
+                                    <div className="cg-figurinhas-painel" role="dialog" aria-label="Minhas figurinhas">
+                                        <div className="cg-figurinhas-topo">
+                                            <strong>Figurinhas</strong>
+                                            <label className="cg-figurinhas-adicionar">
+                                                <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" onChange={adicionarFigurinha} disabled={adicionandoFigurinha || figurinhasDoUsuario.length >= 100} />
+                                                {adicionandoFigurinha ? 'Adicionando...' : '+ Adicionar'}
+                                            </label>
+                                        </div>
+                                        <label className="cg-figurinhas-busca">
+                                            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
+                                            <input type="search" value={buscaFigurinha} onChange={(evento) => setBuscaFigurinha(evento.target.value)} placeholder="Pesquisar figurinhas" aria-label="Pesquisar nas minhas figurinhas" />
+                                        </label>
+                                        {carregandoFigurinhas ? (
+                                            <p className="cg-figurinhas-vazio">Carregando sua coleção...</p>
+                                        ) : figurinhasFiltradas.length ? (
+                                            <div className="cg-figurinhas-grade">
+                                                {figurinhasFiltradas.map((figurinha) => (
+                                                    <button key={figurinha.id} type="button" title={figurinha.midia_nome} aria-label={`Enviar figurinha: ${figurinha.midia_nome}`} disabled={enviando} onClick={() => { setFigurinhasAbertas(false); enviarMensagem(null, figurinha); }}>
+                                                        <img src={figurinha.midia_url} alt="" loading="lazy" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="cg-figurinhas-vazio">{buscaFigurinha ? 'Nenhuma figurinha encontrada.' : 'Sua coleção está vazia. Adicione uma imagem ou GIF para começar.'}</p>
+                                        )}
+                                    </div>
+                                )}
+                                <button
+                                    className="cg-icone-botao"
+                                    type="button"
+                                    onClick={() => setFigurinhasAbertas((aberto) => !aberto)}
+                                    aria-label="Abrir figurinhas"
+                                    title="Figurinhas"
+                                    aria-expanded={figurinhasAbertas}
+                                >
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5h.01M15 9.5h.01" /></svg>
+                                </button>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={`cg-icone-botao${gravandoAudio ? ' cg-gravando' : ''}`}
+                                aria-label={gravandoAudio ? 'Parar gravação de áudio' : 'Gravar áudio'}
+                                title={gravandoAudio ? 'Parar gravação' : 'Gravar áudio'}
+                                aria-pressed={gravandoAudio}
+                                onClick={alternarGravacaoAudio}
+                                disabled={enviando}
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" /></svg>
+                            </button>
+
+                            <button
+                                type="submit"
+                                className="cg-enviar"
+                                disabled={(!texto.trim() && !arquivoSelecionado) || enviando}
+                                aria-label={editandoId ? 'Salvar edição' : 'Enviar mensagem'}
+                                title={editandoId ? 'Salvar' : 'Enviar'}
+                            >
+                                {editandoId ? (
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7" /></svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-6 16-3-7-7-1Z" /></svg>
+                                )}
+                            </button>
                         </div>
-                    )}
-                </section>
+                    </form>
+
+                    <div className="cg-composer-dicas">
+                        {erro ? (
+                            <p className="cg-erro" role="alert">{erro}</p>
+                        ) : (
+                            <span>Enter envia · Shift + Enter quebra a linha</span>
+                        )}
+                        {texto.length > 400 && <span className="cg-contador">{texto.length}/500</span>}
+                    </div>
+                </div>
             </main>
-        </>
+
+            <button className="cg-membros-fundo" type="button" aria-label="Fechar membros" onClick={() => setMembrosAbertos(false)} tabIndex={-1} />
+            <aside className="cg-membros" aria-label="Membros online">
+                <div className="cg-membros-topo">
+                    <span>Online — {membrosVisiveis.length}</span>
+                    <button className="cg-membros-fechar" type="button" onClick={() => setMembrosAbertos(false)} aria-label="Fechar membros">×</button>
+                </div>
+                <div className="cg-membros-lista">
+                    {membrosVisiveis.map((membro) => {
+                        const status = membro.autor_id === user?.id
+                            ? 'você'
+                            : membro.gravando_audio
+                                ? 'gravando áudio...'
+                                : membro.digitando
+                                    ? 'digitando...'
+                                    : 'online';
+
+                        return (
+                            <button className="cg-membro" type="button" key={membro.autor_id} onClick={() => abrirPerfil(membro.autor_id)}>
+                                <span className="cg-avatar-com-status">
+                                    {renderAvatar(membro.autor_avatar_url, membro.autor_nome, 'cg-avatar cg-avatar-p')}
+                                    <i className="cg-status-online" aria-hidden="true" />
+                                </span>
+                                <span className="cg-membro-texto">
+                                    <strong>{membro.autor_nome || 'Viciado em Souls'}</strong>
+                                    <span className={membro.digitando || membro.gravando_audio ? 'cg-membro-ativo' : ''}>{status}</span>
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </aside>
+
+            {midiaAmpliada && (
+                <div className="chat-global-image-viewer" role="dialog" aria-modal="true" aria-label="Galeria de mídias do chat" onClick={() => setMidiaAmpliadaIndex(null)}>
+                    <button type="button" className="chat-global-image-viewer-close" onClick={() => setMidiaAmpliadaIndex(null)} aria-label="Fechar visualizador">×</button>
+                    <button type="button" className="chat-global-image-viewer-prev" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(-1); }} aria-label="Mídia anterior">‹</button>
+                    {midiaAmpliada.tipo?.startsWith('video/')
+                        ? <video className="chat-global-image-viewer-media chat-global-image-viewer-video" src={midiaAmpliada.url} controls playsInline muted={false} preload="auto" onClick={(evento) => evento.stopPropagation()} />
+                        : <img className="chat-global-image-viewer-media" src={midiaAmpliada.url} alt={midiaAmpliada.nome} onClick={(evento) => evento.stopPropagation()} />}
+                    <button type="button" className="chat-global-image-viewer-next" onClick={(evento) => { evento.stopPropagation(); navegarGaleria(1); }} aria-label="Próxima mídia">›</button>
+                    <div className="chat-global-image-thumbnails" onClick={(evento) => evento.stopPropagation()}>
+                        {midiasGaleria.map((midia, indice) => (
+                            <button className={indice === midiaAmpliadaIndex ? 'ativo' : ''} type="button" key={midia.id} onClick={() => setMidiaAmpliadaIndex(indice)} aria-label={`Abrir ${midia.tipo?.startsWith('video/') ? 'vídeo' : 'imagem'} ${indice + 1}`}>
+                                {midia.tipo?.startsWith('video/') ? <video src={midia.url} muted playsInline preload="metadata" /> : <img src={midia.url} alt="" />}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -959,6 +1367,15 @@ function formatarDuracaoAudio(segundos) {
     const minutos = Math.floor(segundos / 60);
     const segundosRestantes = Math.floor(segundos % 60).toString().padStart(2, '0');
     return `${minutos}:${segundosRestantes}`;
+}
+
+// Texto curto para a faixa "Respondendo a": mídias ganham um nome em vez de ficarem em branco.
+function resumoDaResposta(mensagem) {
+    if (mensagem.texto?.trim()) return mensagem.texto.trim();
+    if (mensagem.midia_tipo?.startsWith('image/')) return 'Foto';
+    if (mensagem.midia_tipo?.startsWith('video/')) return 'Vídeo';
+    if (mensagem.midia_tipo?.startsWith('audio/')) return 'Áudio';
+    return 'Mensagem';
 }
 
 function textoDeResposta(mensagem) {

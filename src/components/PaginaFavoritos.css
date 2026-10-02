@@ -1,0 +1,195 @@
+.favoritos-page {
+    max-width: 1180px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.favoritos-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin-bottom: 24px;
+    padding: 10px 16px;
+    color: #eeeeee;
+    background: transparent;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+    font: 700 0.8rem 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.favoritos-voltar svg,
+.favoritos-dica svg {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.favoritos-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding-bottom: 28px;
+}
+
+.favoritos-sobretitulo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--souls-brasa);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.favoritos-sobretitulo::before,
+.favoritos-sobretitulo::after {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+}
+
+.favoritos-heading h1 {
+    margin: 8px 0 12px;
+    font: 600 clamp(1.6rem, 3vw, 2.1rem)/1.3 'Poppins', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.favoritos-heading p {
+    max-width: 520px;
+    color: #aaaaaa;
+    font-size: 0.85rem;
+    line-height: 1.75;
+}
+
+.favoritos-dica {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 280px;
+    padding: 16px;
+    background: #141414;
+    border: 1px solid #292929;
+    border-radius: 6px;
+    color: #bcbcbc;
+}
+
+.favoritos-dica p {
+    font-size: 0.75rem;
+}
+
+.favoritos-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-block: 16px;
+    border-block: 1px solid #292929;
+}
+
+.favoritos-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.favoritos-filtros button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+}
+
+.favoritos-voltar:hover {
+    color: #111111;
+    background: #ffffff;
+}
+
+.favoritos-filtros button span {
+    padding: 1px 6px;
+    color: inherit;
+    background: rgba(128, 128, 128, 0.15);
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.favoritos-ordem,
+.favoritos-grupo-heading > span {
+    color: #888888;
+    font-size: 0.72rem;
+}
+
+.favoritos-grupo-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.favoritos-grupo-heading h2,
+.favoritos-vazio h2 {
+    color: #dedede;
+    font: 600 1rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0;
+    text-align: left;
+}
+
+.favoritos-grupo-heading p {
+    margin-top: 5px;
+    color: #999999;
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+.favoritos-grupo-heading > span {
+    flex: 0 0 auto;
+}
+
+.favoritos-vazio {
+    margin-top: 32px;
+    padding: 32px 24px;
+    background: #111111;
+    border: 1px solid #292929;
+    border-radius: 8px;
+}
+
+.favoritos-vazio p {
+    max-width: 520px;
+    margin: 12px 0 20px;
+    color: #aaaaaa;
+    font-size: 0.85rem;
+    line-height: 1.75;
+}
+
+.favoritos-page button:focus-visible {
+    outline: 2px solid var(--souls-brasa);
+    outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+    .favoritos-heading {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+    }
+
+    .favoritos-dica {
+        max-width: none;
+        padding: 12px;
+    }
+
+    .favoritos-filtros button {
+        padding-inline: 10px;
+    }
+}

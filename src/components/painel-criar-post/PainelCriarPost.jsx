@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import AnexosPublicacao from '../AnexosPublicacao';
+import { useDialogoPublicacao } from '../useDialogoPublicacao';
+import './PainelCriarPost.css';
 
 function PainelCriarPost({ aoCriarPost, fecharPainelCriarPost }) {
     const [midias, setMidias] = useState([]);
@@ -8,9 +11,11 @@ function PainelCriarPost({ aoCriarPost, fecharPainelCriarPost }) {
     const [publicando, setPublicando] = useState(false);
     const [statusPublicacao, setStatusPublicacao] = useState('');
     const [erroPublicacao, setErroPublicacao] = useState('');
+    const { painelRef, tituloRef } = useDialogoPublicacao(fecharPainelCriarPost, publicando);
 
     async function enviarFormulario(evento) {
         evento.preventDefault();
+        if (publicando) return;
 
         const novoPost = {
             categoria,
@@ -29,7 +34,7 @@ function PainelCriarPost({ aoCriarPost, fecharPainelCriarPost }) {
             }
         } catch (erro) {
             console.error('Erro ao preparar o post:', erro);
-            setErroPublicacao(`Não foi possível preparar os anexos: ${erro.message || 'erro desconhecido'}`);
+            setErroPublicacao(`Não foi possível publicar: ${erro.message || 'erro desconhecido'}`);
         } finally {
             setPublicando(false);
             setStatusPublicacao('');
@@ -37,105 +42,89 @@ function PainelCriarPost({ aoCriarPost, fecharPainelCriarPost }) {
     }
 
     return (
-        <article className="painel-criar-post">
-            <header className="header-painel-criar-post">
-                <div className="header-lado-esquerdo-painel-criar-post">
-                    <h2>Criar Post</h2>
+        <article
+            className="painel-criar-post criar-post-comunidade"
+            ref={painelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="criar-post-titulo"
+            aria-describedby="criar-post-convite"
+            tabIndex={-1}
+        >
+            <header className="criar-post-header">
+                <div className="criar-post-boas-vindas">
+                    <span className="criar-post-kicker">Porão da comunidade</span>
+                    <h2 id="criar-post-titulo">Criar post</h2>
+                    <p id="criar-post-convite">Uma conquista, uma dúvida ou aquele momento inesperado. Tem espaço para tudo isso aqui.</p>
                 </div>
-
-                <div className="header-lado-direito-painel-criar-post">
-                    <button
-                        type="button"
-                        className="btn-fechar-painel-criar-post"
-                        onClick={fecharPainelCriarPost}
-                        disabled={publicando}
-                    >
-                        Sair
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    className="criar-post-fechar"
+                    onClick={fecharPainelCriarPost}
+                    disabled={publicando}
+                    aria-label="Fechar formulário de post"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                        <path d="m6 6 12 12M18 6 6 18" />
+                    </svg>
+                </button>
             </header>
-            <form onSubmit={enviarFormulario}>
-                <div className="area-escolher-categoria">
-                    <label htmlFor="categoria-post">Categoria:</label>
-                    <select
-                        id="categoria-post"
-                        name="categoria-post"
-                        value={categoria}
-                        onChange={(evento) => setCategoria(evento.target.value)}
-                    >
-                        <option value="">Nenhuma</option>
-                        <option value="Dark Souls Remastered">Dark Souls Remastered</option>
-                        <option value="Dark Souls II">Dark Souls II</option>
-                        <option value="Dark Souls III">Dark Souls III</option>
-                        <option value="Elden Ring">Elden Ring</option>
-                        <option value="Elden Ring Nightreign">Elden Ring Nightreign</option>
-                        <option value="Bloodborne">Bloodborne</option>
-                        <option value="Demon's Souls">Demon's Souls</option>
-                        <option value="Sekiro: Shadows Die Twice">Sekiro: Shadows Die Twice</option>
-                        <option value="Lies of P">Lies of P</option>
-                    </select>
-                </div>
-
-                <div className="area-titulo-post">
-                    <label htmlFor="titulo-post">Título:</label>
-                    <input
-                        type="text"
-                        id="titulo-post"
-                        name="titulo-post"
-                        value={titulo}
-                        onChange={(evento) => setTitulo(evento.target.value)}
-                    />
-                </div>
-
-                <div className="area-colocar-midia-post">
-                    <label htmlFor="midia-post">Anexar Arquivo:</label>
-                    <div className="area-midia-preview-post">
-                        {midias.map((arquivo, indice) => (
-                            <div key={`${arquivo.name}-${arquivo.lastModified}-${indice}`}>
-                                {arquivo.type.startsWith('image/') && (
-                                    <img src={URL.createObjectURL(arquivo)} alt={arquivo.name} />
-                                )}
-                                {arquivo.type.startsWith('video/') && (
-                                    <video src={URL.createObjectURL(arquivo)} controls />
-                                )}
-                                <p>{arquivo.name}</p>
-                                <button
-                                    type="button"
-                                    className="btn-remover-midia-painel"
-                                    onClick={() => setMidias((selecionadas) => selecionadas.filter((_, itemIndice) => itemIndice !== indice))}
-                                    disabled={publicando}
-                                    aria-label={`Remover ${arquivo.name}`}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                        ))}
+            <form onSubmit={enviarFormulario} aria-busy={publicando}>
+                <fieldset className="criar-post-campos" disabled={publicando}>
+                    <legend className="criar-post-sr-only">Conteúdo do post</legend>
+                    <div className="criar-post-identificacao">
+                        <div className="criar-post-campo">
+                            <label htmlFor="titulo-post">Título do post</label>
+                            <input
+                                ref={tituloRef}
+                                type="text"
+                                id="titulo-post"
+                                name="titulo-post"
+                                placeholder="Dê um título ao seu post"
+                                value={titulo}
+                                onChange={(evento) => setTitulo(evento.target.value)}
+                            />
+                        </div>
+                        <div className="criar-post-campo">
+                            <label htmlFor="categoria-post">Sobre qual jogo? <span>Opcional</span></label>
+                            <select
+                                id="categoria-post"
+                                name="categoria-post"
+                                value={categoria}
+                                onChange={(evento) => setCategoria(evento.target.value)}
+                            >
+                                <option value="">Conversa geral</option>
+                                <option value="Dark Souls Remastered">Dark Souls Remastered</option>
+                                <option value="Dark Souls II">Dark Souls II</option>
+                                <option value="Dark Souls III">Dark Souls III</option>
+                                <option value="Elden Ring">Elden Ring</option>
+                                <option value="Elden Ring Nightreign">Elden Ring Nightreign</option>
+                                <option value="Bloodborne">Bloodborne</option>
+                                <option value="Demon's Souls">Demon's Souls</option>
+                                <option value="Sekiro: Shadows Die Twice">Sekiro: Shadows Die Twice</option>
+                                <option value="Lies of P">Lies of P</option>
+                            </select>
+                        </div>
                     </div>
-                    <input
-                        type="file"
+                    <div className="criar-post-campo">
+                        <label htmlFor="descricao-post">Conte para a comunidade <span>Opcional</span></label>
+                        <textarea
+                            id="descricao-post"
+                            name="descricao-post"
+                            placeholder="Compartilhe o que aconteceu, peça uma dica ou puxe uma conversa..."
+                            value={descricao}
+                            onChange={(evento) => setDescricao(evento.target.value)}
+                        />
+                    </div>
+                    <AnexosPublicacao
                         id="midia-post"
-                        name="midia-post"
-                        accept="image/*,video/*"
-                        disabled={publicando}
-                        multiple
-                        onChange={(evento) => {
-                            const arquivosNovos = Array.from(evento.target.files ?? []);
-                            setMidias((selecionadas) => [...selecionadas, ...arquivosNovos]);
-                            evento.target.value = '';
-                        }}
+                        midias={midias}
+                        setMidias={setMidias}
+                        publicando={publicando}
+                        titulo="Mostre seu momento"
+                        descricao="Imagens e vídeos para acompanhar a história."
                     />
-
-                </div>
-
-                <div className="area-descricao-post">
-                    <label htmlFor="descricao-post">Descrição:</label>
-                    <textarea
-                        id="descricao-post"
-                        name="descricao-post"
-                        value={descricao}
-                        onChange={(evento) => setDescricao(evento.target.value)}
-                    />
-                </div>
+                </fieldset>
 
                 {statusPublicacao && (
                     <p className="status-publicacao-post" role="status">{statusPublicacao}</p>
@@ -144,11 +133,11 @@ function PainelCriarPost({ aoCriarPost, fecharPainelCriarPost }) {
                     <p className="erro-publicacao-post" role="alert">{erroPublicacao}</p>
                 )}
 
-                <div className="area-enviar-post">
-                    <button type="submit" disabled={publicando}>
-                        {publicando ? 'Processando...' : 'Publicar Post'}
+                <footer className="criar-post-footer">
+                    <button className="criar-post-publicar" type="submit" disabled={publicando}>
+                        {publicando ? 'Publicando...' : 'Publicar post'}
                     </button>
-                </div>
+                </footer>
             </form>
         </article>
     )

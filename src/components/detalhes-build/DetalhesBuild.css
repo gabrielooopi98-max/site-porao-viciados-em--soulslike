@@ -1,0 +1,137 @@
+/*
+ * Partes exclusivas do detalhe de build. O resto da página usa DetalhesPost.css,
+ * para post e build terem a mesma estrutura.
+ */
+
+/* ---------- Ficha: nível em destaque + foco e dano ---------- */
+
+.detalhe-build-ficha {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 18px 0 0;
+}
+
+.detalhe-build-ficha > div {
+    flex: 1 1 180px;
+    min-width: 0;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+.detalhe-build-ficha dt {
+    margin: 0;
+    color: rgba(240, 240, 240, 0.45);
+    font: 600 0.64rem/1.2 'Poppins', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.detalhe-build-ficha dd {
+    margin: 0;
+    color: #f2f2f2;
+    font: 600 0.92rem/1.35 'Poppins', sans-serif;
+    overflow-wrap: break-word;
+}
+
+/* Nível: bloco compacto com o número grande, como o nível de alma. */
+.detalhe-build-ficha > .detalhe-build-nivel {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    justify-content: center;
+    min-width: 104px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.45);
+    border-color: rgba(240, 120, 24, 0.4);
+}
+
+.detalhe-build-nivel dd {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 4px;
+    color: #ffffff;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.detalhe-build-nivel dd small {
+    color: #f2a46a;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.detalhe-build-atributo {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: 10px;
+    row-gap: 2px;
+}
+
+.detalhe-build-icone {
+    display: grid;
+    grid-row: 1 / 3;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    align-self: center;
+    color: rgba(240, 150, 90, 0.9);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.detalhe-build-icone svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ---------- Como a build funciona ---------- */
+
+.detalhe-build-sobre {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.detalhe-build-sobre h2 {
+    margin: 0;
+    color: #f5f5f5;
+    font: 700 1rem/1.3 'Poppins', sans-serif;
+    letter-spacing: 0.03em;
+    text-align: left;
+}
+
+.detalhe-build-sobre .detalhe-post-texto {
+    margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+    .detalhe-build-ficha > div {
+        flex-basis: 130px;
+    }
+
+    .detalhe-build-ficha > .detalhe-build-nivel {
+        flex: 1 1 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .detalhe-build-nivel dd {
+        margin-top: 0;
+    }
+}

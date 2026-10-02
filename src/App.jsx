@@ -2,8 +2,11 @@ import { supabase } from './services/supabase';
 import { gerarIdUnico } from './gerarIdUnico';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import './App.css';
+import './components/cards-posts/AreaPosts.css';
+import './components/cards-builds/AreaBuilds.css';
 import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { FavoritosProvider } from './contexts/FavoritosContext';
 import { useAuth } from './contexts/useAuth';
 import AvisosHeader from './components/AvisosHeader';
 import ImagemDecorativaAdiada from './components/ImagemDecorativaAdiada';
@@ -13,6 +16,7 @@ const CardPost = lazy(() => import('./components/cards-posts/CardPost'));
 const CardBuild = lazy(() => import('./components/cards-builds/CardBuild'));
 const ChatGlobal = lazy(() => import('./components/ChatGlobal'));
 const MensagensPrivadas = lazy(() => import('./components/MensagensPrivadas'));
+const PaginaFavoritos = lazy(() => import('./components/PaginaFavoritos'));
 const PaginaLogin = lazy(() => import('./components/autenticacao/PaginaLogin'));
 const PaginaConfigurarPerfil = lazy(() => import('./components/autenticacao/PaginaConfigurarPerfil'));
 const PaginaPerfil = lazy(() => import('./components/autenticacao/PaginaPerfil'));
@@ -490,134 +494,74 @@ function Home() {
           </div>
         </section>
 
-        <section className="area-posts-comunidade" id="comunidade">
-          <div className="header-secao">
-
-            <div className="area-svg area-posts-banner-fundo" aria-hidden="true">
-              <ImagemDecorativaAdiada
+        <section className="area-posts-comunidade" id="comunidade" aria-labelledby="titulo-posts-comunidade">
+          <div className="posts-secao-conteudo">
+          <header className="posts-header">
+            <div className="posts-header-texto">
+              <span className="posts-sobretitulo">Comunidade</span>
+              <h2 id="titulo-posts-comunidade">Posts da comunidade</h2>
+              <p>Dicas, clipes e conversas sobre os jogos que a gente não larga.</p>
+            </div>
+            <div className="area-svg posts-ilustracao" aria-hidden="true">
+              <img
                 src="/svg-animado/dark-souls-banner-1760x575-otimizado.svg"
                 alt=""
                 className="dark-souls-banner"
+                width="1760"
+                height="575"
+                decoding="async"
+                fetchPriority="low"
               />
             </div>
+          </header>
 
-            <div className="area-posts-header-conteudo">
-
-              <h2>Posts da comunidade</h2>
-              <p className="descricao-secao-post">
-                Aqui você encontra dicas, teorias, convites pra jogar junto, clipes, memes e muito mais.
-                Troque ideia com a galera e participe de tudo que rola por aqui.
-              </p>
+          <div className="posts-filtros" role="group" aria-labelledby="posts-filtros-titulo">
+            <div className="posts-filtros-toolbar">
+              <span id="posts-filtros-titulo" className="posts-filtros-titulo">Filtrar por jogo</span>
+            </div>
+            <div className="buttons-post-comunidade-grid">
+              {[
+                { valor: 'todos', nome: 'Todos' },
+                { valor: 'Dark Souls Remastered', nome: 'Dark Souls Remastered' },
+                { valor: 'Dark Souls II', nome: 'Dark Souls II' },
+                { valor: 'Dark Souls III', nome: 'Dark Souls III' },
+                { valor: 'Elden Ring', nome: 'Elden Ring' },
+                { valor: 'Elden Ring Nightreign', nome: 'Elden Ring Nightreign' },
+                { valor: "Demon's Souls", nome: "Demon's Souls" },
+                { valor: 'Bloodborne', nome: 'Bloodborne' },
+                { valor: 'Sekiro: Shadows Die Twice', nome: 'Sekiro' },
+                { valor: 'Lies of P', nome: 'Lies of P' },
+              ].map(({ valor, nome }) => (
+                <button
+                  key={valor}
+                  className="btn-filtro"
+                  aria-pressed={filtro === valor}
+                  type="button"
+                  onClick={() => setFiltro(valor)}
+                >
+                  {nome}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="area-filtros-posts">
-            <div className="buttons-post-comunidade-grid">
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'todos'}
-                type="button"
-                onClick={() => setFiltro('todos')}
-              >
-                Todos
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Dark Souls Remastered'}
-                type="button"
-                onClick={() => setFiltro('Dark Souls Remastered')}
-              >
-                Dark Souls Remastered
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Dark Souls II'}
-                type="button"
-                onClick={() => setFiltro('Dark Souls II')}
-              >
-                Dark Souls II
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Dark Souls III'}
-                type="button"
-                onClick={() => setFiltro('Dark Souls III')}
-              >
-                Dark Souls III
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Elden Ring'}
-                type="button"
-                onClick={() => setFiltro('Elden Ring')}
-              >
-                Elden Ring
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Elden Ring Nightreign'}
-                type="button"
-                onClick={() => setFiltro('Elden Ring Nightreign')}
-              >
-                Elden Ring Nightreign
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === "Demon's Souls"}
-                type="button"
-                onClick={() => setFiltro("Demon's Souls")}
-              >
-                Demon's Souls
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Bloodborne'}
-                type="button"
-                onClick={() => setFiltro('Bloodborne')}
-              >
-                Bloodborne
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Sekiro'}
-                type="button"
-                onClick={() => setFiltro('Sekiro')}
-              >
-                Sekiro
-              </button>
-              <button
-                className="btn-filtro"
-                aria-pressed={filtro === 'Lies of P'}
-                type="button"
-                onClick={() => setFiltro('Lies of P')}
-              >
-                Lies of P
-              </button>
+          <div className="posts-lista-heading">
+            <div className="posts-lista-contexto">
+              <h3>Últimos posts</h3>
+              <span aria-live="polite">{filtro === 'todos' ? 'Todos os jogos' : filtro}</span>
             </div>
-
-            <div className="area-criar-post">
-              <button
-                type="button"
-                className="btn-criar-post"
-                onClick={() => user ? setMostrarPainel(true) : navigate('/login')}
-              >
-                Criar Post
-              </button>
-
-              {mostrarPainel && (
-                <>
-                  <div className="fundo-painel"></div>
-                  <Suspense fallback={<div className="componente-carregando" role="status">Preparando formulário...</div>}>
-                    <PainelCriarPost
-                      aoCriarPost={adicionarPost}
-                      fecharPainelCriarPost={() => setMostrarPainel(false)}
-                    />
-                  </Suspense>
-                </>
-
-              )}
-            </div>
-
+            <button
+              type="button"
+              className="btn-criar-post posts-criar"
+              onClick={() => user ? setMostrarPainel(true) : navigate('/login')}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Criar post
+            </button>
+          </div>
+          <div className="posts-lista">
             {carregandoPosts && (
               <span className="skeleton-status" role="status">Carregando posts</span>
             )}
@@ -647,24 +591,64 @@ function Home() {
             </div>
           </div>
 
-          <button
-            type="button"
-            className="ver-mais-posts"
-            onClick={() => navigate('/posts')}
-          >
-            Ver mais posts
-          </button>
-        </section>
-
-        <section className="area-builds-comunidade" id="builds">
-          <div className="header-secao-builds">
-            <h2>Builds da comunidade</h2>
-            <p>
-              Crie e compartilhe suas builds insanas dos seus Soulslikes favoritos e compartilhe pra comunidade.
-            </p>
+          <footer className="posts-secao-footer">
+            <button
+              type="button"
+              className="ver-mais-posts"
+              onClick={() => navigate('/posts')}
+            >
+              Ver todos os posts
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14m-5-5 5 5-5 5" />
+              </svg>
+            </button>
+          </footer>
           </div>
 
-          <div className="area-filtros-post">
+          {mostrarPainel && (
+            <>
+              <div className="fundo-painel"></div>
+              <Suspense fallback={<div className="componente-carregando" role="status">Preparando formulário...</div>}>
+                <PainelCriarPost
+                  aoCriarPost={adicionarPost}
+                  fecharPainelCriarPost={() => setMostrarPainel(false)}
+                />
+              </Suspense>
+            </>
+          )}
+        </section>
+
+        <section className="area-builds-comunidade" id="builds" aria-labelledby="titulo-builds-comunidade">
+          <div className="posts-secao-conteudo">
+          <header className="posts-header builds-header">
+            <div className="posts-header-texto">
+              <span className="posts-sobretitulo">Builds da comunidade</span>
+              <h2 id="titulo-builds-comunidade">Builds da comunidade</h2>
+              <p>Armas, atributos e estratégias. Encontre seu estilo e compartilhe sua build.</p>
+              <div className="builds-identidade" aria-label="Armas, atributos e estratégias">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m5 3 4 1 10 13-2 2L4 9 3 5Zm10 14 5-5M16 18l4 4M19 3l-4 1-3 4M21 5l-1 4-3 3M9 15l-2 4-2-2M4 12l5 5M8 18l-4 4" />
+                </svg>
+                <span>Armas <span aria-hidden="true">·</span> Atributos <span aria-hidden="true">·</span> Estratégias</span>
+              </div>
+            </div>
+            <div className="posts-ilustracao" aria-hidden="true">
+              <img
+                src="/svg-animado/dark-souls-banner-1760x575-otimizado.svg"
+                alt=""
+                className="dark-souls-banner"
+                width="1760"
+                height="575"
+                decoding="async"
+                fetchPriority="low"
+              />
+            </div>
+          </header>
+
+          <div className="posts-filtros" role="group" aria-labelledby="builds-filtros-titulo">
+            <div className="posts-filtros-toolbar">
+              <span id="builds-filtros-titulo" className="posts-filtros-titulo">Filtrar por jogo</span>
+            </div>
             <div className="buttons-builds-comunidade-grid">
               {[
                 'todos',
@@ -685,38 +669,30 @@ function Home() {
                   type="button"
                   onClick={() => setFiltroBuild(categoria)}
                 >
-                  {categoria === 'todos' ? 'Todos' : categoria}
+                  {categoria === 'todos' ? 'Todos' : categoria === 'Sekiro: Shadows Die Twice' ? 'Sekiro' : categoria}
                 </button>
               ))}
             </div>
 
-            <div className="area-busca">
-              <label htmlFor="busca-build" className="sr-only">Buscar Build:</label>
-              <input type="text" className="input-busca" id="busca-build" placeholder="Ex: Sangramento" />
-            </div>
+          </div>
 
-            <div className="area-criar-post">
+          <div className="posts-lista-heading">
+            <div className="posts-lista-contexto">
+              <h3>Últimas builds</h3>
+              <span aria-live="polite">{filtroBuild === 'todos' ? 'Todos os jogos' : filtroBuild}</span>
+            </div>
               <button
                 type="button"
-                className="btn-criar-post"
+                className="btn-criar-post posts-criar"
                 onClick={() => user ? setMostrarPainelBuild(true) : navigate('/login')}
               >
-                Criar Build
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Criar build
               </button>
-
-              {mostrarPainelBuild && (
-                <>
-                  <div className="fundo-painel"></div>
-                  <Suspense fallback={<div className="componente-carregando" role="status">Preparando formulário...</div>}>
-                    <PainelCriarBuild
-                      aoCriarBuild={adicionarBuild}
-                      fecharPainelCriarBuild={() => setMostrarPainelBuild(false)}
-                    />
-                  </Suspense>
-                </>
-              )}
-            </div>
-
+          </div>
+          <div className="builds-lista">
             {carregandoBuilds && (
               <span className="skeleton-status" role="status">Carregando builds</span>
             )}
@@ -745,13 +721,30 @@ function Home() {
                 ))}
             </div>
           </div>
+          <footer className="posts-secao-footer">
           <button
             type="button"
-            className="ver-mais-builds"
+            className="ver-mais-builds ver-mais-posts"
             onClick={() => navigate('/builds')}
           >
-            Ver mais builds
+            Ver todas as builds
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-5-5 5 5-5 5" />
+            </svg>
           </button>
+          </footer>
+          </div>
+          {mostrarPainelBuild && (
+            <>
+              <div className="fundo-painel"></div>
+              <Suspense fallback={<div className="componente-carregando" role="status">Preparando formulário...</div>}>
+                <PainelCriarBuild
+                  aoCriarBuild={adicionarBuild}
+                  fecharPainelCriarBuild={() => setMostrarPainelBuild(false)}
+                />
+              </Suspense>
+            </>
+          )}
         </section>
 
         <section className="area-ranking" id="ranking">
@@ -1343,6 +1336,14 @@ function PaginaDetalhesPost() {
       <DetalhesPost
         post={post}
         fecharDetalhesPost={() => {
+          if (location.state?.retornoFavoritos) {
+            navigate('/favoritos', { state: { filtroFavoritos: location.state.retornoFavoritos.filtro } });
+            return;
+          }
+          if (location.state?.retornoConversa) {
+            navigate(`/mensagens/${location.state.retornoConversa}`);
+            return;
+          }
           if (location.state?.retornoBiblioteca) {
             navigate('/posts', { state: { restaurarBiblioteca: location.state.retornoBiblioteca } });
             return;
@@ -1411,6 +1412,14 @@ function PaginaDetalhesBuild() {
       <DetalhesBuild
         build={build}
         fecharDetalhesBuild={() => {
+          if (location.state?.retornoFavoritos) {
+            navigate('/favoritos', { state: { filtroFavoritos: location.state.retornoFavoritos.filtro } });
+            return;
+          }
+          if (location.state?.retornoConversa) {
+            navigate(`/mensagens/${location.state.retornoConversa}`);
+            return;
+          }
           if (location.state?.retornoBibliotecaBuilds) {
             navigate('/builds', { state: { restaurarBibliotecaBuilds: location.state.retornoBibliotecaBuilds } });
             return;
@@ -1431,6 +1440,7 @@ function PaginaDetalhesBuild() {
 function App() {
   return (
     <AuthProvider>
+      <FavoritosProvider>
       <PresencaMensagensPrivadas />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -1471,9 +1481,15 @@ function App() {
         )} />
         <Route path="/posts" element={<BibliotecaPosts />} />
         <Route path="/builds" element={<BibliotecaBuilds />} />
+        <Route path="/favoritos" element={(
+          <Suspense fallback={<main className="componente-carregando" role="status">Carregando favoritos...</main>}>
+            <PaginaFavoritos />
+          </Suspense>
+        )} />
         <Route path="/post/:id" element={<PaginaDetalhesPost />} />
         <Route path="/build/:id" element={<PaginaDetalhesBuild />} />
       </Routes>
+      </FavoritosProvider>
     </AuthProvider>
   );
 }

@@ -7,6 +7,8 @@ import { useAuth } from '../../contexts/useAuth';
 import { criarNotificacao } from '../../services/notificacoes';
 import MidiasPublicacao from '../MidiasPublicacao';
 import AcoesPublicacao from '../AcoesPublicacao';
+import CompartilharPublicacao from '../CompartilharPublicacao';
+import './CardBuild.css';
 
 function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
     const navigate = useNavigate();
@@ -208,127 +210,191 @@ function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
         }
     }
 
+    const nomeAutor = build.autor_nome || (build.autor_id ? 'Viciado em Souls' : 'Gabriel Moreira');
+    const midias = build.midias?.length ? build.midias : build.midia_url ? [build] : [];
+    const temVideo = midias.some((midia) => midia.tipo_midia?.startsWith('video/'));
+    const midiasExtras = midias.length - 1;
+
+    function abrirPerfilAutor(evento) {
+        evento.stopPropagation();
+        if (build.autor_id) navigate(`/perfil/${build.autor_id}`);
+    }
+
+    function abrirComTeclado(evento) {
+        if (evento.target === evento.currentTarget && (evento.key === 'Enter' || evento.key === ' ')) {
+            evento.preventDefault();
+            aoAbrirBuild?.();
+        }
+    }
+
     return (
-        <article ref={cardRef} className="card-build" onClick={aoAbrirBuild}>
-
-            <header className="card-build-header">
-                <div className="lado-esquerdo-header-build">
-                    <div className="area-foto-usuario-post">
-                        <button
-                            className="link-avatar-card"
-                            type="button"
-                            aria-label={`Abrir perfil de ${build.autor_nome || 'Viciado em Souls'}`}
-                            onClick={(evento) => { evento.stopPropagation(); if (build.autor_id) navigate(`/perfil/${build.autor_id}`); }}
-                        >
-                            {build.autor_avatar_url ? (
-                                <img
-                                    className="perfil-usuario-post perfil-usuario-post-imagem"
-                                    src={build.autor_avatar_url}
-                                    alt=""
-                                    style={{ objectPosition: `${build.autor_avatar_pos_x ?? 50}% ${build.autor_avatar_pos_y ?? 50}%`, transform: `scale(${build.autor_avatar_zoom ?? 1})` }}
-                                />
-                            ) : (
-                                <div className="perfil-usuario-post"></div>
-                            )}
-                        </button>
-                    </div>
-
-                    <div className="info-usuario-build">
-                        {build.autor_id ? (
-                            <button className="link-usuario-card" type="button" onClick={(evento) => { evento.stopPropagation(); navigate(`/perfil/${build.autor_id}`); }}>
-                                {build.autor_nome || 'Viciado em Souls'}
-                            </button>
-                        ) : (
-                            <h3 className="nome-usuario-info-build">{build.autor_nome || 'Gabriel Moreira'}</h3>
-                        )}
-                        <p className="tempo-build">{formatarTempo(build.criado_em)}</p>
-                    </div>
+        <article
+            ref={cardRef}
+            className="build-card"
+            onClick={aoAbrirBuild}
+            onKeyDown={abrirComTeclado}
+            tabIndex={0}
+            aria-label={`Build: ${build.titulo}`}
+        >
+            <header className="build-card-cabecalho">
+                <div className="build-card-contexto">
+                    <span className="build-card-tipo">Build</span>
+                    {build.categoria && <span className="build-card-jogo">{build.categoria}</span>}
                 </div>
-
-                <div className="lado-direito-header-build">
-                    <button
-                        className={`btn-seguir-usuario${seguindo ? ' seguindo' : ''}`}
-                        type="button"
-                        disabled={autorEhUsuario || !build.autor_id || carregandoSeguir}
-                        onClick={alternarSeguir}
-                    >
-                        {autorEhUsuario ? 'Você' : seguindo ? 'Seguindo' : 'Seguir'}
-                    </button>
+                <div className="publicacao-header-acoes">
+                    <CompartilharPublicacao publicacao={build} tipo="build" />
                     <AcoesPublicacao publicacao={build} tipo="build" aoAtualizar={aoAtualizar} aoExcluir={aoExcluir} />
                 </div>
+                <h3 className="build-card-titulo">{build.titulo}</h3>
             </header>
 
-            <div className="area-midia-build">
-                <MidiasPublicacao
-                    publicacao={build}
-                    itemClassName="item-midia-build"
-                    mediaClassName=""
-                />
-            </div>
+            {midias.length > 0 && (
+                <div className="build-card-capa">
+                    <MidiasPublicacao
+                        publicacao={build}
+                        itemClassName="build-card-capa-item"
+                        mediaClassName="build-card-capa-arquivo"
+                        modoPreviaVideo
+                    />
 
-            <div className="area-conteudo-build">
-                <span className="categoria-build">{build.categoria}</span>
-                <h3 className="titulo-build">{build.titulo}</h3>
-                {build.descricao?.trim() && (
-                    <p className="descricao-build">{build.descricao}</p>
+                    <div className="build-card-etiquetas">
+                        {temVideo && <span className="build-card-selo">Vídeo</span>}
+                        {midiasExtras > 0 && <span className="build-card-selo">+{midiasExtras}</span>}
+                    </div>
+                </div>
+            )}
+
+            <div className="build-card-corpo">
+                {(build.nivel || build.foco || build.dano) && (
+                    <dl className="build-card-atributos">
+                        {build.nivel && (
+                            <div>
+                                <span className="build-card-atributo-icone" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7Z" />
+                                        <path d="M12 8v8M9 12h6" />
+                                    </svg>
+                                </span>
+                                <dt>Nível</dt>
+                                <dd>{build.nivel}</dd>
+                            </div>
+                        )}
+                        {build.foco && (
+                            <div>
+                                <span className="build-card-atributo-icone" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="8" />
+                                        <circle cx="12" cy="12" r="3.5" />
+                                        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                                    </svg>
+                                </span>
+                                <dt>Foco</dt>
+                                <dd>{build.foco}</dd>
+                            </div>
+                        )}
+                        {build.dano && (
+                            <div>
+                                <span className="build-card-atributo-icone" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
+                                        <path d="m13 19 6-6M16 16l4 4M19 21l2-2" />
+                                    </svg>
+                                </span>
+                                <dt>Dano</dt>
+                                <dd>{build.dano}</dd>
+                            </div>
+                        )}
+                    </dl>
                 )}
-
-                <dl className="dados-build">
-                    {build.nivel && <div><dt>Nível</dt><dd>Lv {build.nivel}</dd></div>}
-                    {build.foco && <div><dt>Foco</dt><dd>{build.foco}</dd></div>}
-                    {build.dano && <div><dt>Dano</dt><dd>{build.dano}</dd></div>}
-                </dl>
+                {build.descricao?.trim() && (
+                    <p className="build-card-texto">{build.descricao}</p>
+                )}
             </div>
 
-            <footer className="area-footer-build">
-                <div className="lado-esquerdo-footer-build">
-                    <span className="numeros-de-comentarios">
-                        <svg className="icone-metrica-post" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 2v-4.2A7.5 7.5 0 1 1 20 11.5Z" />
-                        </svg>
-                        <span>{totalComentarios.toLocaleString('pt-BR')}</span>
-                    </span>
-                    <span className="numeros-de-curtidas">
-                        <svg className="icone-acao-post" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-                        </svg>
-                        <span>{totalCurtidas.toLocaleString('pt-BR')}</span>
-                    </span>
-                        <span className="numeros-de-visualizacoes">
-                            <svg className="icone-metrica-post" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <span>{(build.visualizacoes ?? 0).toLocaleString('pt-BR')}</span>
+            <footer className="build-card-rodape">
+                <div className="build-card-autor">
+                    <button
+                        className="build-card-avatar"
+                        type="button"
+                        aria-label={`Abrir perfil de ${nomeAutor}`}
+                        onClick={abrirPerfilAutor}
+                        disabled={!build.autor_id}
+                    >
+                        {build.autor_avatar_url ? (
+                            <img
+                                src={build.autor_avatar_url}
+                                alt=""
+                                style={{ objectPosition: `${build.autor_avatar_pos_x ?? 50}% ${build.autor_avatar_pos_y ?? 50}%`, transform: `scale(${build.autor_avatar_zoom ?? 1})` }}
+                            />
+                        ) : (
+                            <span aria-hidden="true">{nomeAutor.trim().charAt(0).toUpperCase()}</span>
+                        )}
+                    </button>
+                    <div className="build-card-autor-texto">
+                        {build.autor_id ? (
+                            <button className="build-card-nome" type="button" onClick={abrirPerfilAutor}>
+                                {nomeAutor}
+                            </button>
+                        ) : (
+                            <span className="build-card-nome">{nomeAutor}</span>
+                        )}
+                        <span className="build-card-meta">
+                            <time dateTime={build.criado_em}>{formatarTempo(build.criado_em)}</time>
+                            {build.autor_id && !autorEhUsuario && (
+                                <button
+                                    className={`build-card-seguir${seguindo ? ' seguindo' : ''}`}
+                                    type="button"
+                                    disabled={carregandoSeguir}
+                                    onClick={alternarSeguir}
+                                >
+                                    {seguindo ? 'Seguindo' : 'Seguir'}
+                                </button>
+                            )}
                         </span>
+                    </div>
                 </div>
 
-                <div className="lado-direito-footer-post">
+                <div className="build-card-reacoes">
                     <button
-                        className="btn-responder-post"
-                        type="button"
-                        onClick={(evento) => {
-                            evento.stopPropagation();
-                            aoAbrirBuild?.();
-                        }}
-                    >
-                        <span>Responder</span>
-                    </button>
-                    <button
-                        className="btn-curtir-post"
+                        className="build-card-acao"
                         type="button"
                         aria-label={curtido ? 'Descurtir build' : 'Curtir build'}
                         aria-pressed={curtido}
                         disabled={carregandoInteracoes}
                         onClick={alternarCurtida}
                     >
-                        <svg className="icone-acao-post" viewBox="0 0 24 24" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
                         </svg>
+                        <span>{totalCurtidas.toLocaleString('pt-BR')}</span>
                     </button>
+                    <button
+                        className="build-card-acao"
+                        type="button"
+                        aria-label={`${totalComentarios} comentários. Abrir build para comentar`}
+                        onClick={(evento) => {
+                            evento.stopPropagation();
+                            aoAbrirBuild?.();
+                        }}
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 2v-4.2A7.5 7.5 0 1 1 20 11.5Z" />
+                        </svg>
+                        <span>{totalComentarios.toLocaleString('pt-BR')}</span>
+                    </button>
+                    <span
+                        className="build-card-views"
+                        aria-label={`${(build.visualizacoes ?? 0).toLocaleString('pt-BR')} visualizações`}
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        {(build.visualizacoes ?? 0).toLocaleString('pt-BR')}
+                    </span>
                 </div>
             </footer>
-        </article >
+        </article>
     )
 }
 

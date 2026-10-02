@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/useAuth';
 
 function ListaComentarios({
     comentarios,
@@ -10,7 +11,9 @@ function ListaComentarios({
     aoResponder,
     aoEditar,
     aoApagar,
+    respondendoId = null,
 }) {
+    const { user } = useAuth();
     const [respostasOcultas, setRespostasOcultas] = useState({});
     const [comentarioEditandoId, setComentarioEditandoId] = useState(null);
     const [textoEditado, setTextoEditado] = useState('');
@@ -70,18 +73,68 @@ function ListaComentarios({
         }
     }
 
+    function fotoDoComentario(comentario) {
+        if (comentario.autor_avatar_url) {
+            return {
+                url: comentario.autor_avatar_url,
+                zoom: comentario.autor_avatar_zoom,
+                x: comentario.autor_avatar_pos_x,
+                y: comentario.autor_avatar_pos_y,
+            };
+        }
+
+        // Comentários salvos antes da foto existir: nos do próprio usuário, usa a foto atual da conta.
+        const metadados = user?.user_metadata;
+        if (user?.id && comentario.autor_id === user.id && metadados?.avatar_url) {
+            return {
+                url: metadados.avatar_url,
+                zoom: metadados.avatar_zoom,
+                x: metadados.avatar_pos_x,
+                y: metadados.avatar_pos_y,
+            };
+        }
+
+        return null;
+    }
+
+    function renderAvatar(comentario) {
+        const foto = fotoDoComentario(comentario);
+
+        if (!foto) {
+            return (
+                <img
+                    className="avatar-comentario-post"
+                    src="/svg-animado/icone-usuario.svg"
+                    alt=""
+                    aria-hidden="true"
+                />
+            );
+        }
+
+        return (
+            <span className="avatar-comentario-post avatar-comentario-foto" aria-hidden="true">
+                <img
+                    src={foto.url}
+                    alt=""
+                    style={{
+                        objectPosition: `${foto.x ?? 50}% ${foto.y ?? 50}%`,
+                        transform: `scale(${foto.zoom ?? 1})`,
+                    }}
+                />
+            </span>
+        );
+    }
+
     function renderComentario(comentario) {
         const respostas = respostasPorPai.get(String(comentario.id)) ?? [];
         const reacoes = reacoesComentarios[comentario.id] ?? {};
 
         return (
-            <article className="comentario-post" key={comentario.id}>
-                <img
-                    className="avatar-comentario-post"
-                    src={comentario.avatar_url || '/svg-animado/icone-usuario.svg'}
-                    alt=""
-                    aria-hidden="true"
-                />
+            <article
+                className={`comentario-post${respondendoId != null && String(respondendoId) === String(comentario.id) ? ' comentario-sendo-respondido' : ''}`}
+                key={comentario.id}
+            >
+                {renderAvatar(comentario)}
                 <div className="conteudo-comentario-post">
                     <div className="cabecalho-comentario-post">
                         <strong className="nome-comentario-post">{comentario.nome_usuario}</strong>

@@ -7,6 +7,8 @@ import { useAuth } from '../../contexts/useAuth';
 import { criarNotificacao } from '../../services/notificacoes';
 import MidiasPublicacao from '../MidiasPublicacao';
 import AcoesPublicacao from '../AcoesPublicacao';
+import CompartilharPublicacao from '../CompartilharPublicacao';
+import './CardPost.css';
 
 function CardPost({ post, aoAbrirPost, aoAtualizar, aoExcluir }) {
     const navigate = useNavigate();
@@ -213,118 +215,150 @@ function CardPost({ post, aoAbrirPost, aoAtualizar, aoExcluir }) {
         }
     }
 
+    const nomeAutor = post.autor_nome || (post.autor_id ? 'Viciado em Souls' : 'Gabriel Moreira');
+    const midias = post.midias?.length ? post.midias : post.midia_url ? [post] : [];
+    const temVideo = midias.some((midia) => midia.tipo_midia?.startsWith('video/'));
+    const midiasExtras = midias.length - 1;
+
+    function abrirPerfilAutor(evento) {
+        evento.stopPropagation();
+        if (post.autor_id) navigate(`/perfil/${post.autor_id}`);
+    }
+
+    function abrirComTeclado(evento) {
+        if (evento.target === evento.currentTarget && (evento.key === 'Enter' || evento.key === ' ')) {
+            evento.preventDefault();
+            aoAbrirPost?.();
+        }
+    }
+
     return (
-        <article ref={cardRef} className="card-post" onClick={aoAbrirPost}>
-            <header className="card-post-header">
-                <div className="lado-esquerdo-header-post">
-                    <div className="area-foto-usuario-post">
-                        <button
-                            className="link-avatar-card"
-                            type="button"
-                            aria-label={`Abrir perfil de ${post.autor_nome || 'Viciado em Souls'}`}
-                            onClick={(evento) => { evento.stopPropagation(); if (post.autor_id) navigate(`/perfil/${post.autor_id}`); }}
-                        >
-                            {post.autor_avatar_url ? (
-                                <img
-                                    className="perfil-usuario-post perfil-usuario-post-imagem"
-                                    src={post.autor_avatar_url}
-                                    alt=""
-                                    style={{ objectPosition: `${post.autor_avatar_pos_x ?? 50}% ${post.autor_avatar_pos_y ?? 50}%`, transform: `scale(${post.autor_avatar_zoom ?? 1})` }}
-                                />
-                            ) : (
-                                <div className="perfil-usuario-post"></div>
-                            )}
-                        </button>
-                    </div>
-                    <div className="info-usuario-post">
+        <article
+            ref={cardRef}
+            className="post-card"
+            onClick={aoAbrirPost}
+            onKeyDown={abrirComTeclado}
+            tabIndex={0}
+            aria-label={`Post: ${post.titulo}`}
+        >
+            <header className="post-card-topo">
+                <button
+                    className="post-card-avatar"
+                    type="button"
+                    aria-label={`Abrir perfil de ${nomeAutor}`}
+                    onClick={abrirPerfilAutor}
+                    disabled={!post.autor_id}
+                >
+                    {post.autor_avatar_url ? (
+                        <img
+                            src={post.autor_avatar_url}
+                            alt=""
+                            style={{ objectPosition: `${post.autor_avatar_pos_x ?? 50}% ${post.autor_avatar_pos_y ?? 50}%`, transform: `scale(${post.autor_avatar_zoom ?? 1})` }}
+                        />
+                    ) : (
+                        <span aria-hidden="true">{nomeAutor.trim().charAt(0).toUpperCase()}</span>
+                    )}
+                </button>
+
+                <div className="post-card-autor">
+                    <div className="post-card-linha-nome">
                         {post.autor_id ? (
-                            <button className="link-usuario-card" type="button" onClick={(evento) => { evento.stopPropagation(); navigate(`/perfil/${post.autor_id}`); }}>
-                                {post.autor_nome || 'Viciado em Souls'}
+                            <button className="post-card-nome" type="button" onClick={abrirPerfilAutor}>
+                                {nomeAutor}
                             </button>
                         ) : (
-                            <h3 className="nome-usuario-post">{post.autor_nome || 'Gabriel Moreira'}</h3>
+                            <span className="post-card-nome">{nomeAutor}</span>
                         )}
-                        <p className="tempo-post">{formatarTempo(post.criado_em)}</p>
+                        {post.autor_id && !autorEhUsuario && (
+                            <button
+                                className={`post-card-seguir${seguindo ? ' seguindo' : ''}`}
+                                type="button"
+                                disabled={carregandoSeguir}
+                                onClick={alternarSeguir}
+                            >
+                                {seguindo ? 'Seguindo' : 'Seguir'}
+                            </button>
+                        )}
+                    </div>
+                    <div className="post-card-meta">
+                        <time dateTime={post.criado_em}>{formatarTempo(post.criado_em)}</time>
+                        {post.categoria && (
+                            <>
+                                <span aria-hidden="true">·</span>
+                                <span className="post-card-jogo" title={post.categoria}>{post.categoria}</span>
+                            </>
+                        )}
                     </div>
                 </div>
-                <div className="lado-direito-header-post">
-                    <button
-                        className={`btn-seguir-usuario${seguindo ? ' seguindo' : ''}`}
-                        type="button"
-                        disabled={autorEhUsuario || !post.autor_id || carregandoSeguir}
-                        onClick={alternarSeguir}
-                    >
-                        {autorEhUsuario ? 'Você' : seguindo ? 'Seguindo' : 'Seguir'}
-                    </button>
+
+                <div className="publicacao-header-acoes">
+                    <CompartilharPublicacao publicacao={post} tipo="post" />
                     <AcoesPublicacao publicacao={post} tipo="post" aoAtualizar={aoAtualizar} aoExcluir={aoExcluir} />
                 </div>
             </header>
 
-            <div className="area-conteudo-post">
-                {post.categoria && (
-                    <span className="categoria-post">
-                        {post.categoria}
-                    </span>
-                )}
-                <h3 className="titulo-conteudo-post">{post.titulo}</h3>
-
-                <div className="area-midia-post">
-                    <MidiasPublicacao
-                        publicacao={post}
-                        itemClassName="item-midia-post"
-                        mediaClassName="midia-post"
-                        modoPreviaVideo
-                    />
-                </div>
-
+            <div className="post-card-corpo">
+                <h3 className="post-card-titulo">{post.titulo}</h3>
                 {post.descricao?.trim() && (
-                    <p className="descricao-conteudo-post">{post.descricao}</p>
+                    <p className="post-card-texto">{post.descricao}</p>
                 )}
             </div>
 
-            <footer className="card-post-footer">
-                <div className="lado-esquerdo-footer-post">
-                    <span className="numeros-de-comentarios">
-                        <svg className="icone-metrica-post" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 2v-4.2A7.5 7.5 0 1 1 20 11.5Z" />
-                        </svg>
-                        <span>{totalComentarios.toLocaleString('pt-BR')}</span>
-                    </span>
-                    <span className="numeros-de-curtidas">
-                        <svg className="icone-acao-post" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-                        </svg>
-                        <span>{totalCurtidas.toLocaleString('pt-BR')}</span>
-                    </span>
-                    <span
-                        className="numeros-de-visualizacoes"
-                        aria-label={`${(post.visualizacoes ?? 0).toLocaleString('pt-BR')} visualizações`}
-                    >
-                        <svg className="icone-metrica-post" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </svg>
-                        <span>{(post.visualizacoes ?? 0).toLocaleString('pt-BR')}</span>
-                    </span>
+            {midias.length > 0 && (
+                <div className="post-card-midia">
+                    <MidiasPublicacao
+                        publicacao={post}
+                        itemClassName="post-card-midia-item"
+                        mediaClassName="post-card-midia-arquivo"
+                        modoPreviaVideo
+                    />
+                    {temVideo && <span className="post-card-selo">Vídeo</span>}
+                    {midiasExtras > 0 && (
+                        <span className="post-card-contador">+{midiasExtras} {midiasExtras === 1 ? 'mídia' : 'mídias'}</span>
+                    )}
                 </div>
+            )}
 
-                <div className="lado-direito-footer-post">
-                    <button className="btn-responder-post" type="button">
-                        <span>Responder</span>
-                    </button>
-                    <button
-                        className="btn-curtir-post"
-                        type="button"
-                        aria-label={curtido ? 'Descurtir post' : 'Curtir post'}
-                        aria-pressed={curtido}
-                        disabled={carregandoCurtidas}
-                        onClick={alternarCurtida}
-                    >
-                        <svg className="icone-acao-post" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-                        </svg>
-                    </button>
-                </div>
+            <footer className="post-card-acoes">
+                <button
+                    className="post-card-acao"
+                    type="button"
+                    aria-label={curtido ? 'Descurtir post' : 'Curtir post'}
+                    aria-pressed={curtido}
+                    disabled={carregandoCurtidas}
+                    onClick={alternarCurtida}
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+                    </svg>
+                    <span>{totalCurtidas.toLocaleString('pt-BR')}</span>
+                </button>
+
+                <button
+                    className="post-card-acao"
+                    type="button"
+                    aria-label={`${totalComentarios} comentários. Abrir post para comentar`}
+                    onClick={(evento) => {
+                        evento.stopPropagation();
+                        aoAbrirPost?.();
+                    }}
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 2v-4.2A7.5 7.5 0 1 1 20 11.5Z" />
+                    </svg>
+                    <span>{totalComentarios.toLocaleString('pt-BR')}</span>
+                </button>
+
+                <span
+                    className="post-card-views"
+                    aria-label={`${(post.visualizacoes ?? 0).toLocaleString('pt-BR')} visualizações`}
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    {(post.visualizacoes ?? 0).toLocaleString('pt-BR')}
+                </span>
             </footer>
         </article>
     )

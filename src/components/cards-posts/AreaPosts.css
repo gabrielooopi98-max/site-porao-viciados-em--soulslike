@@ -1,0 +1,274 @@
+.container-site > section :is(h1, h2):not(.painel-criar-post h2) {
+    font-family: 'Cinzel', serif;
+}
+
+.area-posts-comunidade {
+    --posts-intervalo-banner: 0px;
+    position: relative;
+    margin-top: var(--posts-intervalo-banner);
+    padding: 0 24px 56px;
+    border-top: 0;
+}
+
+.posts-secao-conteudo {
+    width: min(100%, 1180px);
+    margin-inline: auto;
+}
+
+.posts-header {
+    position: relative;
+    isolation: isolate;
+    min-height: clamp(390px, calc(43vw - 110px), 450px);
+    margin-bottom: 20px;
+    padding: 92px 24px 28px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.posts-header-texto {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    max-width: 600px;
+    margin-inline: auto;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.posts-sobretitulo {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--souls-brasa);
+    font: 600 0.7rem/1.4 'Poppins', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.posts-sobretitulo::before,
+.posts-sobretitulo::after {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    margin: 0 12px 3px;
+    background: var(--souls-brasa);
+}
+
+.posts-header h2 {
+    margin: 0;
+    font-size: clamp(1.7rem, 2.9vw, 2.45rem);
+    line-height: 1.35;
+    letter-spacing: 0;
+    text-align: center;
+}
+
+.posts-header p {
+    max-width: 430px;
+    margin: 12px auto 0;
+    color: #e0d8ce;
+    font: 600 0.85rem/1.75 'Poppins', sans-serif;
+}
+
+:is(.area-posts-comunidade, .area-builds-comunidade) .posts-criar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin: 0;
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    color: #080808;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--souls-brasa);
+    border: 1px solid var(--souls-brasa);
+    border-radius: 4px;
+}
+
+:is(.area-posts-comunidade, .area-builds-comunidade) .posts-criar:hover {
+    color: #080808;
+    background: #ff8a2d;
+    border-color: #ff8a2d;
+}
+
+.posts-criar svg,
+.posts-secao-footer svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+:is(.area-posts-comunidade, .area-builds-comunidade) .posts-ilustracao {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    min-width: 0;
+    width: 100%;
+    height: clamp(275px, 35vw, 425px);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image:
+        linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent),
+        linear-gradient(180deg, transparent, #000 12%, #000 90%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+        linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent),
+        linear-gradient(180deg, transparent, #000 12%, #000 90%, transparent);
+    mask-composite: intersect;
+}
+
+:is(.area-posts-comunidade, .area-builds-comunidade) .posts-ilustracao .dark-souls-banner {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: max(110%, 840px);
+    height: auto;
+    max-width: none;
+    object-fit: contain;
+    transform: translateX(-50%);
+    opacity: 1;
+    image-rendering: pixelated;
+    filter: none;
+}
+
+.posts-filtros {
+    display: grid;
+    gap: 12px;
+    padding-block: 20px;
+    border-top: 1px solid #292929;
+    border-bottom: 1px solid #292929;
+}
+
+.posts-filtros-titulo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--souls-osso);
+    font: 600 0.88rem/1.4 'Poppins', sans-serif;
+}
+
+.posts-filtros-titulo::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 3px;
+    height: 18px;
+    background: var(--souls-brasa);
+    border-radius: 1px;
+}
+
+.posts-filtros-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.area-posts-comunidade .buttons-post-comunidade-grid {
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 2px 2px 10px;
+    overflow-x: auto;
+    scroll-padding-inline: 2px;
+}
+
+.posts-lista-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin: 26px 0 16px;
+}
+
+.posts-lista-heading h3 {
+    color: #dedede;
+    font: 600 0.9rem/1.4 'Poppins', sans-serif;
+    letter-spacing: 0;
+}
+
+.posts-lista-contexto {
+    flex: 1 1 100px;
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.posts-lista-heading span {
+    color: #999999;
+    font: 400 0.72rem/1.5 'Poppins', sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.area-posts-comunidade .cards-posts-container {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 20px;
+    margin-top: 0;
+}
+
+.posts-secao-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+}
+
+.posts-secao-footer .ver-mais-posts {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 18px;
+    color: #cccccc;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-color: #383838;
+    border-radius: 6px;
+}
+
+.posts-secao-footer .ver-mais-posts:hover {
+    color: #eeeeee;
+    background: #1a1a1a;
+    border-color: #666666;
+}
+
+@media (max-width: 768px) {
+    .area-posts-comunidade {
+        --posts-intervalo-banner: 0px;
+        padding: 0 16px 40px;
+    }
+
+    .posts-header {
+        min-height: 356px;
+        padding: 82px 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .posts-header p {
+        max-width: 520px;
+    }
+
+    :is(.area-posts-comunidade, .area-builds-comunidade) .posts-ilustracao {
+        height: 275px;
+    }
+
+    .area-posts-comunidade .cards-posts-container {
+        gap: 14px;
+        margin-inline: -16px;
+        padding: 2px 16px 12px;
+        scroll-padding-inline: 16px;
+    }
+
+    .area-posts-comunidade .cards-posts-container > * {
+        flex: 0 0 min(86vw, 377px);
+        width: min(86vw, 377px);
+        min-width: 0;
+    }
+}
