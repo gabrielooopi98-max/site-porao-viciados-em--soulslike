@@ -129,40 +129,57 @@ async function enviarMidias(arquivos, aoAtualizarStatus) {
 
 function SkeletonCard({ variant }) {
   const isBuild = variant === 'build';
+  const autor = (
+    <div className="skeleton-card-author">
+      <span className="skeleton-shape skeleton-avatar" />
+      <div className="skeleton-user-lines">
+        <span className="skeleton-shape skeleton-user-name" />
+        <span className="skeleton-shape skeleton-user-meta" />
+      </div>
+    </div>
+  );
 
   return (
     <article className={`skeleton-card skeleton-card-${variant}`} aria-hidden="true">
       <div className="skeleton-card-header">
-        <span className="skeleton-shape skeleton-avatar" />
-        <div className="skeleton-user-lines">
-          <span className="skeleton-shape skeleton-user-name" />
-          <span className="skeleton-shape skeleton-user-meta" />
-        </div>
+        {isBuild ? <span className="skeleton-shape skeleton-category" /> : autor}
         <span className="skeleton-shape skeleton-action" />
       </div>
       <div className="skeleton-card-content">
-        <span className="skeleton-shape skeleton-category" />
         <span className="skeleton-shape skeleton-title" />
         <span className="skeleton-shape skeleton-title-short" />
-        <span className="skeleton-shape skeleton-media" />
-        {isBuild ? (
-          <div className="skeleton-build-stats">
-            <span className="skeleton-shape" />
-            <span className="skeleton-shape" />
-            <span className="skeleton-shape" />
-          </div>
-        ) : (
+        {!isBuild && (
           <>
             <span className="skeleton-shape skeleton-copy" />
             <span className="skeleton-shape skeleton-copy-short" />
           </>
         )}
       </div>
+      <span className="skeleton-shape skeleton-media" />
+      {isBuild && (
+        <div className="skeleton-build-body">
+          <div className="skeleton-build-stats">
+            {Array.from({ length: 3 }, (_, indice) => (
+              <div className="skeleton-build-stat" key={indice}>
+                <span className="skeleton-shape skeleton-stat-icon" />
+                <div className="skeleton-stat-lines">
+                  <span className="skeleton-shape skeleton-stat-label" />
+                  <span className="skeleton-shape skeleton-stat-value" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <span className="skeleton-shape skeleton-copy" />
+          <span className="skeleton-shape skeleton-copy-short" />
+        </div>
+      )}
       <div className="skeleton-card-footer">
-        <span className="skeleton-shape skeleton-metric" />
-        <span className="skeleton-shape skeleton-metric" />
-        <span className="skeleton-shape skeleton-metric" />
-        <span className="skeleton-shape skeleton-action" />
+        {isBuild && autor}
+        <div className="skeleton-card-reactions">
+          <span className="skeleton-shape skeleton-metric" />
+          <span className="skeleton-shape skeleton-metric" />
+          <span className="skeleton-shape skeleton-views" />
+        </div>
       </div>
     </article>
   );

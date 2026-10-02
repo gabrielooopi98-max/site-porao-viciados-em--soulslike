@@ -12,6 +12,12 @@ export default function GaleriaMidiasPrivadas({ midias, inicialId, aoFechar }) {
     if (!midia) aoFechar();
   }, [midia, aoFechar]);
 
+  useEffect(() => {
+    painelRef.current?.querySelector('.chat-global-image-thumbnails .ativo')?.scrollIntoView({
+      block: 'nearest', inline: 'center',
+    });
+  }, [idSelecionado, painelRef]);
+
   function navegar(direcao) {
     if (midias.length) setIdSelecionado(midias[(indice + direcao + midias.length) % midias.length].id);
   }
@@ -37,7 +43,7 @@ export default function GaleriaMidiasPrivadas({ midias, inicialId, aoFechar }) {
       <button ref={tituloRef} className="chat-global-image-viewer-close" type="button" onClick={aoFechar} aria-label="Fechar galeria">×</button>
       <button className="chat-global-image-viewer-prev" type="button" disabled={midias.length < 2} onClick={(evento) => { evento.stopPropagation(); navegar(-1); }} aria-label="Mídia anterior">‹</button>
       {midia.tipo?.startsWith('video/')
-        ? <video key={midia.id} className="chat-global-image-viewer-media" src={midia.url} controls playsInline preload="metadata" onClick={(evento) => evento.stopPropagation()} />
+        ? <video key={midia.id} className="chat-global-image-viewer-media" src={midia.url} controls playsInline preload="metadata" aria-label={midia.nome} onClick={(evento) => evento.stopPropagation()} />
         : <img className="chat-global-image-viewer-media" src={midia.url} alt={midia.nome} onClick={(evento) => evento.stopPropagation()} />}
       <button className="chat-global-image-viewer-next" type="button" disabled={midias.length < 2} onClick={(evento) => { evento.stopPropagation(); navegar(1); }} aria-label="Próxima mídia">›</button>
       <div className="chat-global-image-thumbnails" onClick={(evento) => evento.stopPropagation()}>

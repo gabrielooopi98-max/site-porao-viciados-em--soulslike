@@ -32,6 +32,11 @@ O rodape destaca as interacoes
 com borda superior e fundo neutros discretos, botoes com area de toque
 de 44px e hover em cinza; o estado curtido usa destaque em cinza claro;
 no celular, a home preserva a navegacao horizontal.
+Os skeletons seguem a estrutura dos cards atuais: posts com autor no topo,
+titulo e resumo antes da midia 16:9; builds com contexto e titulo no topo,
+capa 3:2, atributos e autoria no rodape. O carregamento compartilha esse
+layout na home e nas bibliotecas, sem alturas minimas artificiais,
+com brilho suave desativado quando ha preferencia por movimento reduzido.
 
 A secao da home tem largura limitada e apresentacao centralizada sobre
 a parte superior do cenario, com sombra discreta para leitura. O botao de
@@ -91,12 +96,28 @@ real nem navegacao para perfis ficticios nesta etapa.
 O chat privado acompanha o visual do global: lista de amigos escura,
 bolhas neutras, autoria agrupada em intervalos de cinco minutos,
 separadores por dia e compositor com anexos, voz, figurinhas e envio por icone.
+A lista tem busca local por nome, contador de amigos e destaque da conversa
+ativa. O historico e o compositor limitam a largura em telas grandes.
+A busca usa uma unica borda no contenedor, inclusive no foco. Os baloes
+separam o conteudo do rodape compacto com horario e recibo. Clicar ou tocar
+no balao (ou pressionar Enter/Espaco com foco nele) abre as acoes em um menu;
+Escape, clique fora e rolagem fecham o menu. Links e controles de midia
+preservam suas acoes. Editar e excluir continuam restritos ao autor,
+com controles de 44px e o agrupamento por autor preservados.
+No celular, lista e conversa ocupam telas separadas; a seta do cabecalho
+retorna aos amigos, e o campo de texto fica acima das ferramentas para
+preservar a area de escrita e os controles de toque de 44px.
 Enter envia, Shift + Enter quebra a linha e Escape cancela resposta/edicao.
 O texto cresce ate 140px, sem sobrepor o historico, mantendo o limite de
 2000 caracteres ja existente no privado.
 Novas mensagens nao puxam a rolagem enquanto o usuario le o historico:
 um atalho leva ao fim. Imagens, videos e figurinhas abrem uma galeria
 com miniaturas, setas, Escape e restauracao do foco.
+Fotos e videos abrem ao tocar na previa; videos mostram um icone de play
+no balao e os controles de reproducao na galeria ampliada. O carrossel
+reune as fotos e videos carregados na conversa enviados pelo mesmo autor
+da midia aberta, sem misturar figurinhas. A miniatura ativa fica visivel
+ao navegar. Figurinhas mantem uma galeria separada por autor.
 O player de audio e compartilhado com o global; o privado preserva
 a conversao de codecs incompativeis, URLs assinadas, recibos de leitura,
 presenca e acesso exclusivo entre amizades aceitas.

@@ -775,7 +775,7 @@ function ChatGlobal() {
             <div className="cg-app cg-app-visitante">
                 <div className="cg-visitante-arte" aria-hidden="true">
                     <ImagemDecorativaAdiada
-                        src="/svg-animado/lua-bloodborne-banner-1760x575.svg"
+                        src="/svg-animado/lampiao-bom-cacador-pixel-art-otimizado.svg"
                         alt=""
                         className="cg-visitante-arte-imagem"
                     />
@@ -792,7 +792,7 @@ function ChatGlobal() {
                     <button className="cg-botao-primario" type="button" onClick={() => navigate('/login', { state: { returnTo: '/chat' } })}>
                         Entrar ou criar conta
                     </button>
-                    <span className="cg-visitante-nota">É preciso ter uma conta para enviar mensagens.</span>
+                    <span className="cg-visitante-nota">É preciso ter uma conta para entrar.</span>
                 </section>
             </div>
         );

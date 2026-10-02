@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { supabase } from '../services/supabase';
@@ -161,6 +162,7 @@ function MensagensPrivadas() {
   const navigate = useNavigate();
   const { pessoaId } = useParams();
   const [amizades, setAmizades] = useState([]);
+  const [buscaAmigo, setBuscaAmigo] = useState('');
   const [mensagens, setMensagens] = useState([]);
   const [mensagensCarregadasPara, setMensagensCarregadasPara] = useState(null);
   const [texto, setTexto] = useState('');
@@ -182,6 +184,9 @@ function MensagensPrivadas() {
   const [erro, setErro] = useState('');
   const [novasMensagens, setNovasMensagens] = useState(0);
   const [midiaAberta, setMidiaAberta] = useState(null);
+  const [menuMensagem, setMenuMensagem] = useState(null);
+  const menuMensagemRef = useRef(null);
+  const origemMenuRef = useRef(null);
   const rolagemRef = useRef({ conversa: null, ids: new Set(), noFim: true, forcarFim: false });
   const textoRef = useRef(null);
   const listaRef = useRef(null);
@@ -248,7 +253,62 @@ function MensagensPrivadas() {
   }, [usuarioId]);
 
   const amigos = useMemo(() => obterAmigos(amizades, usuarioId), [amizades, usuarioId]);
+  const amigosFiltrados = useMemo(() => {
+    const busca = buscaAmigo.trim().toLocaleLowerCase('pt-BR');
+    return amigos.filter((amigo) => (amigo.nome || 'Viciado em Souls').toLocaleLowerCase('pt-BR').includes(busca));
+  }, [amigos, buscaAmigo]);
   const amigoSelecionado = amigos.find((amigo) => amigo.id === pessoaId) ?? null;
+  const mensagemDoMenu = menuMensagem?.conversa === pessoaId
+    ? mensagens.find((mensagem) => mensagem.id === menuMensagem.id)
+    : null;
+
+  function fecharMenuMensagem(devolverFoco = false) {
+    setMenuMensagem(null);
+    if (devolverFoco) origemMenuRef.current?.focus();
+  }
+
+  function abrirMenuMensagem(evento, mensagem) {
+    if (evento.target.closest('button, a, input, video, audio')) return;
+    if (window.getSelection()?.toString()) return;
+    const origem = evento.currentTarget;
+    const caixa = origem.getBoundingClientRect();
+    origemMenuRef.current = origem;
+    setMenuMensagem({
+      id: mensagem.id,
+      conversa: pessoaId,
+      x: Math.max(8, Math.min(caixa.right - 184, window.innerWidth - 192)),
+      y: Math.max(8, Math.min(caixa.bottom, window.innerHeight - 160)),
+    });
+  }
+
+  useEffect(() => {
+    if (!menuMensagem) return undefined;
+    menuMensagemRef.current?.querySelector('button')?.focus();
+    function fecharFora(evento) {
+      if (!menuMensagemRef.current?.contains(evento.target)) setMenuMensagem(null);
+    }
+    function fecharEscape(evento) {
+      if (evento.key === 'Escape') {
+        evento.preventDefault();
+        setMenuMensagem(null);
+        origemMenuRef.current?.focus();
+      }
+    }
+    function fecharAoMover(evento) {
+      if (menuMensagemRef.current?.contains(evento.target)) return;
+      setMenuMensagem(null);
+    }
+    document.addEventListener('pointerdown', fecharFora);
+    document.addEventListener('keydown', fecharEscape);
+    window.addEventListener('resize', fecharAoMover);
+    document.addEventListener('scroll', fecharAoMover, true);
+    return () => {
+      document.removeEventListener('pointerdown', fecharFora);
+      document.removeEventListener('keydown', fecharEscape);
+      window.removeEventListener('resize', fecharAoMover);
+      document.removeEventListener('scroll', fecharAoMover, true);
+    };
+  }, [menuMensagem]);
   const figurinhasFiltradas = useMemo(() => {
     const busca = buscaFigurinha.trim().toLocaleLowerCase('pt-BR');
     return figurinhas.filter((figurinha) => !busca || figurinha.midia_nome.toLocaleLowerCase('pt-BR').includes(busca));
@@ -479,7 +539,12 @@ function MensagensPrivadas() {
     [mensagens, mensagensCarregadasPara, pessoaId]
   );
   const itensMensagens = organizarMensagens(mensagensVisiveis, 'remetente_id');
+  const mensagemMidiaAberta = midiaAberta?.conversa === pessoaId
+    ? mensagensVisiveis.find((mensagem) => mensagem.id === midiaAberta.id)
+    : null;
   const midiasGaleria = mensagensVisiveis.flatMap((mensagem) => {
+    if (mensagem.remetente_id !== mensagemMidiaAberta?.remetente_id) return [];
+    if (mensagemMidiaAberta.figurinha_id ? !mensagem.figurinha_id : !mensagem.midia_path || mensagem.audio_path) return [];
     const url = mensagem.midia_url || mensagem.figurinha?.midia_url;
     return url ? [{
       id: mensagem.id, url,
@@ -993,22 +1058,34 @@ function MensagensPrivadas() {
       </header>
       <main className={`mensagens-privadas-page mp-organizado${amigoSelecionado ? ' com-conversa' : ''}`}>
         <aside className="mensagens-privadas-lista">
-          <header><h1>Conversas</h1><span>{amigos.length} amigos</span></header>
+          <header>
+            <div className="mp-lista-titulo">
+              <span className="mp-sobretitulo">Entre amigos</span>
+              <h1>Conversas</h1>
+              <p>Um espaço para trocar ideias.</p>
+            </div>
+            <span className="mp-total-amigos">{amigos.length} {amigos.length === 1 ? 'amigo' : 'amigos'}</span>
+            <label className="mp-busca-amigos">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></svg>
+              <input type="search" value={buscaAmigo} onChange={(evento) => setBuscaAmigo(evento.target.value)} placeholder="Buscar amigo" aria-label="Buscar amigo" />
+            </label>
+          </header>
           {carregandoAmizades ? (
             <p className="mensagens-privadas-vazio">Carregando amigos...</p>
           ) : amigos.length ? (
-            amigos.map((amigo) => (
-              <button className={`mensagem-privada-contato${amigo.id === pessoaId ? ' ativo' : ''}`} key={amigo.id} type="button" onClick={() => navegarConversa(`/mensagens/${amigo.id}`)}>
+            amigosFiltrados.length ? amigosFiltrados.map((amigo) => (
+              <button className={`mensagem-privada-contato${amigo.id === pessoaId ? ' ativo' : ''}`} aria-current={amigo.id === pessoaId ? 'page' : undefined} key={amigo.id} type="button" onClick={() => navegarConversa(`/mensagens/${amigo.id}`)}>
                 <span className="mensagem-privada-avatar-wrap">
-                  {amigo.avatar ? <img src={amigo.avatar} alt="" /> : <span className="mensagem-privada-avatar-vazio">?</span>}
+                  {amigo.avatar ? <img src={amigo.avatar} alt="" /> : <span className="mensagem-privada-avatar-vazio">{(amigo.nome || 'Viciado em Souls').charAt(0).toLocaleUpperCase('pt-BR')}</span>}
                   <i role="img" className={`mensagem-privada-presenca${amigosOnline[amigo.id] ? ' online' : ''}`} aria-label={amigosOnline[amigo.id] ? 'Online' : 'Offline'} />
                 </span>
                 <span className="mensagem-privada-contato-info">
                   <strong>{amigo.nome || 'Viciado em Souls'}</strong>
                   <small className={amigosOnline[amigo.id] ? 'online' : ''}>{amigosOnline[amigo.id] ? 'Online' : 'Offline'}</small>
                 </span>
+                <svg className="mp-contato-seta" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
               </button>
-            ))
+            )) : <p className="mensagens-privadas-vazio" role="status">Nenhum amigo encontrado com esse nome.</p>
           ) : (
             <p className="mensagens-privadas-vazio">Você ainda não tem amigos. Visite um perfil e envie um pedido de amizade.</p>
           )}
@@ -1018,9 +1095,9 @@ function MensagensPrivadas() {
           {amigoSelecionado ? (
             <>
               <header className="mensagem-privada-cabecalho">
-                <button type="button" className="mensagem-privada-voltar" onClick={() => navegarConversa('/mensagens')}>Conversas</button>
+                <button type="button" className="mensagem-privada-voltar" onClick={() => navegarConversa('/mensagens')} aria-label="Voltar às conversas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
                 <span className="mensagem-privada-avatar-wrap">
-                  {amigoSelecionado.avatar ? <img src={amigoSelecionado.avatar} alt="" /> : <span className="mensagem-privada-avatar-vazio">?</span>}
+                  {amigoSelecionado.avatar ? <img src={amigoSelecionado.avatar} alt="" /> : <span className="mensagem-privada-avatar-vazio">{(amigoSelecionado.nome || 'Viciado em Souls').charAt(0).toLocaleUpperCase('pt-BR')}</span>}
                   <i role="img" className={`mensagem-privada-presenca${amigosOnline[amigoSelecionado.id] ? ' online' : ''}`} aria-label={amigosOnline[amigoSelecionado.id] ? 'Online' : 'Offline'} />
                 </span>
                 <div>
@@ -1055,7 +1132,13 @@ function MensagensPrivadas() {
                         )}
                         <div className="mp-mensagem-corpo">
                           {!agrupada && mensagem.remetente_id !== usuarioId && <span className="mp-autor-nome">{amigoSelecionado.nome || 'Amigo'}</span>}
-                    <article className={`mensagem-privada-balao${mensagem.remetente_id === usuarioId ? ' propria' : ''}${respondendoA?.id === mensagem.id ? ' respondendo' : ''}`} data-mensagem-privada-id={mensagem.id} tabIndex={0}>
+                    <article className={`mensagem-privada-balao${mensagem.midia_path && mensagem.midia_url && !mensagem.audio_path ? ' mp-balao-midia' : ''}${mensagem.remetente_id === usuarioId ? ' propria' : ''}${respondendoA?.id === mensagem.id ? ' respondendo' : ''}`} data-mensagem-privada-id={mensagem.id} tabIndex={0} aria-label="Mensagem. Pressione Enter para abrir ações." aria-haspopup="dialog" aria-expanded={mensagemDoMenu?.id === mensagem.id} onClick={(evento) => abrirMenuMensagem(evento, mensagem)} onKeyDown={(evento) => {
+                      if (evento.target !== evento.currentTarget) return;
+                      if (evento.key === 'Enter' || evento.key === ' ') {
+                        evento.preventDefault();
+                        abrirMenuMensagem(evento, mensagem);
+                      }
+                    }}>
                       {mensagem.resposta_mensagem_id && (
                         <button
                           className="mensagem-privada-resposta-preview"
@@ -1075,7 +1158,7 @@ function MensagensPrivadas() {
                         mensagem.midia_url
                           ? <>
                             {mensagem.midia_tipo?.startsWith('video/')
-                              ? <div className="mp-video"><video className="mensagem-privada-midia" src={mensagem.midia_url} controls playsInline preload="metadata" onLoadedMetadata={manterNoFim} aria-label={mensagem.midia_nome || 'Vídeo enviado'} /><button type="button" className="mp-ampliar-video" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar vídeo">⤢</button></div>
+                              ? <button className="mp-midia-botao mp-video" type="button" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar vídeo"><video className="mensagem-privada-midia" src={mensagem.midia_url} muted playsInline preload="metadata" onLoadedMetadata={manterNoFim} /><span className="mp-video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 11 7-11 7V5Z" /></svg></span></button>
                               : <button className="mp-midia-botao" type="button" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar imagem"><img className="mensagem-privada-midia imagem" src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada'} loading="lazy" onLoad={manterNoFim} /></button>}
                             {mensagem.texto && <p className="mensagem-privada-legenda">{mensagem.texto}</p>}
                           </>
@@ -1085,6 +1168,7 @@ function MensagensPrivadas() {
                           ? <button className="mp-midia-botao" type="button" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar figurinha"><img className="mensagem-privada-figurinha" src={mensagem.figurinha.midia_url} alt={mensagem.figurinha.midia_nome || 'Figurinha'} loading="lazy" onLoad={manterNoFim} /></button>
                           : <p className="mensagem-privada-audio-erro">Figurinha indisponível.</p>
                       ) : <TextoMensagemPrivada texto={mensagem.texto} />}
+                      <div className="mp-balao-rodape">
                       <footer>
                         <time dateTime={mensagem.criado_em}>{formatarHora(mensagem.criado_em)}</time>
                         {mensagem.editada && <span className="mensagem-privada-editada">editada</span>}
@@ -1094,16 +1178,6 @@ function MensagensPrivadas() {
                           </span>
                         )}
                       </footer>
-                      <div className="mensagem-privada-acoes">
-                        <button type="button" onClick={() => responderMensagem(mensagem)} aria-label="Responder mensagem" title="Responder">↩</button>
-                        {mensagem.remetente_id === usuarioId && !mensagem.audio_path && !mensagem.midia_path && !mensagem.figurinha_id && mensagem.texto && (
-                          <button type="button" onClick={() => editarMensagem(mensagem)} aria-label="Editar mensagem" title="Editar">✎</button>
-                        )}
-                        {mensagem.remetente_id === usuarioId && (
-                          <button type="button" onClick={() => excluirMensagem(mensagem)} aria-label="Excluir mensagem" title="Excluir">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" /></svg>
-                          </button>
-                        )}
                       </div>
                     </article>
                         </div>
@@ -1262,6 +1336,7 @@ function MensagensPrivadas() {
             </>
           ) : (
             <div className="mensagens-privadas-selecione">
+              <span className="mp-selecione-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 3.5V5Z" /><path d="M8 9h8M8 12h5" /></svg></span>
               <h2>{pessoaId && !carregandoAmizades ? 'Conversa indisponível' : 'Suas conversas privadas'}</h2>
               <p>{pessoaId && !carregandoAmizades ? 'Você precisa aceitar o pedido de amizade para conversar com essa pessoa.' : 'Selecione um amigo ou adicione alguém pela página de perfil.'}</p>
               {erro && <p className="mensagens-privadas-erro" role="alert">{erro}</p>}
@@ -1269,6 +1344,18 @@ function MensagensPrivadas() {
           )}
         </section>
       </main>
+      {mensagemDoMenu && createPortal(
+        <div className="mp-menu-mensagem" ref={menuMensagemRef} role="dialog" aria-label="Ações da mensagem" style={{ left: menuMensagem.x, top: menuMensagem.y }}>
+          <button type="button" onClick={() => { fecharMenuMensagem(); responderMensagem(mensagemDoMenu); }}>Responder</button>
+          {mensagemDoMenu.remetente_id === usuarioId && !mensagemDoMenu.audio_path && !mensagemDoMenu.midia_path && !mensagemDoMenu.figurinha_id && mensagemDoMenu.texto && (
+            <button type="button" onClick={() => { fecharMenuMensagem(); editarMensagem(mensagemDoMenu); }}>Editar</button>
+          )}
+          {mensagemDoMenu.remetente_id === usuarioId && (
+            <button className="mp-menu-excluir" type="button" onClick={() => { fecharMenuMensagem(true); excluirMensagem(mensagemDoMenu); }}>Excluir</button>
+          )}
+        </div>,
+        document.body
+      )}
       {midiaAberta && midiaAberta.conversa === pessoaId && (
         <GaleriaMidiasPrivadas key={`${pessoaId}:${midiaAberta.id}`} inicialId={midiaAberta.id} midias={midiasGaleria} aoFechar={fecharGaleria} />
       )}

@@ -1,35 +1,208 @@
+.mensagens-privadas-header {
+    height: 76px;
+    padding: 0 20px;
+}
+
+.mensagens-privadas-header .barra-menu {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
+
+.mensagens-privadas-header .lado-esquerdo {
+    min-width: 0;
+}
+
+.mensagens-privadas-header .area-logo-site p {
+    font-size: 0.9rem;
+}
+
 .mensagens-privadas-page.mp-organizado {
     width: 100%;
     min-height: 0;
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: clamp(270px, 24vw, 340px) minmax(0, 1fr);
     background: #0f0f10;
     border: 0;
 }
 
 .mp-organizado .mensagens-privadas-lista,
 .mp-organizado .mensagens-privadas-lista > header {
-    background: #0a0a0b;
+    background: #111113;
+}
+
+.mp-organizado .mensagens-privadas-lista {
+    padding: 0 10px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #3b3b3d transparent;
+}
+
+.mp-organizado .mensagens-privadas-lista > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px 8px;
+    margin: 0 -10px 12px;
+    padding: 24px 20px 18px;
+}
+
+.mp-sobretitulo {
+    color: #a4a4ab;
+    font: 600 0.65rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.mp-organizado .mensagens-privadas-lista h1 {
+    margin-top: 4px;
+    font-size: 1.25rem;
+}
+
+.mp-lista-titulo p {
+    margin: 6px 0 0;
+    color: #96969e;
+    font: 400 0.72rem/1.5 'Poppins', sans-serif;
+}
+
+.mp-organizado .mensagens-privadas-lista > header > .mp-total-amigos {
+    padding: 5px 8px;
+    color: #bcbcc4;
+    background: #1c1c20;
+    border: 1px solid #303035;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.mp-busca-amigos {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 0 12px;
+    color: #9898a0;
+    background: #19191c;
+    border: 1px solid #303035;
+    border-radius: 8px;
+}
+
+.mp-busca-amigos:focus-within {
+    border-color: #a4a4ab;
+    box-shadow: 0 0 0 2px rgba(164, 164, 171, 0.12);
+}
+
+.mp-busca-amigos input {
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 0;
+    color: #eee;
+    background: transparent;
+    border: 0;
+    font: 400 0.8rem 'Poppins', sans-serif;
+}
+
+.mp-busca-amigos input:focus,
+.mp-busca-amigos input:focus-visible {
+    outline: none;
+    border: 0;
+    box-shadow: none;
+}
+
+.mp-busca-amigos svg,
+.mp-contato-seta,
+.mp-organizado .mensagem-privada-voltar svg,
+.mp-selecione-icone svg {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.mp-contato-seta {
+    color: #777780;
+}
+
+.mp-selecione-icone {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+    place-items: center;
+    color: #ccc;
+    background: #1c1c20;
+    border: 1px solid #333338;
+    border-radius: 18px;
+}
+
+.mp-selecione-icone svg {
+    width: 28px;
+    height: 28px;
 }
 
 .mp-organizado .mensagens-privadas-conversa {
     min-width: 0;
-    background: #0f0f10;
+    background: radial-gradient(ellipse at 50% 0%, #18181b, transparent 65%), #0f0f10;
     overflow: hidden;
 }
 
 .mp-organizado .mensagem-privada-cabecalho {
-    min-height: 64px;
-    background: #151517;
+    flex: 0 0 auto;
+    min-height: 76px;
+    padding: 14px 24px;
+    background: #141416;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
+.mp-organizado .mensagem-privada-cabecalho > div {
+    flex: 1;
+}
+
+.mp-organizado .mensagem-privada-cabecalho strong {
+    font-size: 0.9rem;
+}
+
+.mp-organizado .mensagem-privada-cabecalho > div > span {
+    color: #aaaab1;
+    font-size: 0.72rem;
+}
+
+.mp-organizado .mensagem-privada-perfil,
+.mp-organizado .mensagem-privada-voltar {
+    flex-shrink: 0;
+    min-height: 44px;
+    border-radius: 8px;
+}
+
 .mp-organizado .mensagem-privada-contato {
-    min-height: 64px;
+    width: 100%;
+    min-height: 74px;
+    margin-bottom: 4px;
+    padding: 12px;
     border-bottom: 0;
+    border-radius: 10px;
+    transition: background 180ms ease;
+}
+
+.mp-organizado .mensagem-privada-contato.ativo {
+    background: #252529;
+    box-shadow: inset 2px 0 #bcbcc4;
+}
+
+.mp-organizado .mensagem-privada-contato strong {
+    font-size: 0.82rem;
+}
+
+.mp-organizado .mensagem-privada-contato small {
+    font-size: 0.7rem;
 }
 
 .mp-organizado .mensagens-privadas-historico {
-    padding: 16px 24px;
+    padding: 20px max(24px, calc((100% - 960px) / 2));
     gap: 0;
     overscroll-behavior: contain;
 }
@@ -102,7 +275,7 @@
     flex-direction: column;
     gap: 4px;
     min-width: 0;
-    max-width: min(76%, 560px);
+    max-width: min(calc(100% - 48px), 560px);
 }
 
 .mp-autor-nome {
@@ -113,15 +286,16 @@
 
 .mp-organizado .mensagem-privada-balao {
     max-width: 100%;
-    padding: 8px 12px 6px;
-    background: #1d1d20;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 4px 14px 14px 14px;
+    padding: 11px 14px 5px;
+    background: #1c1c20;
+    border: 1px solid #303035;
+    border-radius: 5px 14px 14px 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .mp-organizado .mensagem-privada-balao.propria {
-    background: #262626;
-    border-color: rgba(var(--souls-destaque-rgb), 0.12);
+    background: #28282d;
+    border-color: #3b3b42;
     border-radius: 14px 4px 14px 14px;
 }
 
@@ -136,6 +310,88 @@
 
 .mp-organizado .mensagem-privada-balao p {
     font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+.mp-balao-rodape {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin-top: 5px;
+}
+
+.mp-menu-mensagem {
+    position: fixed;
+    z-index: 1100;
+    display: grid;
+    width: 184px;
+    padding: 5px;
+    background: #202024;
+    border: 1px solid #44444b;
+    border-radius: 10px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.mp-menu-mensagem button {
+    min-height: 44px;
+    padding: 10px 12px;
+    color: #eee;
+    font: 500 0.8rem 'Poppins', sans-serif;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.mp-menu-mensagem button:hover,
+.mp-menu-mensagem button:focus-visible {
+    background: #34343b;
+}
+
+.mp-menu-mensagem button:focus-visible {
+    outline: 2px solid #aaa;
+    outline-offset: -2px;
+}
+
+.mp-menu-mensagem .mp-menu-excluir {
+    color: #ffaaa0;
+}
+
+.mp-organizado .mp-balao-rodape footer {
+    order: 1;
+    flex: 0 0 auto;
+    gap: 6px;
+    margin: 0 0 0 auto;
+}
+
+.mp-organizado .mensagem-privada-balao time,
+.mp-organizado .mensagem-privada-editada {
+    color: #aaaab3;
+    font-size: 0.65rem;
+}
+
+.mp-organizado .mensagem-privada-acoes {
+    gap: 2px;
+    margin: 0;
+}
+
+.mp-organizado .mensagem-privada-resposta-preview {
+    gap: 4px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.22);
+    border-radius: 6px;
+}
+
+.mp-organizado .mensagem-privada-resposta-preview strong {
+    font-size: 0.72rem;
+}
+
+.mp-organizado .mensagem-privada-resposta-preview span {
+    font-size: 0.75rem;
 }
 
 .mp-organizado .mensagem-privada-acoes button {
@@ -146,6 +402,31 @@
 .mp-organizado .mensagem-privada-midia {
     width: min(360px, 100%);
     max-width: 100%;
+}
+
+.mp-organizado .mp-balao-midia {
+    width: 370px;
+    max-width: 100%;
+    padding: 4px;
+}
+
+.mp-organizado .mp-balao-midia .mp-midia-botao,
+.mp-organizado .mp-balao-midia .mp-video {
+    width: 100%;
+}
+
+.mp-organizado .mp-balao-midia .mensagem-privada-midia {
+    width: 100%;
+    height: auto;
+    max-height: none;
+}
+
+.mp-organizado .mp-balao-midia .mensagem-privada-legenda {
+    padding: 0 8px;
+}
+
+.mp-organizado .mp-balao-midia .mp-balao-rodape {
+    padding: 0 4px;
 }
 
 .mp-organizado .mensagem-privada-figurinha {
@@ -164,17 +445,30 @@
     position: relative;
 }
 
-.mp-ampliar-video {
+.mp-video .mensagem-privada-midia {
+    pointer-events: none;
+}
+
+.mp-video-play {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 44px;
-    height: 44px;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    transform: translate(-50%, -50%);
     color: #fff;
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid #777;
-    border-radius: 5px;
-    cursor: pointer;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.mp-video-play svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
 }
 
 .mp-organizado .mensagens-privadas-compositor {
@@ -183,12 +477,17 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: 6px;
-    margin: 8px 16px 0;
+    gap: 4px;
+    margin: 12px max(20px, calc((100% - 960px) / 2)) 0;
     padding: 8px;
-    background: #1c1c1f;
-    border: 1px solid #333;
-    border-radius: 8px;
+    background: #1a1a1d;
+    border: 1px solid #38383e;
+    border-radius: 12px;
+    transition: border-color 180ms ease;
+}
+
+.mp-organizado .mensagens-privadas-compositor:focus-within {
+    border-color: #777780;
 }
 
 .mp-organizado .mensagens-privadas-compositor textarea {
@@ -217,7 +516,7 @@
 }
 
 .mp-organizado .mensagens-privadas-compositor button {
-    border-radius: 5px;
+    border-radius: 8px;
 }
 
 .mp-organizado .mensagens-privadas-compositor :is(.mensagem-privada-anexar, .mensagem-privada-microfone, .mensagem-privada-botao-figurinhas, .mp-enviar) {
@@ -269,7 +568,7 @@
     flex: 0 0 auto;
     justify-content: space-between;
     gap: 8px;
-    padding: 6px 24px max(10px, env(safe-area-inset-bottom));
+    padding: 8px max(24px, calc((100% - 944px) / 2)) max(12px, env(safe-area-inset-bottom));
     color: #999;
     font: 400 0.65rem/1.5 'Poppins', sans-serif;
 }
@@ -327,17 +626,51 @@
 }
 
 @media (max-width: 768px) {
+    .mensagens-privadas-header {
+        height: 65px;
+        padding: 0 12px;
+    }
+
+    .mensagens-privadas-header .area-logo-site p {
+        font-size: 0.72rem;
+        line-height: 1.5;
+    }
+
+    .mensagens-privadas-header .lado-direito {
+        flex-shrink: 0;
+    }
+
     .mensagens-privadas-page.mp-organizado {
         grid-template-columns: minmax(0, 1fr);
         min-height: 0;
     }
 
     .mp-organizado .mensagens-privadas-historico {
-        padding-inline: 12px;
+        padding: 12px;
+    }
+
+    .mp-organizado .mensagem-privada-cabecalho {
+        gap: 8px;
+        min-height: 68px;
+        padding: 10px;
+    }
+
+    .mp-organizado .mensagem-privada-voltar {
+        display: grid;
+        width: 44px;
+        padding: 0;
+        place-items: center;
+        background: transparent;
+        border: 0;
+    }
+
+    .mp-organizado .mensagem-privada-perfil {
+        padding-inline: 10px;
+        font-size: 0.7rem;
     }
 
     .mp-mensagem-corpo {
-        max-width: 85%;
+        max-width: calc(100% - 38px);
     }
 
     .mp-avatar-autor,
@@ -351,11 +684,17 @@
     }
 
     .mp-organizado .mensagens-privadas-compositor {
-        margin-inline: 8px;
+        margin: 8px 10px 0;
     }
 
     .mp-organizado .mensagens-privadas-compositor textarea {
-        flex-basis: calc(100% - 56px);
+        order: 0;
+        flex-basis: 100%;
+        font-size: 1rem;
+    }
+
+    .mp-organizado .mensagens-privadas-compositor > .mensagem-privada-anexar {
+        order: 2;
     }
 
     .mp-organizado .mensagens-privadas-compositor > .mp-enviar {
@@ -374,6 +713,15 @@
 
     .mp-compositor-dica {
         padding-inline: 16px;
+        font-size: 0.65rem;
+    }
+
+    .mp-compositor-dica > span:first-child {
+        display: none;
+    }
+
+    .mp-busca-amigos input {
+        font-size: 1rem;
     }
 
     .mp-organizado .mensagem-privada-acoes button {

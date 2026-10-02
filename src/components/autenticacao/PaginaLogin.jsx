@@ -44,7 +44,6 @@ function PaginaLogin() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const returnTo = location.state?.returnTo === '/chat' ? '/chat' : '/';
-  const veioDoChat = returnTo === '/chat';
   const redefinirSenha = new URLSearchParams(location.search).get('redefinir-senha') === '1';
 
   const [modoCadastro, setModoCadastro] = useState(false);
@@ -336,15 +335,6 @@ function PaginaLogin() {
             ================================================= */}
 
             <div className="form-side caixa-login">
-
-              <button
-                className="btn-filtro autenticacao-voltar"
-                type="button"
-                onClick={() => navigate(returnTo)}
-              >
-                {veioDoChat ? 'Voltar ao chat' : 'Voltar à comunidade'}
-              </button>
-
               <h1 id="titulo-autenticacao">
                 Entrar
               </h1>
@@ -436,6 +426,14 @@ function PaginaLogin() {
                     : 'Entrar'}
                 </button>
 
+                <button
+                  className="btn-switch"
+                  type="button"
+                  onClick={irParaCadastro}
+                >
+                  Ainda não tem conta? <span>Criar conta</span>
+                </button>
+
               </form>
             </div>
 
@@ -445,15 +443,6 @@ function PaginaLogin() {
             ================================================= */}
 
             <div className="form-side caixa-cadastro">
-
-              <button
-                className="btn-filtro autenticacao-voltar"
-                type="button"
-                onClick={() => navigate(returnTo)}
-              >
-                {veioDoChat ? 'Voltar ao chat' : 'Voltar à comunidade'}
-              </button>
-
               <h1>
                 Criar conta
               </h1>
@@ -563,6 +552,13 @@ function PaginaLogin() {
                     : 'Criar conta'}
                 </button>
 
+                <button
+                  className="btn-switch"
+                  type="button"
+                  onClick={irParaLogin}
+                >
+                  Já tem uma conta? <span>Entrar</span>
+                </button>
 
               </form>
 
