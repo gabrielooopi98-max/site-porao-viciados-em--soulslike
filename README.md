@@ -7,9 +7,18 @@ Cinzel fica restrita aos titulos H1 e H2 das secoes da pagina principal,
 sem afetar os dialogos abertos nela.
 
 O fundo global usa tons de carvao e gradientes suaves, sem tramas diagonais.
-Posts, builds e sobre compartilham um fundo de pedra com um toque discreto
-de brasa (opacidade 0.018). O laranja continua nos controles e destaques,
+Posts, builds e sobre compartilham um fundo de pedra com luz discreta
+em cinza (opacidade 0.018). A paleta usa preto, branco e cinza:
+cinza claro (#d4d4d4) nos controles e destaques e branco suave (#f0f0f0) no hover,
 mantendo o conteudo em primeiro plano no desktop e no celular.
+As variaveis `--souls-destaque`, `--souls-destaque-rgb`,
+`--souls-destaque-hover` e `--souls-destaque-suave` centralizam a cor,
+as transparencias e os estados de interacao, incluindo o chat.
+Fundos neutros, cores de erro/sucesso e artes dos jogos sao preservados.
+Posts, builds, ranking e sobre usam a mesma divisoria decorativa:
+Dark Sign em cinza entre linhas suaves, com largura responsiva.
+Os sobretitulos Comunidade e Builds da comunidade e seus tracos laterais usam
+laranja (#f07818) como detalhe pontual de identidade.
 
 ## Cards de posts
 
@@ -18,10 +27,10 @@ autor, data e categoria no cabecalho, titulo e resumo acima da previa de
 midia opcional, seguidos pelas acoes e contagem de visualizacoes. Posts sem midia
 priorizam o texto, sem imagem de preenchimento. O layout usa bordas neutras
 e espacamento compacto. O hover acompanha os cards de build: elevacao de 2px,
-sombra, cantos em brasa e zoom de 4% na midia, respeitando movimento reduzido.
+sombra, cantos claros e zoom de 4% na midia, respeitando movimento reduzido.
 O rodape destaca as interacoes
 com borda superior e fundo neutros discretos, botoes com area de toque
-de 44px e hover em cinza; o laranja fica reservado ao estado curtido;
+de 44px e hover em cinza; o estado curtido usa destaque em cinza claro;
 no celular, a home preserva a navegacao horizontal.
 
 A secao da home tem largura limitada e apresentacao centralizada sobre
@@ -50,11 +59,56 @@ Os cards de build seguem uma ficha: jogo e nome no topo, midia opcional no
 meio e nivel, foco e dano agrupados antes do resumo. Apenas atributos
 preenchidos aparecem. O rodape separa autoria e interacoes em duas linhas,
 sem disputar espaco, com botoes de 44px. Builds sem midia priorizam a ficha,
-sem capa de preenchimento. Home e perfil usam o mesmo componente.
+sem capa de preenchimento. Home e perfil usam o mesmo componente,
+com capa 3:2 e espacamentos compactos, preservando a leitura dos atributos
+e a area de toque de 44px nas interacoes.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Ranking da comunidade
+
+A secao segue a composicao dos posts: largura limitada, titulo centralizado
+e cenario da lua de Bloodborne integrado ao fundo, sem moldura externa.
+Linhas cinza com extremidades graduais e o simbolo Dark Sign central em cinza
+separam a area de builds do ranking, adaptando sua largura a tela.
+O fundo proprio mistura preto e carvao, com luz cinza suave perto da lua
+e transicoes escuras nas extremidades, sem textura ou cores saturadas.
+A arte em cinza se funde ao fundo com composicao screen e mascaras graduais
+amplas nas quatro bordas, evitando um recorte retangular visivel.
+O podio destaca os tres primeiros, com o lider ao centro no desktop.
+O titulo da classificacao fica centralizado acima do podio, com um pequeno
+simbolo de posicoes entre linhas discretas e um traco laranja abaixo do titulo.
+No celular, os destaques ficam em ordem de classificacao em linhas compactas;
+as demais posicoes usam uma lista com nome, avatar e pontos.
+A paleta e neutra, com laranja apenas no sobretitulo e tracos laterais.
+O ranking ainda e uma previa visual com dados de exemplo, sem aviso visual
+na interface.
+Os antigos filtros sem funcionamento foram removidos; nao ha classificacao
+real nem navegacao para perfis ficticios nesta etapa.
+
+## Chat para amigos
+
+O chat privado acompanha o visual do global: lista de amigos escura,
+bolhas neutras, autoria agrupada em intervalos de cinco minutos,
+separadores por dia e compositor com anexos, voz, figurinhas e envio por icone.
+Enter envia, Shift + Enter quebra a linha e Escape cancela resposta/edicao.
+O texto cresce ate 140px, sem sobrepor o historico, mantendo o limite de
+2000 caracteres ja existente no privado.
+Novas mensagens nao puxam a rolagem enquanto o usuario le o historico:
+um atalho leva ao fim. Imagens, videos e figurinhas abrem uma galeria
+com miniaturas, setas, Escape e restauracao do foco.
+O player de audio e compartilhado com o global; o privado preserva
+a conversao de codecs incompativeis, URLs assinadas, recibos de leitura,
+presenca e acesso exclusivo entre amizades aceitas.
+
 ## Compartilhamento e favoritos
+
+O atalho de mensagens do header usa um icone de conversa com contador de
+mensagens recebidas ainda sem `lida_em`. O contador aparece apenas acima de
+zero, limita a exibicao a 99+ e atualiza por Realtime, ao voltar a janela
+e ao confirmar leituras no chat. Falhas aparecem com um indicador de erro
+e descricao acessivel, sem mostrar uma contagem falsa de zero.
+Usa a tabela e as politicas existentes de mensagens privadas.
 
 Posts e builds oferecem compartilhar e salvar no cabecalho, em todas as
 superficies que usam os cards. Compartilhar abre um dialogo com copia de link
@@ -92,21 +146,21 @@ ou a conversa de onde abriu a publicacao.
 Perfil pessoal e publico usam paineis neutros, sem textura, glow ou fundos
 saturados. Avatar e estatisticas ficam juntos; seguir, amizade e conversa
 mantem os fluxos existentes no perfil publico.
-O laranja aparece apenas nos subtitulos com traco, setas dos atalhos e
+O cinza claro aparece apenas nos subtitulos com traco, setas dos atalhos e
 detalhes de botoes sociais e filtros ativos, sem tingir os paineis.
 O perfil pessoal oferece
 atalhos para favoritos, mensagens privadas e chat da comunidade.
 Os atalhos ficam abaixo do painel do perfil e acima da pontuacao, em uma barra de botoes compactos com icone e nome em peso 700,
 sem descricoes, setas ou caixas de dashboard. No celular, os atalhos ficam
 em uma coluna de botoes compactos de largura igual, com area de toque de 48px;
-bordas e icones ganham laranja no hover, sem elevacao ou sombra.
+bordas e icones ficam mais claros no hover, sem elevacao ou sombra.
 Publicacoes tem grade responsiva e filtros neutros; pontuacao aparece em faixa secundaria.
 Email e sair da conta ficam no rodape pessoal, separados das acoes sociais.
 
 ## Painel de criar post
 
 
-O formulario usa a paleta preta/cinza do site, laranja brasa nos destaques
+O formulario usa a paleta preta/cinza do site, cinza claro nos destaques
 e titulo em Poppins. Agrupa titulo e jogo no desktop, com uma coluna no
 celular, convite para conversar, campos opcionais e selecao de imagens/videos
 com previa e remocao individual. Mantem o envio existente e mostra progresso

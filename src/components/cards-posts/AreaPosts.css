@@ -38,7 +38,7 @@
 .posts-sobretitulo {
     display: block;
     margin-bottom: 10px;
-    color: var(--souls-brasa);
+    color: var(--souls-destaque);
     font: 600 0.7rem/1.4 'Poppins', sans-serif;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -51,7 +51,11 @@
     width: 24px;
     height: 1px;
     margin: 0 12px 3px;
-    background: var(--souls-brasa);
+    background: currentColor;
+}
+
+:is(.area-posts-comunidade, .area-builds-comunidade) .posts-sobretitulo {
+    color: #f07818;
 }
 
 .posts-header h2 {
@@ -82,15 +86,15 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    background: var(--souls-brasa);
-    border: 1px solid var(--souls-brasa);
+    background: var(--souls-destaque);
+    border: 1px solid var(--souls-destaque);
     border-radius: 4px;
 }
 
 :is(.area-posts-comunidade, .area-builds-comunidade) .posts-criar:hover {
     color: #080808;
-    background: #ff8a2d;
-    border-color: #ff8a2d;
+    background: var(--souls-destaque-hover);
+    border-color: var(--souls-destaque-hover);
 }
 
 .posts-criar svg,
@@ -161,7 +165,7 @@
     flex: 0 0 auto;
     width: 3px;
     height: 18px;
-    background: var(--souls-brasa);
+    background: var(--souls-destaque);
     border-radius: 1px;
 }
 

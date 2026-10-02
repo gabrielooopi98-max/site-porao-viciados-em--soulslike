@@ -137,8 +137,8 @@
 }
 
 .criar-post-comunidade :is(input[type="text"], input[type="number"], select, textarea):focus {
-    border-color: var(--souls-brasa);
-    box-shadow: 0 0 0 3px rgba(240, 120, 24, 0.1);
+    border-color: var(--souls-destaque);
+    box-shadow: 0 0 0 3px rgba(var(--souls-destaque-rgb), 0.1);
     outline: none;
 }
 
@@ -200,7 +200,7 @@
 
 .criar-post-upload:hover,
 .criar-post-upload:focus-within {
-    border-color: var(--souls-brasa);
+    border-color: var(--souls-destaque);
 }
 
 .criar-post-anexos {
@@ -274,15 +274,15 @@
     padding: 10px 24px;
     color: #0d0d0d;
     font: 600 0.82rem 'Poppins', sans-serif;
-    background: var(--souls-brasa);
-    border: 1px solid var(--souls-brasa);
+    background: var(--souls-destaque);
+    border: 1px solid var(--souls-destaque);
     border-radius: 6px;
     cursor: pointer;
 }
 
 .criar-post-publicar:hover:not(:disabled) {
-    background: #ff8a2d;
-    border-color: #ff8a2d;
+    background: var(--souls-destaque-hover);
+    border-color: var(--souls-destaque-hover);
 }
 
 .criar-post-comunidade button:disabled,

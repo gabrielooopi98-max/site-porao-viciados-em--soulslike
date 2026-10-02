@@ -1,0 +1,422 @@
+.area-ranking.ranking-comunidade {
+    position: relative;
+    margin-top: 0;
+    padding: 0 24px 56px;
+    background:
+        radial-gradient(ellipse at 50% 200px, rgba(160, 160, 160, 0.035), transparent 480px),
+        linear-gradient(180deg, #050505 0%, #090909 48%, #050505 100%);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.area-ranking.ranking-comunidade::before {
+    content: none;
+}
+
+.ranking-conteudo {
+    width: min(100%, 1180px);
+    margin-inline: auto;
+}
+
+.ranking-header {
+    position: relative;
+    min-height: clamp(390px, calc(43vw - 110px), 450px);
+    padding: 92px 24px 28px;
+    overflow: hidden;
+}
+
+.ranking-header-texto {
+    position: relative;
+    z-index: 1;
+    max-width: 620px;
+    margin-inline: auto;
+    text-align: center;
+    text-shadow: 0 2px 8px #000;
+}
+
+.ranking-sobretitulo {
+    display: block;
+    margin-bottom: 10px;
+    color: #f07818;
+    font: 600 0.7rem/1.4 'Poppins', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ranking-sobretitulo::before,
+.ranking-sobretitulo::after {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    margin: 0 12px 3px;
+    background: currentColor;
+}
+
+.ranking-header h2 {
+    margin: 0;
+    font-size: clamp(1.7rem, 2.9vw, 2.45rem);
+    line-height: 1.35;
+    letter-spacing: 0;
+}
+
+.ranking-header p {
+    max-width: 440px;
+    margin: 12px auto 0;
+    color: #d0d0d0;
+    font: 600 0.85rem/1.75 'Poppins', sans-serif;
+}
+
+.ranking-ilustracao {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent), linear-gradient(180deg, transparent, #000 24%, #000 58%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent), linear-gradient(180deg, transparent, #000 24%, #000 58%, transparent);
+    mask-composite: intersect;
+}
+
+.ranking-ilustracao .imagem-decorativa-adiada {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    aspect-ratio: auto;
+}
+
+.ranking-ilustracao .ranking-cenario {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: max(110%, 840px);
+    height: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    image-rendering: pixelated;
+    filter: grayscale(1);
+    opacity: 0.8;
+}
+
+.ranking-apresentacao {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 8px 0 24px;
+    text-align: center;
+}
+
+.ranking-apresentacao-detalhe {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #bcbcbc;
+}
+
+.ranking-apresentacao-detalhe::before,
+.ranking-apresentacao-detalhe::after {
+    content: '';
+    width: clamp(40px, 8vw, 80px);
+    height: 1px;
+    background: #383838;
+}
+
+.ranking-apresentacao-detalhe svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ranking-apresentacao h3 {
+    color: #ededed;
+    font: 700 clamp(1.35rem, 2.5vw, 1.75rem)/1.5 'Poppins', sans-serif;
+    letter-spacing: 0;
+}
+
+.ranking-apresentacao h3::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    margin: 10px auto;
+    background: #f07818;
+}
+
+.ranking-podio {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: 16px;
+    padding: 0;
+    margin: 12px 0 24px;
+    list-style: none;
+}
+
+.ranking-destaque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    padding: 18px 20px 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, #151515, #0c0c0c);
+    border: 1px solid #333;
+    border-radius: 6px;
+}
+
+.ranking-destaque-1 {
+    grid-column: 2;
+    grid-row: 1;
+    padding-top: 24px;
+    border-top: 2px solid #d4d4d4;
+}
+
+.ranking-destaque-2 {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.ranking-destaque-3 {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.ranking-destaque-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-height: 24px;
+    margin-bottom: 16px;
+}
+
+.ranking-colocacao {
+    color: #bcbcbc;
+    font: 700 0.72rem/1.4 'Poppins', sans-serif;
+}
+
+.ranking-coroa {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: #dedede;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ranking-avatar {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+    object-fit: cover;
+    background: #1b1b1b;
+    border: 2px solid #555;
+    border-radius: 50%;
+}
+
+.ranking-destaque-1 .ranking-avatar {
+    width: 76px;
+    height: 76px;
+    border-color: #aaa;
+}
+
+.ranking-jogador-nome {
+    min-width: 0;
+    color: #ededed;
+    font: 700 0.9rem/1.5 'Poppins', sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.ranking-destaque .ranking-jogador-nome {
+    text-align: center;
+}
+
+.ranking-destaque-pontos {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 7px;
+    align-self: stretch;
+    margin-top: 20px;
+    padding: 12px 0;
+    border-top: 1px solid #2b2b2b;
+}
+
+.ranking-destaque-pontos strong {
+    color: #f0f0f0;
+    font: 700 1.5rem/1.3 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-destaque-pontos span {
+    color: #999;
+    font: 400 0.72rem/1.4 'Poppins', sans-serif;
+}
+
+.ranking-lista-painel {
+    overflow: hidden;
+    border: 1px solid #2b2b2b;
+    border-radius: 6px;
+    background: #0c0c0c;
+}
+
+.ranking-lista-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #999;
+    font: 600 0.68rem/1.5 'Poppins', sans-serif;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-lista {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ranking-linha {
+    display: grid;
+    grid-template-columns: 32px 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    min-height: 72px;
+    padding: 12px 20px;
+}
+
+.ranking-linha + .ranking-linha {
+    border-top: 1px solid #242424;
+}
+
+.ranking-numero {
+    color: #929292;
+    font: 600 0.85rem/1.4 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-linha img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border: 1px solid #444;
+    border-radius: 50%;
+}
+
+.ranking-linha-pontos {
+    color: #ddd;
+    font: 700 0.9rem/1.5 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ranking-linha-pontos span {
+    color: #999;
+    font-size: 0.68rem;
+    font-weight: 400;
+}
+
+@media (max-width: 768px) {
+    .area-ranking.ranking-comunidade {
+        padding: 0 16px 40px;
+    }
+
+    .ranking-header {
+        min-height: 390px;
+        padding: 82px 0 24px;
+    }
+
+    .ranking-header h2 {
+        font-size: clamp(1.6rem, 5.5vw, 2rem);
+    }
+
+    .ranking-podio {
+        gap: 10px;
+    }
+
+    .ranking-destaque {
+        padding-inline: 12px;
+    }
+}
+
+@media (max-width: 560px) {
+    .ranking-podio {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ranking-destaque {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        gap: 4px 12px;
+        padding: 16px;
+    }
+
+    .ranking-destaque-1,
+    .ranking-destaque-2,
+    .ranking-destaque-3 {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .ranking-destaque-topo {
+        grid-column: 1 / -1;
+        margin-bottom: 8px;
+    }
+
+    .ranking-destaque .ranking-avatar {
+        grid-row: 2;
+        width: 52px;
+        height: 52px;
+        margin: 0;
+    }
+
+    .ranking-destaque .ranking-jogador-nome {
+        align-self: center;
+        text-align: left;
+    }
+
+    .ranking-destaque-pontos {
+        grid-column: 3;
+        grid-row: 2;
+        flex-direction: column;
+        align-items: center;
+        align-self: center;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .ranking-destaque-pontos strong {
+        font-size: 1.2rem;
+    }
+
+    .ranking-linha {
+        grid-template-columns: 24px 32px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .ranking-linha img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .ranking-linha .ranking-jogador-nome {
+        font-size: 0.78rem;
+    }
+
+    .ranking-lista-cabecalho {
+        padding-inline: 12px;
+    }
+}

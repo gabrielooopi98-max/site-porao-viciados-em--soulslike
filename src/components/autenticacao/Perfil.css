@@ -58,7 +58,7 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: var(--souls-brasa);
+    color: var(--souls-destaque);
     background: transparent;
     border: 0;
     box-shadow: none;
@@ -115,20 +115,20 @@
 }
 
 .perfil-organizado .perfil-filtros .btn-filtro[aria-pressed='true'] {
-    color: var(--souls-brasa);
-    background: rgba(240, 120, 24, 0.06);
-    border-color: rgba(240, 120, 24, 0.4);
+    color: var(--souls-destaque);
+    background: rgba(var(--souls-destaque-rgb), 0.06);
+    border-color: rgba(var(--souls-destaque-rgb), 0.4);
 }
 
 .perfil-organizado .perfil-acoes .btn-criar-post {
-    color: #f2c39f;
-    border-color: rgba(240, 120, 24, 0.4);
+    color: var(--souls-destaque-suave);
+    border-color: rgba(var(--souls-destaque-rgb), 0.4);
 }
 
 .perfil-organizado .perfil-acoes .btn-criar-post:hover:not(:disabled) {
     color: #f0f0f0;
-    background: rgba(240, 120, 24, 0.08);
-    border-color: var(--souls-brasa);
+    background: rgba(var(--souls-destaque-rgb), 0.08);
+    border-color: var(--souls-destaque);
 }
 
 .perfil-atalhos {
@@ -156,7 +156,7 @@
     width: 17px;
     height: 17px;
     fill: none;
-    stroke: var(--souls-brasa);
+    stroke: var(--souls-destaque);
     stroke-width: 1.7;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -164,8 +164,8 @@
 
 .perfil-organizado .perfil-acoes .perfil-editar:hover:not(:disabled) {
     color: #ffffff;
-    background: rgba(240, 120, 24, 0.08);
-    border-color: var(--souls-brasa);
+    background: rgba(var(--souls-destaque-rgb), 0.08);
+    border-color: var(--souls-destaque);
 }
 
 .perfil-atalhos button {
@@ -188,7 +188,7 @@
 .perfil-atalhos button:hover {
     color: #ffffff;
     background: #202020;
-    border-color: var(--souls-brasa);
+    border-color: var(--souls-destaque);
 }
 
 .perfil-atalho-icone {
@@ -215,7 +215,7 @@
 }
 
 .perfil-atalhos button:hover .perfil-atalho-icone {
-    color: var(--souls-brasa);
+    color: var(--souls-destaque);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -281,7 +281,7 @@
 }
 
 .perfil-organizado button:focus-visible {
-    outline: 2px solid var(--souls-brasa);
+    outline: 2px solid var(--souls-destaque);
     outline-offset: 3px;
 }
 

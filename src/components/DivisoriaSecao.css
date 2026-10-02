@@ -1,0 +1,42 @@
+.container-site > :is(.area-posts-comunidade, .area-builds-comunidade, .area-ranking, .area-sobre-site) {
+    position: relative;
+}
+
+.container-site > .area-sobre-site {
+    border-top: 0;
+}
+
+.divisoria-secao {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 3vw, 32px);
+    width: min(82%, 1000px);
+    height: 40px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.divisoria-secao::before,
+.divisoria-secao::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #555);
+}
+
+.divisoria-secao::after {
+    background: linear-gradient(90deg, #555, transparent);
+}
+
+.divisoria-secao img {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    filter: grayscale(1);
+    opacity: 0.85;
+}

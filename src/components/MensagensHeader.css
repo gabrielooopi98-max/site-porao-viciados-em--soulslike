@@ -1,0 +1,40 @@
+.lado-direito .btn-mensagens-header {
+    position: relative;
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    padding: 0;
+    border-radius: 5px;
+}
+
+.btn-mensagens-header svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.btn-mensagens-header strong {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    display: grid;
+    min-width: 20px;
+    height: 20px;
+    place-items: center;
+    padding: 0 4px;
+    color: #080808;
+    font: 700 0.62rem/1 'Poppins', sans-serif;
+    background: var(--souls-destaque);
+    border: 2px solid var(--souls-carvao);
+    border-radius: 999px;
+}
+
+.btn-mensagens-header strong.mensagens-header-erro {
+    background: #ffaaa0;
+}

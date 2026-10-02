@@ -45,7 +45,7 @@
     min-width: 104px;
     text-align: center;
     background: rgba(0, 0, 0, 0.45);
-    border-color: rgba(240, 120, 24, 0.4);
+    border-color: rgba(var(--souls-destaque-rgb), 0.4);
 }
 
 .detalhe-build-nivel dd {
@@ -62,7 +62,7 @@
 }
 
 .detalhe-build-nivel dd small {
-    color: #f2a46a;
+    color: var(--souls-destaque-suave);
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -84,7 +84,7 @@
     height: 34px;
     place-items: center;
     align-self: center;
-    color: rgba(240, 150, 90, 0.9);
+    color: rgba(var(--souls-destaque-rgb), 0.9);
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
 }

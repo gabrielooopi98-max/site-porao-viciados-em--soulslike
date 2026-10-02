@@ -5,6 +5,10 @@ import { supabase } from '../services/supabase';
 import { gerarIdUnico } from '../gerarIdUnico';
 import TextoMensagemPrivada from './TextoMensagemPrivada';
 import { consultarAmizadesAceitas, obterAmigos } from '../services/amizades';
+import AudioMensagemChat from './AudioMensagemChat';
+import GaleriaMidiasPrivadas from './GaleriaMidiasPrivadas';
+import { organizarMensagens, rotuloDoDia } from './organizarMensagensChat';
+import './MensagensPrivadas.css';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,9 +29,14 @@ function AudioPrivado({ src }) {
   const [erroConversao, setErroConversao] = useState('');
   const urlConvertidaRef = useRef('');
   const tentativaConversaoRef = useRef(false);
+  const ativoRef = useRef(true);
 
-  useEffect(() => () => {
-    if (urlConvertidaRef.current) URL.revokeObjectURL(urlConvertidaRef.current);
+  useEffect(() => {
+    ativoRef.current = true;
+    return () => {
+      ativoRef.current = false;
+      if (urlConvertidaRef.current) URL.revokeObjectURL(urlConvertidaRef.current);
+    };
   }, []);
 
   async function tratarErroAudio(evento) {
@@ -42,16 +51,18 @@ function AudioPrivado({ src }) {
         const arquivo = await resposta.blob();
         const { normalizarAudio } = await import('../services/normalizarVideo');
         const convertido = await normalizarAudio(arquivo);
+        if (!ativoRef.current) return;
         const url = URL.createObjectURL(convertido);
         urlConvertidaRef.current = url;
         setAudioConvertido(url);
         setCodigoErro(null);
       } catch (erroConversao) {
         console.error('Não foi possível converter o áudio para reprodução:', erroConversao);
+        if (!ativoRef.current) return;
         setErroConversao(erroConversao.message || 'Não foi possível converter o arquivo.');
         setCodigoErro(codigo);
       } finally {
-        setConvertendo(false);
+        if (ativoRef.current) setConvertendo(false);
       }
       return;
     }
@@ -72,14 +83,9 @@ function AudioPrivado({ src }) {
   }
 
   return (
-    <audio
-      key={src}
-      className="mensagem-privada-audio"
+    <AudioMensagemChat
+      key={audioConvertido || src}
       src={audioConvertido || src}
-      controls
-      playsInline
-      preload="metadata"
-      aria-label="Mensagem de áudio"
       onError={tratarErroAudio}
     />
   );
@@ -174,6 +180,10 @@ function MensagensPrivadas() {
   const [atividadeAmigo, setAtividadeAmigo] = useState('');
   const [amigosOnline, setAmigosOnline] = useState({});
   const [erro, setErro] = useState('');
+  const [novasMensagens, setNovasMensagens] = useState(0);
+  const [midiaAberta, setMidiaAberta] = useState(null);
+  const rolagemRef = useRef({ conversa: null, ids: new Set(), noFim: true, forcarFim: false });
+  const textoRef = useRef(null);
   const listaRef = useRef(null);
   const arquivoInputRef = useRef(null);
   const figurinhaInputRef = useRef(null);
@@ -207,6 +217,7 @@ function MensagensPrivadas() {
       return;
     }
     const leituras = new Map((data ?? []).map((mensagem) => [mensagem.id, mensagem.lida_em]));
+    if (leituras.size) window.dispatchEvent(new Event('mensagens-privadas-lidas'));
     setMensagens((atuais) => atuais.map((mensagem) => (
       leituras.has(mensagem.id) ? { ...mensagem, lida_em: leituras.get(mensagem.id) } : mensagem
     )));
@@ -387,6 +398,7 @@ function MensagensPrivadas() {
           if (ativo) setErro('Não foi possível carregar a mídia desta conversa.');
           return;
         }
+        if (!ativo) return;
         setMensagens((atuais) => (
           atuais.some((item) => item.id === mensagemAssinada.id)
             ? atuais
@@ -440,6 +452,7 @@ function MensagensPrivadas() {
             if (!combinado.some((item) => item.id === mensagem.id)) combinado.push(mensagem);
           });
           combinado.sort((a, b) => new Date(a.criado_em) - new Date(b.criado_em));
+          if (!ativo) return;
           setMensagens(combinado);
           marcarComoLidas(combinado.filter((mensagem) => mensagem.destinatario_id === usuarioId && !mensagem.lida_em));
         }
@@ -465,6 +478,16 @@ function MensagensPrivadas() {
     () => mensagensCarregadasPara === pessoaId ? mensagens : [],
     [mensagens, mensagensCarregadasPara, pessoaId]
   );
+  const itensMensagens = organizarMensagens(mensagensVisiveis, 'remetente_id');
+  const midiasGaleria = mensagensVisiveis.flatMap((mensagem) => {
+    const url = mensagem.midia_url || mensagem.figurinha?.midia_url;
+    return url ? [{
+      id: mensagem.id, url,
+      tipo: mensagem.midia_tipo || mensagem.figurinha?.midia_tipo,
+      nome: mensagem.midia_nome || mensagem.figurinha?.midia_nome || 'Mídia da conversa',
+    }] : [];
+  });
+  const fecharGaleria = useCallback(() => setMidiaAberta(null), []);
 
   function navegarConversa(destino) {
     setRespondendoA(null);
@@ -476,13 +499,47 @@ function MensagensPrivadas() {
     setArquivoSelecionado(null);
     if (arquivoInputRef.current) arquivoInputRef.current.value = '';
     setFigurinhasAbertas(false);
+    setMidiaAberta(null);
     setErro('');
     navigate(destino);
   }
 
   useEffect(() => {
-    if (listaRef.current) listaRef.current.scrollTop = listaRef.current.scrollHeight;
-  }, [mensagensVisiveis, carregandoMensagens]);
+    const lista = listaRef.current;
+    if (!lista || carregandoMensagens) return;
+    const estado = rolagemRef.current;
+    const inicial = estado.conversa !== pessoaId;
+    const recebidas = inicial ? 0 : mensagensVisiveis.filter((mensagem) => !estado.ids.has(mensagem.id) && mensagem.destinatario_id === usuarioId).length;
+    if (inicial || estado.noFim || estado.forcarFim) {
+      lista.scrollTop = lista.scrollHeight;
+      estado.noFim = true;
+      estado.forcarFim = false;
+      setNovasMensagens(0);
+    } else if (recebidas) setNovasMensagens((valor) => valor + recebidas);
+    estado.conversa = pessoaId;
+    estado.ids = new Set(mensagensVisiveis.map((mensagem) => mensagem.id));
+  }, [mensagensVisiveis, carregandoMensagens, pessoaId, usuarioId]);
+
+  function manterNoFim() {
+    if (listaRef.current && rolagemRef.current.noFim) listaRef.current.scrollTop = listaRef.current.scrollHeight;
+  }
+
+  useEffect(() => {
+    const lista = listaRef.current;
+    if (!lista || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(() => {
+      if (rolagemRef.current.noFim) lista.scrollTop = lista.scrollHeight;
+    });
+    observer.observe(lista);
+    return () => observer.disconnect();
+  }, [pessoaId, carregandoMensagens]);
+
+  useEffect(() => {
+    const campo = textoRef.current;
+    if (!campo) return;
+    campo.style.height = 'auto';
+    campo.style.height = `${Math.min(campo.scrollHeight, 140)}px`;
+  }, [texto, pessoaId, gravandoAudio]);
 
   function limparArquivoSelecionado() {
     if (previewRef.current) URL.revokeObjectURL(previewRef.current);
@@ -716,6 +773,7 @@ function MensagensPrivadas() {
         mensagemCriada = data;
         mensagemSalva = true;
         const [mensagemAssinada] = await assinarAudios([data]);
+        if (!salvandoEdicao) rolagemRef.current.forcarFim = true;
         setMensagens((atuais) => (
           atuais.some((item) => item.id === data.id)
             ? atuais.map((item) => item.id === data.id ? mensagemAssinada : item)
@@ -797,6 +855,7 @@ function MensagensPrivadas() {
       }
 
       const [mensagemComAudio] = await assinarAudios([data]);
+      rolagemRef.current.forcarFim = true;
       setMensagens((atuais) => (
         atuais.some((item) => item.id === data.id)
           ? atuais
@@ -932,7 +991,7 @@ function MensagensPrivadas() {
           </div>
         </div>
       </header>
-      <main className={`mensagens-privadas-page${amigoSelecionado ? ' com-conversa' : ''}`}>
+      <main className={`mensagens-privadas-page mp-organizado${amigoSelecionado ? ' com-conversa' : ''}`}>
         <aside className="mensagens-privadas-lista">
           <header><h1>Conversas</h1><span>{amigos.length} amigos</span></header>
           {carregandoAmizades ? (
@@ -976,12 +1035,27 @@ function MensagensPrivadas() {
                 </div>
                 <button type="button" className="mensagem-privada-perfil" onClick={() => navigate(`/perfil/${amigoSelecionado.id}`)}>Ver perfil</button>
               </header>
-              <div className="mensagens-privadas-historico" ref={listaRef} role="log" aria-live="polite">
+              <div className="mensagens-privadas-historico" ref={listaRef} role="log" aria-live="polite" onScroll={(evento) => {
+                const lista = evento.currentTarget;
+                rolagemRef.current.noFim = lista.scrollHeight - lista.scrollTop - lista.clientHeight <= 36;
+                if (rolagemRef.current.noFim) setNovasMensagens(0);
+              }}>
                 {carregandoMensagens ? (
                   <p className="mensagens-privadas-vazio">Carregando conversa...</p>
                 ) : mensagens.length ? (
-                  mensagensVisiveis.map((mensagem) => (
-                    <article className={`mensagem-privada-balao${mensagem.remetente_id === usuarioId ? ' propria' : ''}`} key={mensagem.id} data-mensagem-privada-id={mensagem.id}>
+                  itensMensagens.map(({ mensagem, novoDia, agrupada }) => (
+                    <div className="mp-mensagem-bloco" key={mensagem.id}>
+                      {novoDia && <div className="mp-dia" role="separator"><span>{rotuloDoDia(mensagem.criado_em)}</span></div>}
+                      <div className={`mp-mensagem-linha${mensagem.remetente_id === usuarioId ? ' propria' : ''}${agrupada ? ' agrupada' : ''}`}>
+                        {mensagem.remetente_id !== usuarioId && (
+                          agrupada ? <span className="mp-avatar-espaco" aria-hidden="true" /> :
+                            <button className="mp-avatar-autor" type="button" onClick={() => navigate(`/perfil/${amigoSelecionado.id}`)} aria-label={`Abrir perfil de ${amigoSelecionado.nome || 'amigo'}`}>
+                              {amigoSelecionado.avatar ? <img src={amigoSelecionado.avatar} alt="" /> : <span>{(amigoSelecionado.nome || 'A').charAt(0)}</span>}
+                            </button>
+                        )}
+                        <div className="mp-mensagem-corpo">
+                          {!agrupada && mensagem.remetente_id !== usuarioId && <span className="mp-autor-nome">{amigoSelecionado.nome || 'Amigo'}</span>}
+                    <article className={`mensagem-privada-balao${mensagem.remetente_id === usuarioId ? ' propria' : ''}${respondendoA?.id === mensagem.id ? ' respondendo' : ''}`} data-mensagem-privada-id={mensagem.id} tabIndex={0}>
                       {mensagem.resposta_mensagem_id && (
                         <button
                           className="mensagem-privada-resposta-preview"
@@ -995,20 +1069,20 @@ function MensagensPrivadas() {
                       )}
                       {mensagem.audio_path ? (
                         mensagem.audio_url
-                          ? <AudioPrivado src={mensagem.audio_url} />
+                          ? <AudioPrivado key={mensagem.audio_url} src={mensagem.audio_url} />
                           : <p className="mensagem-privada-audio-erro" role="alert">Não foi possível acessar o áudio. Confira a política de leitura do bucket privado no Supabase.</p>
                       ) : mensagem.midia_path ? (
                         mensagem.midia_url
                           ? <>
                             {mensagem.midia_tipo?.startsWith('video/')
-                              ? <video className="mensagem-privada-midia" src={mensagem.midia_url} controls playsInline preload="metadata" aria-label={mensagem.midia_nome || 'Vídeo enviado'} />
-                              : <img className="mensagem-privada-midia imagem" src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada'} loading="lazy" />}
+                              ? <div className="mp-video"><video className="mensagem-privada-midia" src={mensagem.midia_url} controls playsInline preload="metadata" onLoadedMetadata={manterNoFim} aria-label={mensagem.midia_nome || 'Vídeo enviado'} /><button type="button" className="mp-ampliar-video" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar vídeo">⤢</button></div>
+                              : <button className="mp-midia-botao" type="button" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar imagem"><img className="mensagem-privada-midia imagem" src={mensagem.midia_url} alt={mensagem.midia_nome || 'Imagem enviada'} loading="lazy" onLoad={manterNoFim} /></button>}
                             {mensagem.texto && <p className="mensagem-privada-legenda">{mensagem.texto}</p>}
                           </>
                           : <p className="mensagem-privada-audio-erro">Mídia temporariamente indisponível.</p>
                       ) : mensagem.figurinha_id ? (
                         mensagem.figurinha?.midia_url
-                          ? <img className="mensagem-privada-figurinha" src={mensagem.figurinha.midia_url} alt={mensagem.figurinha.midia_nome || 'Figurinha'} loading="lazy" />
+                          ? <button className="mp-midia-botao" type="button" onClick={() => setMidiaAberta({ conversa: pessoaId, id: mensagem.id })} aria-label="Ampliar figurinha"><img className="mensagem-privada-figurinha" src={mensagem.figurinha.midia_url} alt={mensagem.figurinha.midia_nome || 'Figurinha'} loading="lazy" onLoad={manterNoFim} /></button>
                           : <p className="mensagem-privada-audio-erro">Figurinha indisponível.</p>
                       ) : <TextoMensagemPrivada texto={mensagem.texto} />}
                       <footer>
@@ -1032,11 +1106,19 @@ function MensagensPrivadas() {
                         )}
                       </div>
                     </article>
+                        </div>
+                      </div>
+                    </div>
                   ))
                 ) : (
                   <p className="mensagens-privadas-vazio">Esta conversa está vazia. Envie uma mensagem para começar.</p>
                 )}
               </div>
+              {novasMensagens > 0 && <button className="mp-novas-mensagens" type="button" onClick={() => {
+                rolagemRef.current.noFim = true;
+                setNovasMensagens(0);
+                listaRef.current?.scrollTo({ top: listaRef.current.scrollHeight, behavior: 'smooth' });
+              }}>↓ {novasMensagens} {novasMensagens === 1 ? 'nova mensagem' : 'novas mensagens'}</button>}
               {erro && <p className="mensagens-privadas-erro" role="alert">{erro}</p>}
               <form className="mensagens-privadas-compositor" onSubmit={enviarMensagem}>
                 {(respondendoA || editandoId) && (
@@ -1065,6 +1147,7 @@ function MensagensPrivadas() {
                   </div>
                 ) : (
                   <textarea
+                    ref={textoRef}
                     id="mensagem-privada-texto"
                     value={texto}
                     onChange={(evento) => {
@@ -1079,7 +1162,8 @@ function MensagensPrivadas() {
                       }
                     }}
                     onKeyDown={(evento) => {
-                      if (evento.key === 'Enter' && !evento.shiftKey) {
+                      if (evento.key === 'Escape') { cancelarRespostaEdicao(); setFigurinhasAbertas(false); }
+                      if (evento.key === 'Enter' && !evento.shiftKey && !evento.nativeEvent.isComposing) {
                         evento.preventDefault();
                         enviarMensagem(evento);
                       }
@@ -1168,9 +1252,13 @@ function MensagensPrivadas() {
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h10l4 4v13H5z" /><path d="M14.5 3.5v5h4.5M8 12h8M8 16h5" /></svg>
                       </button>
                     </div>
+                    <button className="mp-enviar" type="submit" disabled={enviando || (!texto.trim() && !arquivoSelecionado)} aria-label={editandoId ? 'Salvar edição' : 'Enviar mensagem'} title={editandoId ? 'Salvar edição' : 'Enviar mensagem'}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">{editandoId ? <path d="m5 12 5 5L20 7" /> : <path d="M4 12 20 4l-6 16-3-7-7-1Z" />}</svg>
+                    </button>
                   </>
                 )}
               </form>
+              <div className="mp-compositor-dica"><span>{enviando ? 'Enviando...' : 'Enter envia · Shift + Enter quebra a linha'}</span>{texto.length > 1600 && <span>{texto.length}/2000</span>}</div>
             </>
           ) : (
             <div className="mensagens-privadas-selecione">
@@ -1181,6 +1269,9 @@ function MensagensPrivadas() {
           )}
         </section>
       </main>
+      {midiaAberta && midiaAberta.conversa === pessoaId && (
+        <GaleriaMidiasPrivadas key={`${pessoaId}:${midiaAberta.id}`} inicialId={midiaAberta.id} midias={midiasGaleria} aoFechar={fecharGaleria} />
+      )}
     </>
   );
 }

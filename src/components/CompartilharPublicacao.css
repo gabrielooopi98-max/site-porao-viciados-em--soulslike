@@ -28,7 +28,7 @@
 }
 
 .publicacao-social > button[aria-pressed='true'] {
-    color: var(--souls-brasa);
+    color: var(--souls-destaque);
 }
 
 .publicacao-social svg {
@@ -271,7 +271,7 @@
 
 .compartilhar-painel :focus-visible,
 .publicacao-social button:focus-visible {
-    outline: 2px solid var(--souls-brasa);
+    outline: 2px solid var(--souls-destaque);
     outline-offset: 2px;
 }
 

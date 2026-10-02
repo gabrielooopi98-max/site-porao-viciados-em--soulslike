@@ -1,6 +1,6 @@
 /*
  * Chat global no formato de app de mensagens: canais à esquerda, conversa no centro
- * e membros online à direita. Cores neutras; o laranja do site aparece só em destaques.
+ * e membros online à direita. Cores neutras; os destaques usam cinza claro.
  */
 
 .cg-app {
@@ -14,9 +14,9 @@
     --cg-texto-2: #a6a6ad;
     --cg-texto-3: #6f6f77;
     --cg-bolha-outra: #1d1d20;
-    --cg-bolha-propria: #2b2018;
-    --cg-destaque: #f07818;
-    --cg-destaque-suave: rgba(240, 120, 24, 0.12);
+    --cg-bolha-propria: #262626;
+    --cg-destaque: var(--souls-destaque);
+    --cg-destaque-suave: rgba(var(--souls-destaque-rgb), 0.12);
     --cg-online: #3ba55d;
 
     position: fixed;
@@ -70,9 +70,9 @@
 }
 
 .cg-avatar-inicial {
-    color: #f3d9c2;
+    color: var(--souls-destaque-suave);
     font: 700 0.95rem 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #3a2a1e, #1f1a16);
+    background: linear-gradient(135deg, #2a2a2a, #1b1b1b);
 }
 
 .cg-avatar-p.cg-avatar-inicial {
@@ -464,7 +464,7 @@
 
 .cg-msg-autor {
     padding: 0 2px;
-    color: #e9b48a;
+    color: var(--souls-destaque-suave);
     font-size: 0.8rem;
     font-weight: 600;
     background: none;
@@ -497,7 +497,7 @@
 
 .cg-msg-propria .cg-bolha {
     background: var(--cg-bolha-propria);
-    border-color: rgba(240, 120, 24, 0.12);
+    border-color: rgba(var(--souls-destaque-rgb), 0.12);
     border-radius: 14px 4px 14px 14px;
 }
 
@@ -526,7 +526,7 @@
 }
 
 .cg-msg-propria .cg-bolha-meta {
-    color: rgba(240, 200, 170, 0.5);
+    color: rgba(196, 196, 196, 0.5);
 }
 
 /* Mídia sozinha: sem moldura de balão, a hora fica sobre a imagem. */
@@ -659,7 +659,7 @@
     text-align: left;
     background: rgba(255, 255, 255, 0.05);
     border: 0;
-    border-left: 3px solid rgba(240, 120, 24, 0.75);
+    border-left: 3px solid rgba(var(--souls-destaque-rgb), 0.75);
     border-radius: 4px 8px 8px 4px;
     cursor: pointer;
     transition: background-color 120ms ease;
@@ -678,7 +678,7 @@
 }
 
 .cg-citacao strong {
-    color: #e9b48a;
+    color: var(--souls-destaque-suave);
     font-size: 0.74rem;
 }
 
@@ -832,7 +832,7 @@
     gap: 8px;
     min-height: 34px;
     padding: 0 16px;
-    color: #1a0d03;
+    color: #0d0d0d;
     font-size: 0.8rem;
     font-weight: 600;
     background: var(--cg-destaque);
@@ -1089,7 +1089,7 @@
     place-items: center;
     margin-left: 2px;
     padding: 0;
-    color: #1a0d03;
+    color: #0d0d0d;
     background: var(--cg-destaque);
     border: 0;
     border-radius: 10px;
@@ -1104,7 +1104,7 @@
 }
 
 .cg-enviar:hover:not(:disabled) {
-    background: #ff8c33;
+    background: var(--souls-destaque-hover);
 }
 
 .cg-enviar:disabled {
@@ -1406,7 +1406,7 @@
 .cg-botao-primario {
     width: 100%;
     min-height: 44px;
-    color: #1a0d03;
+    color: #0d0d0d;
     font-size: 0.9rem;
     font-weight: 600;
     background: var(--cg-destaque);
@@ -1416,7 +1416,7 @@
 }
 
 .cg-botao-primario:hover {
-    background: #ff8c33;
+    background: var(--souls-destaque-hover);
 }
 
 .cg-visitante-nota {
@@ -1600,7 +1600,7 @@
 
 .cg-respondendo-rotulo strong {
     overflow: hidden;
-    color: #e9b48a;
+    color: var(--souls-destaque-suave);
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1650,8 +1650,8 @@
 
 /* A mensagem que está sendo respondida fica marcada na conversa. */
 .cg-msg.cg-msg-sendo-respondida {
-    background: rgba(240, 120, 24, 0.045);
-    box-shadow: inset 2px 0 0 rgba(240, 120, 24, 0.7);
+    background: rgba(var(--souls-destaque-rgb), 0.045);
+    box-shadow: inset 2px 0 0 rgba(var(--souls-destaque-rgb), 0.7);
 }
 
 @media (prefers-reduced-motion: reduce) {

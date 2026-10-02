@@ -9,8 +9,10 @@ import { AuthProvider } from './contexts/AuthContext';
 import { FavoritosProvider } from './contexts/FavoritosContext';
 import { useAuth } from './contexts/useAuth';
 import AvisosHeader from './components/AvisosHeader';
-import ImagemDecorativaAdiada from './components/ImagemDecorativaAdiada';
+import MensagensHeader from './components/MensagensHeader';
 import PresencaMensagensPrivadas from './components/PresencaMensagensPrivadas';
+import AreaRanking from './components/AreaRanking';
+import DivisoriaSecao from './components/DivisoriaSecao';
 
 const CardPost = lazy(() => import('./components/cards-posts/CardPost'));
 const CardBuild = lazy(() => import('./components/cards-builds/CardBuild'));
@@ -440,7 +442,7 @@ function Home() {
           <div className="lado-direito">
             {user ? (
               <>
-                <button className="btn-filtro btn-mensagens-header" type="button" onClick={() => navigate('/mensagens')}>Mensagens</button>
+                <MensagensHeader />
                 <AvisosHeader />
                 <button
                   className="botao-avatar-header"
@@ -495,6 +497,7 @@ function Home() {
         </section>
 
         <section className="area-posts-comunidade" id="comunidade" aria-labelledby="titulo-posts-comunidade">
+          <DivisoriaSecao />
           <div className="posts-secao-conteudo">
           <header className="posts-header">
             <div className="posts-header-texto">
@@ -619,6 +622,7 @@ function Home() {
         </section>
 
         <section className="area-builds-comunidade" id="builds" aria-labelledby="titulo-builds-comunidade">
+          <DivisoriaSecao />
           <div className="posts-secao-conteudo">
           <header className="posts-header builds-header">
             <div className="posts-header-texto">
@@ -747,79 +751,10 @@ function Home() {
           )}
         </section>
 
-        <section className="area-ranking" id="ranking">
-          <div className="header-secao">
-
-            <div className="area-svg">
-              <ImagemDecorativaAdiada
-                src="/svg-animado/lua-bloodborne-banner-1760x575.svg"
-                alt="Lua Pixel Art Max"
-                className="lua-pixel-art-banner"
-              />
-            </div>
-
-            <div className="area-ranking-texto">
-              <h2>Ranking</h2>
-              <p>
-                Os jogadores que mais se destacaram na comunidade. Complete desafios, compartilhe builds e
-                acumule almas pra subir no topo.
-              </p>
-            </div>
-          </div>
-
-          <div className="abas-categoria-ranking">
-            <button className="btn-categoria-ranking" aria-pressed="true" type="button">Desafios</button>
-            <button className="btn-categoria-ranking" type="button">Builds</button>
-          </div>
-
-          <div className="tabela-ranking">
-            <ol className="tabela-ranking-grid">
-              <li className="linha-tabela-ranking" data-usuario-id="123" data-pontos="150">
-                <span className="posicao-usuario-ranking">1</span>
-                <img src="/avatar.png" alt="" className="avatar-usuario-ranking" />
-                <span className="nome-usuario-ranking">Gabriel Moreira</span>
-                <span className="pontucao">150 pts</span>
-              </li>
-
-              <li className="linha-tabela-ranking" data-usuario-id="123" data-pontos="150">
-                <span className="posicao-usuario-ranking">2</span>
-                <img src="/avatar.png" alt="" className="avatar-usuario-ranking" />
-                <span className="nome-usuario-ranking">Gabriel Moreira</span>
-                <span className="pontucao">150 pts</span>
-              </li>
-
-              <li className="linha-tabela-ranking" data-usuario-id="123" data-pontos="150">
-                <span className="posicao-usuario-ranking">3</span>
-                <img src="/avatar.png" alt="" className="avatar-usuario-ranking" />
-                <span className="nome-usuario-ranking">Gabriel Moreira</span>
-                <span className="pontucao">150 pts</span>
-              </li>
-
-              <li className="linha-tabela-ranking" data-usuario-id="123" data-pontos="150">
-                <span className="posicao-usuario-ranking">4</span>
-                <img src="/avatar.png" alt="" className="avatar-usuario-ranking" />
-                <span className="nome-usuario-ranking">Gabriel Moreira</span>
-                <span className="pontucao">150 pts</span>
-              </li>
-
-              <li className="linha-tabela-ranking" data-usuario-id="123" data-pontos="150">
-                <span className="posicao-usuario-ranking">5</span>
-                <img src="/avatar.png" alt="" className="avatar-usuario-ranking" />
-                <span className="nome-usuario-ranking">Gabriel Moreira</span>
-                <span className="pontucao">150 pts</span>
-              </li>
-
-              <li className="linha-tabela-ranking" data-usuario-id="123" data-pontos="150">
-                <span className="posicao-usuario-ranking">6</span>
-                <img src="/avatar.png" alt="" className="avatar-usuario-ranking" />
-                <span className="nome-usuario-ranking">Gabriel Moreira</span>
-                <span className="pontucao">150 pts</span>
-              </li>
-            </ol>
-          </div>
-        </section>
+        <AreaRanking />
 
         <section className="area-sobre-site" id="sobre">
+          <DivisoriaSecao />
           <div className="header-secao">
             <h2>Sobre o Site</h2>
           </div>

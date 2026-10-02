@@ -31,16 +31,16 @@
 .post-card::before {
     top: -1px;
     left: -1px;
-    border-top: 1px solid rgba(240, 120, 24, 0.6);
-    border-left: 1px solid rgba(240, 120, 24, 0.6);
+    border-top: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
+    border-left: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
     border-top-left-radius: 8px;
 }
 
 .post-card::after {
     right: -1px;
     bottom: -1px;
-    border-right: 1px solid rgba(240, 120, 24, 0.6);
-    border-bottom: 1px solid rgba(240, 120, 24, 0.6);
+    border-right: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
+    border-bottom: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
     border-bottom-right-radius: 8px;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .post-card:focus-visible {
-    outline: 2px solid var(--souls-brasa);
+    outline: 2px solid var(--souls-destaque);
     outline-offset: 3px;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .post-card-avatar:not(:disabled):hover {
-    border-color: var(--souls-brasa);
+    border-color: var(--souls-destaque);
 }
 
 .post-card-autor {
@@ -382,12 +382,12 @@ button.post-card-nome:hover {
 }
 
 .post-card-acao[aria-pressed='true'] {
-    color: var(--souls-brasa);
+    color: var(--souls-destaque);
     background: transparent;
 }
 
 .post-card-acao[aria-pressed='true'] svg {
-    fill: rgba(240, 120, 24, 0.25);
+    fill: rgba(var(--souls-destaque-rgb), 0.25);
 }
 
 .post-card-acao:disabled {
@@ -395,7 +395,7 @@ button.post-card-nome:hover {
 }
 
 .post-card :is(button, a):focus-visible {
-    outline: 2px solid var(--souls-brasa);
+    outline: 2px solid var(--souls-destaque);
     outline-offset: 2px;
 }
 

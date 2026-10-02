@@ -43,7 +43,7 @@
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    color: var(--souls-brasa);
+    color: var(--souls-destaque);
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -173,7 +173,7 @@
 }
 
 .favoritos-page button:focus-visible {
-    outline: 2px solid var(--souls-brasa);
+    outline: 2px solid var(--souls-destaque);
     outline-offset: 3px;
 }
 
