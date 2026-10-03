@@ -106,10 +106,10 @@ export default function PaginaRanking() {
             </select>
             <span>{dados.desafios.length} {dados.desafios.length === 1 ? 'desafio publicado' : 'desafios publicados'}</span>
           </div>
-          <aside className="ranking-desafios">
+          <aside className="ranking-desafios" id="ranking-desafios">
             <div className="ranking-desafios-titulo"><h2>Desafios e provas</h2><span>{dados.desafios.length}</span></div>
             <p className="ranking-desafios-ajuda">Os cards abaixo abrem regras, inscrições e provas. Eles são desafios, não tabelas de ranking.</p>
-            <Link className={`ranking-link-geral ${!desafioId ? 'selecionado' : ''}`} aria-current={!desafioId ? 'page' : undefined} to="/ranking" onClick={() => { setParticipar(false); setPagina(1); }}>Visão geral do ranking <span aria-hidden="true">→</span></Link>
+            <Link className={`btn-filtro ranking-link-geral ${!desafioId ? 'selecionado' : ''}`} aria-current={!desafioId ? 'page' : undefined} to="/ranking" onClick={() => { setParticipar(false); setPagina(1); }}>Visão geral do ranking <span aria-hidden="true">→</span></Link>
             {!dados.desafios.length && <p>Nenhum desafio publicado ainda.</p>}
             {dados.desafios.map((d) => <button className="ranking-desafio-card" type="button" key={d.id} aria-pressed={d.id === desafioId}
               onClick={() => { setParams({ desafio: d.id }); setParticipar(false); setFiltro('todos'); setPagina(1); }}>
@@ -124,9 +124,9 @@ export default function PaginaRanking() {
           <section className={`ranking-feed ${!desafioId ? 'ranking-feed-visao-geral' : ''}`} aria-label="Conteúdo do ranking">
             {!desafioId ? <>
               <nav className="ranking-indice" aria-label="Seções do ranking">
-                <a href="#ranking-geral"><strong>01</strong><span>Ranking geral</span></a>
-                <a href="#ranking-builds"><strong>02</strong><span>Classificação de builds</span></a>
-                <a href="#ranking-cards-builds"><strong>03</strong><span>Cards da competição</span></a>
+                <a className="btn-filtro" href="#ranking-geral"><strong>01</strong><span>Ranking geral</span></a>
+                <a className="btn-filtro" href="#ranking-builds"><strong>02</strong><span>Classificação de builds</span></a>
+                <a className="btn-filtro" href="#ranking-desafios"><strong>03</strong><span>Desafios e provas</span></a>
               </nav>
               <section className="ranking-bloco ranking-bloco-geral" id="ranking-geral" aria-labelledby="ranking-geral-titulo">
                 <header className="ranking-classificacao-header">
@@ -158,8 +158,10 @@ export default function PaginaRanking() {
                 {mostrarFormulario && <div id="enviar-participacao" className="rk-participar-formulario">
                   <FormularioParticipacao key={desafio.id} desafio={desafio} aoPublicar={atualizar} aoFechar={fecharParticipacao} />
                 </div>}
-                <h3 className="ranking-subtitulo">Objetivo e regras</h3>
-                <p className="ranking-texto">{desafio.descricao}</p>
+                <section className="ranking-descricao-regras" aria-labelledby="ranking-descricao-regras-titulo">
+                  <h3 className="ranking-subtitulo" id="ranking-descricao-regras-titulo">Objetivos ou regras</h3>
+                  <p className="ranking-texto">{desafio.descricao}</p>
+                </section>
                 <LinhaDoTempoDesafio desafio={desafio} agora={agora} />
                 {desafio.tipo === 'build' && <details className="rk-dobra">
                   <summary>O que sua build precisa mostrar (5 itens obrigatórios)</summary>
@@ -168,7 +170,7 @@ export default function PaginaRanking() {
                 <details className="ranking-regras">
                   <summary>Regras detalhadas e desempates</summary>
                 <p>{desafio.tipo === 'build'
-                  ? 'Os votos só definem quem avança: até 4 builds passam à semifinal e até 2 à final. Empates: participação enviada primeiro. Votos reabrem em cada etapa. Somente o vencedor recebe pontos no ranking geral.'
+                  ? 'Cada pessoa tem um voto por competição em cada etapa; pode trocar a build escolhida até o prazo. Os votos novos se somam aos anteriores: as 4 maiores somas passam à semifinal e as 2 maiores à final. A maior soma ao fim da final vence. Empates: participação enviada primeiro. Somente o vencedor recebe pontos no ranking geral.'
                   : 'Todo jogador com a prova aprovada pelo ADM recebe os pontos. Não há votação: a comunidade comenta as provas e pode apontar problemas, e o ADM decide. A análise do ADM pode continuar por até 3 dias após o fim.'}</p>
                 {desafio.tipo === 'build' && <p>Toda build enviada durante a classificatória entra na disputa na hora; o ADM só remove builds que quebrem as regras. Havendo menos participantes, avançam os disponíveis. Sem votos na final, a competição termina sem vencedor e sem prêmio.</p>}
                 <p>Três dias após o fim, o desafio, as participações e os comentários são removidos. Os pontos conquistados continuam no ranking geral.</p>

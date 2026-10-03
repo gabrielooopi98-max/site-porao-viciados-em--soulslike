@@ -1,54 +1,65 @@
-/* Ficha de build com atributos agrupados antes do resumo. */
+/* Ficha de build: capa com titulo, atributos em destaque, resumo e autor.
+   O card responde a propria largura (container query), entao funciona igual
+   na grade da home, no carrossel do celular, no perfil e nos favoritos. */
 
 .build-card {
+    --build-borda: rgba(255, 255, 255, 0.09);
+    --build-borda-forte: rgba(255, 255, 255, 0.18);
+    --build-texto-suave: rgba(240, 240, 240, 0.62);
+    --build-texto-fraco: rgba(240, 240, 240, 0.42);
+    --build-brasa: 226, 140, 70;
+
     position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
     min-width: 0;
     margin: 0;
+    container-type: inline-size;
     color: #f0f0f0;
-    background: linear-gradient(180deg, #121212 0%, #090909 100%);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 12px;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    background:
+        radial-gradient(120% 60% at 50% 100%, rgba(var(--build-brasa), 0.05), transparent 70%),
+        linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+    border: 1px solid var(--build-borda);
+    border-radius: 14px;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
     cursor: pointer;
-    transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+    transition: border-color 240ms ease, transform 240ms ease, box-shadow 240ms ease;
 }
 
-/* Cantos claros que acendem no hover, como a moldura dos menus dos jogos. */
+/* Cantos que acendem no hover, como a moldura dos menus dos jogos. */
 .build-card::before,
 .build-card::after {
     content: '';
     position: absolute;
-    z-index: 4;
-    width: 18px;
-    height: 18px;
+    z-index: 6;
+    width: 22px;
+    height: 22px;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 220ms ease;
+    transition: opacity 240ms ease;
 }
 
 .build-card::before {
     top: -1px;
     left: -1px;
-    border-top: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
-    border-left: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
-    border-top-left-radius: 12px;
+    border-top: 1px solid rgba(var(--souls-destaque-rgb), 0.75);
+    border-left: 1px solid rgba(var(--souls-destaque-rgb), 0.75);
+    border-top-left-radius: 14px;
 }
 
 .build-card::after {
     right: -1px;
     bottom: -1px;
-    border-right: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
-    border-bottom: 1px solid rgba(var(--souls-destaque-rgb), 0.6);
-    border-bottom-right-radius: 12px;
+    border-right: 1px solid rgba(var(--souls-destaque-rgb), 0.75);
+    border-bottom: 1px solid rgba(var(--souls-destaque-rgb), 0.75);
+    border-bottom-right-radius: 14px;
 }
 
 .build-card:hover {
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.55);
-    transform: translateY(-2px);
+    border-color: var(--build-borda-forte);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(var(--build-brasa), 0.06);
+    transform: translateY(-3px);
 }
 
 .build-card:hover::before,
@@ -65,21 +76,27 @@
 
 /* ---------- Capa ---------- */
 
-.build-card-capa {
+.build-card-topo {
     position: relative;
-    aspect-ratio: 3 / 2;
-    overflow: hidden;
-    background: #050505;
-    border-radius: 0;
 }
 
-/* Contraste para as etiquetas da midia. */
+.build-card-capa {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #050505;
+    border-radius: 13px 13px 0 0;
+}
+
+/* Sombra em cima (selos e menu) e embaixo (titulo) para ler sobre qualquer imagem. */
 .build-card-capa::after {
     content: '';
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 35%);
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.62) 0%, transparent 28%),
+        linear-gradient(0deg, rgba(8, 8, 8, 0.96) 0%, rgba(8, 8, 8, 0.7) 26%, transparent 60%);
     pointer-events: none;
 }
 
@@ -99,15 +116,15 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 500ms ease, filter 500ms ease;
-    filter: saturate(0.9);
+    filter: saturate(0.88) brightness(0.92);
+    transition: transform 600ms ease, filter 600ms ease;
 }
 
 .build-card:hover .build-card-capa-arquivo,
 .build-card:hover .build-card-capa-item img,
 .build-card:hover .build-card-capa-item video {
-    transform: scale(1.04);
-    filter: saturate(1);
+    transform: scale(1.05);
+    filter: saturate(1) brightness(1);
 }
 
 .build-card-capa .build-card-capa-item video {
@@ -119,14 +136,22 @@
 }
 
 .build-card-capa .icone-play-video-post {
-    top: 42%;
-    width: 46px;
-    height: 46px;
+    top: 40%;
+    z-index: 2;
+    width: 48px;
+    height: 48px;
     color: #ffffff;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 50%;
+    backdrop-filter: blur(4px);
     filter: none;
+    transition: transform 240ms ease, background-color 240ms ease;
+}
+
+.build-card:hover .build-card-capa .icone-play-video-post {
+    background: rgba(0, 0, 0, 0.7);
+    transform: translate(-50%, -50%) scale(1.08);
 }
 
 .build-card-capa .icone-play-video-post svg {
@@ -135,191 +160,268 @@
     margin-left: 3px;
 }
 
-.build-card-etiquetas {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 52px;
-    z-index: 2;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.build-card-jogo {
-    min-width: 0;
-    color: #ababab;
-    font: 500 0.7rem/1.5 'Poppins', sans-serif;
-    overflow-wrap: anywhere;
-}
-
-.build-card-selo {
-    padding: 5px 9px;
-    color: #ffffff;
-    font: 600 0.7rem/1 'Poppins', sans-serif;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 999px;
-}
-
-.build-card-cabecalho {
+/* Build sem midia: capa com emblema em vez de um buraco vazio. */
+.build-card-capa--vazia {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    place-items: center;
+    background:
+        radial-gradient(circle at 50% 38%, rgba(var(--build-brasa), 0.16), transparent 55%),
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 12px),
+        #0b0b0b;
+}
+
+.build-card-capa-emblema {
+    width: 30%;
+    max-width: 92px;
+    margin-bottom: 14%;
+    fill: none;
+    stroke: rgba(var(--build-brasa), 0.55);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 14px rgba(var(--build-brasa), 0.35));
+}
+
+/* Faixa superior: tipo, jogo e acoes. */
+.build-card-sobre-capa {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 4;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
-    min-width: 0;
-    padding: 10px 12px 12px 14px;
+    padding: 10px 8px 0 12px;
 }
 
 .build-card-contexto {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+    padding-top: 6px;
+}
+
+.build-card-tipo,
+.build-card-jogo {
+    padding: 4px 9px;
+    font: 600 0.62rem/1.3 'Poppins', sans-serif;
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
 }
 
 .build-card-tipo {
     flex: 0 0 auto;
-    padding-right: 8px;
-    color: #dedede;
-    font: 600 0.65rem/1.5 'Poppins', sans-serif;
-    letter-spacing: 0.08em;
+    color: #140c05;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    border-right: 1px solid #3b3b3b;
+    background: rgba(var(--souls-destaque-rgb), 0.92);
+}
+
+.build-card-jogo {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    color: #f0f0f0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.build-card-menu {
+    flex: 0 0 auto;
+    padding: 2px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+}
+
+.build-card-menu .publicacao-social > button,
+.build-card-menu .btn-acoes-publicacao {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Faixa inferior: selos de midia e titulo sobre a imagem. */
+.build-card-titulo-area {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 3;
+    display: grid;
+    gap: 8px;
+    padding: 0 14px 12px;
+    pointer-events: none;
+}
+
+.build-card-etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.build-card-selo {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    color: #ffffff;
+    font: 600 0.62rem/1 'Poppins', sans-serif;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
+}
+
+.build-card-selo svg {
+    width: 10px;
+    height: 10px;
+    fill: currentColor;
 }
 
 .build-card-titulo {
-    grid-column: 1 / -1;
     display: -webkit-box;
     margin: 0;
     overflow: hidden;
     color: #ffffff;
-    font: 700 1.08rem/1.25 'Poppins', sans-serif;
+    font: 700 1.15rem/1.25 'Poppins', sans-serif;
     letter-spacing: 0;
     text-align: left;
-    text-shadow: none;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
     overflow-wrap: anywhere;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
 }
 
-/* ---------- Corpo ---------- */
+/* ---------- Corpo: ficha de atributos e resumo ---------- */
 
 .build-card-corpo {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     min-width: 0;
-    padding: 12px 12px 0;
-}
-
-.build-card-texto {
-    display: -webkit-box;
-    margin: 0;
-    overflow: hidden;
-    color: rgba(240, 240, 240, 0.62);
-    font: 400 0.82rem/1.55 'Poppins', sans-serif;
-    overflow-wrap: anywhere;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    padding: 14px 14px 0;
 }
 
 .build-card-atributos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 110px), 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(var(--colunas, 3), minmax(0, 1fr));
     margin: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+    border: 1px solid var(--build-borda);
+    border-radius: 10px;
 }
 
 .build-card-atributos div {
     display: grid;
-    grid-template-columns: 26px minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    column-gap: 8px;
-    align-items: center;
-    align-content: center;
+    align-content: start;
+    gap: 5px;
     min-width: 0;
-    padding: 7px 8px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.build-card-atributos div + div {
+    border-left: 1px solid var(--build-borda);
+}
+
+.build-card-atributos dt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--build-texto-fraco);
+    font: 600 0.58rem/1.2 'Poppins', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .build-card-atributo-icone {
     display: grid;
-    grid-row: 1 / 3;
-    width: 26px;
-    height: 26px;
+    flex: 0 0 auto;
     place-items: center;
-    color: #bcbcbc;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 7px;
+    color: rgba(var(--build-brasa), 0.85);
 }
 
 .build-card-atributo-icone svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.8;
+    stroke-width: 1.9;
     stroke-linecap: round;
     stroke-linejoin: round;
-}
-
-.build-card-atributos dt {
-    margin: 0;
-    color: rgba(240, 240, 240, 0.45);
-    font: 600 0.6rem/1.2 'Poppins', sans-serif;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
 }
 
 .build-card-atributos dd {
     display: -webkit-box;
     margin: 0;
     overflow: hidden;
-    color: #f2f2f2;
-    font: 600 0.78rem/1.3 'Poppins', sans-serif;
-    overflow-wrap: anywhere;
+    color: #f5f5f5;
+    font: 600 0.84rem/1.3 'Poppins', sans-serif;
+    overflow-wrap: break-word;
+    hyphens: auto;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
 }
 
-/* ---------- Rodapé: autor e reações ---------- */
+.build-card-texto {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--build-texto-suave);
+    font: 400 0.8rem/1.6 'Poppins', sans-serif;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+/* ---------- Rodape: autor e reacoes ---------- */
 
 .build-card-rodape {
-    display: grid;
-    gap: 8px;
-    margin-top: 10px;
-    padding: 10px 12px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    margin-top: 14px;
+    padding: 8px 8px 8px 14px;
     background: rgba(255, 255, 255, 0.025);
-    border-top: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 0 0 11px 11px;
+    border-top: 1px solid var(--build-borda);
+    border-radius: 0 0 13px 13px;
 }
 
 .build-card-autor {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
     min-width: 0;
 }
 
 .build-card-avatar {
     display: grid;
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
     place-items: center;
     padding: 0;
     overflow: hidden;
     color: #f0f0f0;
-    font: 700 0.8rem 'Poppins', sans-serif;
+    font: 700 0.82rem 'Poppins', sans-serif;
     background: radial-gradient(circle at 35% 30%, rgba(var(--souls-destaque-rgb), 0.22), transparent 60%), #1c1c1c;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 50%;
     cursor: pointer;
+    transition: border-color 160ms ease;
 }
 
 .build-card-avatar:disabled {
@@ -339,7 +441,7 @@
 .build-card-autor-texto {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     min-width: 0;
 }
 
@@ -360,14 +462,16 @@ button.build-card-nome {
 }
 
 button.build-card-nome:hover {
-    color: var(--souls-destaque);
+    color: var(--souls-destaque-hover);
+    text-decoration: underline;
 }
 
 .build-card-meta {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: rgba(240, 240, 240, 0.45);
+    min-width: 0;
+    color: var(--build-texto-fraco);
     font: 400 0.68rem/1.3 'Poppins', sans-serif;
     white-space: nowrap;
 }
@@ -388,7 +492,7 @@ button.build-card-nome:hover {
 }
 
 .build-card-seguir:hover:not(:disabled) {
-    color: var(--souls-destaque-suave);
+    color: var(--souls-destaque-hover);
 }
 
 .build-card-seguir.seguindo {
@@ -404,22 +508,25 @@ button.build-card-nome:hover {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 2px;
 }
 
-.build-card-acao {
+.build-card-acao,
+.build-card-views {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    min-height: 44px;
-    padding: 0 10px;
-    color: rgba(240, 240, 240, 0.72);
-    font: 500 0.78rem 'Poppins', sans-serif;
+    min-height: 40px;
+    padding: 0 9px;
+    font: 500 0.76rem 'Poppins', sans-serif;
     font-variant-numeric: tabular-nums;
+    border-radius: 8px;
+}
+
+.build-card-acao {
+    color: rgba(240, 240, 240, 0.75);
     background: transparent;
     border: 0;
-    border-radius: 6px;
     cursor: pointer;
     transition: background-color 150ms ease, color 150ms ease;
 }
@@ -441,11 +548,16 @@ button.build-card-nome:hover {
 }
 
 .build-card-acao[aria-pressed='true'] {
-    color: var(--souls-destaque);
+    color: rgb(var(--build-brasa));
 }
 
 .build-card-acao[aria-pressed='true'] svg {
-    fill: rgba(var(--souls-destaque-rgb), 0.25);
+    fill: rgba(var(--build-brasa), 0.28);
+}
+
+.build-card-acao:focus-visible {
+    outline: 2px solid var(--souls-destaque);
+    outline-offset: 1px;
 }
 
 .build-card-acao:disabled {
@@ -453,21 +565,74 @@ button.build-card-nome:hover {
 }
 
 .build-card-views {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-    padding: 0 4px 0 7px;
-    color: rgba(240, 240, 240, 0.42);
-    font: 400 0.74rem 'Poppins', sans-serif;
-    font-variant-numeric: tabular-nums;
+    color: var(--build-texto-fraco);
+    font-weight: 400;
+}
+
+/* ---------- Card estreito ---------- */
+
+/* Rodape em duas linhas: autor em cima, reacoes embaixo com divisoria. */
+@container (max-width: 400px) {
+    .build-card-rodape {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px 8px 4px 12px;
+    }
+
+    .build-card-reacoes {
+        justify-content: space-between;
+        margin-left: -6px;
+        padding-top: 4px;
+        border-top: 1px solid var(--build-borda);
+    }
+
+    .build-card-titulo {
+        font-size: 1.05rem;
+    }
+}
+
+/* Muito estreito: atributos viram lista, um por linha. */
+@container (max-width: 250px) {
+    .build-card-atributos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .build-card-atributos div {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+    }
+
+    .build-card-atributos div + div {
+        border-top: 1px solid var(--build-borda);
+        border-left: 0;
+    }
+
+    .build-card-atributos dd {
+        display: block;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .build-card-jogo {
+        display: none;
+    }
+}
+
+@media (hover: none) {
+    .build-card:hover {
+        transform: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .build-card,
     .build-card-capa-arquivo,
     .build-card-capa-item img,
-    .build-card-capa-item video {
+    .build-card-capa-item video,
+    .build-card-capa .icone-play-video-post {
         transition: none;
     }
 

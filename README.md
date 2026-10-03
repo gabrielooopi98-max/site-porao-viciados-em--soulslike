@@ -45,11 +45,10 @@ durante as inscricoes e com login. O atalho da classificacao abre o formulario
 da competicao escolhida. Somente o ADM pode criar competicoes.
 Os cards de desafios do ADM na lista mostram quantos jogadores ja concluiram.
 Na visão geral, o conteudo separa o Ranking geral (pontos acumulados), a
-Classificacao de builds (votos por etapa) e os cards da competicao selecionada.
-A lista lateral fica identificada como desafios e provas; esses cards abrem
-as regras e participacoes, nao sao tabelas de ranking.
-Na pagina completa, um indice leva a cada secao; ao abrir um desafio, a lista
-de participacoes tambem fica identificada como cards de builds ou de provas.
+Classificacao de builds (votos por etapa) e Desafios e provas. A lista lateral
+fica identificada como desafios e provas; esses cards abrem as regras e
+participacoes, nao sao tabelas de ranking. Um indice leva a cada secao; ao
+abrir um desafio, as participacoes aparecem em cards de builds ou de provas.
 O envio de provas de conquista tem apenas anexos, sem titulo ou descricao
 preenchidos pelo jogador. Exige ao menos uma imagem ou um video (ate oito
 arquivos); o card mostra autor, status, midia, os pontos (valendo, concedidos
@@ -138,10 +137,11 @@ e as restricoes especificas, sem alterar desafios de conquista.
 - Builds: precisam ser aprovadas antes do fim da classificatoria. Os
   votos selecionam ate quatro semifinalistas, depois dois finalistas
   e um vencedor. Cada etapa tem prazo proprio definido pelo ADM.
-- Cada pessoa pode votar em varias builds, uma vez em cada por etapa;
-  pode retirar o voto e nao pode votar em si. Votos reabrem a cada etapa,
-  mas o historico anterior fica preservado. Votos da etapa anterior nao
-  somam na seguinte. Uma tentativa feita com etapa desatualizada e recusada.
+- Cada pessoa pode manter um voto por competicao em cada etapa; pode trocar
+  a build escolhida ou retirar o voto, e nao pode votar em si. Uma nova etapa
+  permite votar novamente e os votos se somam ao total da competicao. O
+  historico por etapa fica preservado. Uma tentativa feita com etapa
+  desatualizada e recusada.
 - O valor por voto serve para a pontuacao da competicao. So o vencedor
   recebe o premio no ranking geral. Sem votos na final, nao ha vencedor
   nem premio. Empates sao resolvidos pela participacao enviada primeiro
@@ -270,7 +270,8 @@ Na home, os cards permanecem na secao separada de disputas. A tabela tem seletor
 de competicao e tabela de posicao, build, autor com avatar e votos da etapa.
 Somente builds aprovadas que participam da etapa atual entram na tabela.
 Empates seguem a ordem de envio, como no banco; os votos reabrem em cada
-etapa. Os links abrem a participacao completa. Os pontos dos jogadores nao
+etapa e cada nova escolha acrescenta um voto ao total acumulado. Os links
+abrem a participacao completa. Os pontos dos jogadores nao
 interferem nesta classificacao; eles aparecem no ranking geral.
 `node --test tests/classificacaoBuilds.test.mjs` valida a ordenacao e os filtros.
 As competicoes ficam separadas em "Builds em disputa", com jogo, etapa,

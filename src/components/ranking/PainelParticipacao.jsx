@@ -4,9 +4,9 @@ import './CardsRanking.css';
 
 const passos = {
   build: [
-    ['Monte e envie sua build', 'Nome, atributos, equipamentos, uma imagem e um vídeo.'],
+    ['Monte e envie sua build', 'Informe o nome da build e os equipamentos usados. Envie 1 imagem legível dos atributos do personagem e 1 vídeo mostrando a build em ação contra um boss.'],
     ['Entra na disputa na hora', 'Sem espera: assim que você envia, a comunidade já pode votar.'],
-    ['A comunidade vota', 'Top 4 vão à semifinal, top 2 à final. O vencedor leva os pontos.'],
+    ['A comunidade vota', 'Você pode votar uma vez por etapa. Os votos se somam entre as fases: as 4 builds mais votadas avançam à semifinal, e as 2 mais votadas depois seguem para a final.'],
   ],
   conquista: [
     ['Cumpra o desafio', 'Siga as regras abaixo e grave ou fotografe tudo.'],
@@ -33,7 +33,7 @@ export default function PainelParticipacao({ desafio, agora, user, minhaParticip
   } else if (minhaParticipacao) {
     acao = <p className="rk-participar-estado">
       Você já enviou sua {nome}: <span className={`ranking-status-chip ${minhaParticipacao.status}`}>{statusMinha[desafio.tipo][minhaParticipacao.status]}</span>
-      <a className="rk-btn" href={`#participacao-${minhaParticipacao.id}`}>Ver minha {nome}</a>
+      <a className={`rk-btn${build ? ' rk-btn--filtro' : ''}`} href={`#participacao-${minhaParticipacao.id}`}>Ver minha {nome}</a>
     </p>;
   } else if (agora >= encerramento) {
     acao = <p className="rk-participar-estado">
@@ -50,11 +50,11 @@ export default function PainelParticipacao({ desafio, agora, user, minhaParticip
 
   return (
     <section className="rk-participar" aria-labelledby={`participar-${desafio.id}`}>
-      <div>
-        <span className="rk-rotulo">Como participar</span>
+      <div className="rk-participar-cabecalho">
         <h3 className="rk-participar-titulo" id={`participar-${desafio.id}`}>
-          {build ? 'Envie sua build e dispute os votos da comunidade' : `Conclua o desafio e ganhe ${desafio.pontos} pts`}
+          {build ? 'Como entrar na disputa' : 'Como enviar sua prova'}
         </h3>
+        <p>{build ? 'Três passos para colocar sua build na competição.' : `Três passos para concluir o desafio e receber ${desafio.pontos} pts.`}</p>
       </div>
       <ol className="rk-passos">
         {passos[desafio.tipo].map(([titulo, texto]) => <li key={titulo}><span><strong>{titulo}</strong>{texto}</span></li>)}

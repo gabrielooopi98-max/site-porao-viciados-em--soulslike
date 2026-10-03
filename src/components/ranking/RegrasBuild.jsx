@@ -8,7 +8,7 @@ export default function RegrasBuild({ semTitulo = false }) {
         <li><strong>Nível do personagem</strong><span>Informe o nível em que a build foi feita.</span></li>
         <li><strong>Atributos completos</strong><span>Mostre os valores de cada atributo usado no personagem, por texto ou imagem legível.</span></li>
         <li><strong>Equipamentos e recursos</strong><span>Liste armas, itens, consumíveis, magias, milagres e outros recursos utilizados, conforme o jogo.</span></li>
-        <li><strong>Imagem e vídeo</strong><span>Anexe pelo menos uma imagem da build e um vídeo mostrando a build em ação.</span></li>
+        <li><strong>Imagem e vídeo</strong><span>Anexe pelo menos uma imagem mostrando os atributos do personagem usado na build e um vídeo mostrando a build em ação.</span></li>
       </ol>
     </section>
   );

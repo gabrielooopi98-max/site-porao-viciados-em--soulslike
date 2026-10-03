@@ -7,6 +7,7 @@ import CardParticipacao from './CardParticipacao';
 
 function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
   const [mostrarTodos, setMostrarTodos] = useState(false);
+  const [previaChama, setPreviaChama] = useState(false);
   const tabelaId = useId();
   const builds = classificarBuilds(desafio, participacoes);
   const posicoesVisiveis = mostrarTodos ? builds : builds.slice(0, 6);
@@ -16,14 +17,24 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
     {desafio.etapa === 3 && !desafio.vencedor_id && <p className="ranking-vazio" role="status">
       A final terminou sem votos: a competição foi encerrada sem vencedor e sem prêmio.
     </p>}
-    <article className={`ranking-builds-primeiro${desafio.vencedor_id === lider.id && desafio.final_vencedor?.id === 'er_chama' ? ' ranking-builds-primeiro--chama' : ''}`} aria-label="Primeiro lugar da competição">
-      <span className="ranking-builds-primeiro-posicao">1º lugar</span>
-      <img src={lider.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
-      <div className="ranking-builds-primeiro-identidade">
-        <h3><Link to={`/ranking?desafio=${desafio.id}#participacao-${lider.id}`}>{lider.titulo}</Link></h3>
-        <p>{lider.autor_nome}{desafio.vencedor_id === lider.id && ' · Vencedor'}</p>
+    <article className={`ranking-builds-primeiro${(previaChama || (desafio.vencedor_id === lider.id && desafio.final_vencedor?.id === 'er_chama')) ? ' ranking-builds-primeiro--chama' : ''}`} aria-label="Primeiro lugar da competição">
+      <span className="ranking-builds-primeiro-posicao"><b>01</b></span>
+      <Link className="ranking-builds-primeiro-avatar" to={`/perfil/${lider.autor_id}`} aria-label={`Perfil de ${lider.autor_nome}`}>
+        <img src={lider.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
+      </Link>
+      <div className="ranking-builds-primeiro-jogador">
+        <span>JOGADOR</span>
+        <Link to={`/perfil/${lider.autor_id}`}>{lider.autor_nome}</Link>
       </div>
-      <strong>{lider.votos} <small>{Number(lider.votos) === 1 ? 'voto' : 'votos'} nesta etapa</small></strong>
+      <div className="ranking-builds-primeiro-build">
+        <span>BUILD</span>
+        <Link to={`/ranking?desafio=${desafio.id}#participacao-${lider.id}`}>{lider.titulo}</Link>
+        {desafio.vencedor_id === lider.id && <small>Vencedor</small>}
+      </div>
+      <div className="ranking-builds-primeiro-votos">
+        <strong>{lider.votos}</strong>
+        <span>{Number(lider.votos) === 1 ? 'voto' : 'votos'} nesta etapa</span>
+      </div>
       {desafio.vencedor_id === lider.id && <div className="ranking-builds-primeiro-final">
         {desafio.final_vencedor ? <>
           <span>Final conquistado</span>
@@ -32,17 +43,29 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
         </> : <p>O vencedor ainda está escolhendo seu final.</p>}
       </div>}
     </article>
+    {import.meta.env.DEV && mostrarCards && <div className="ranking-builds-previa-final">
+      <button className="btn-filtro" type="button" aria-pressed={previaChama}
+        onClick={() => setPreviaChama((ativa) => !ativa)}>
+        {previaChama ? 'Fechar prévia da Chama Frenética' : 'Testar banner da Chama Frenética'}
+      </button>
+      <span>Prévia local: não salva uma escolha de final.</span>
+    </div>}
     <div className="ranking-builds-tabela-container">
       <table className="ranking-builds-tabela" id={tabelaId} aria-label={`Classificação de ${desafio.titulo}`}>
-        <thead><tr><th scope="col">Posição</th><th scope="col">Build e jogador</th><th scope="col">Votos</th></tr></thead>
+        <thead><tr><th scope="col">Posição</th><th scope="col">Jogador</th><th scope="col">Build</th><th scope="col">Votos</th></tr></thead>
         <tbody>{posicoesVisiveis.slice(1).map((build, index) => (
           <tr key={build.id}>
             <td>{index + 2}º</td>
-            <td><div className="ranking-builds-identidade">
-              <img src={build.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
+            <td><div className="ranking-builds-identidade ranking-builds-jogador">
+              <Link to={`/perfil/${build.autor_id}`} aria-label={`Perfil de ${build.autor_nome}`}>
+                <img src={build.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
+              </Link>
+              <Link to={`/perfil/${build.autor_id}`}>{build.autor_nome}</Link>
+            </div></td>
+            <td><div className="ranking-builds-identidade ranking-builds-build">
               <div>
                 <Link to={`/ranking?desafio=${desafio.id}#participacao-${build.id}`}>{build.titulo}</Link>
-                <span>{build.autor_nome}{desafio.vencedor_id === build.id && ' · Vencedor'}</span>
+                {desafio.vencedor_id === build.id && <span>Vencedor</span>}
               </div>
             </div></td>
             <td>{build.votos}</td>

@@ -48,6 +48,24 @@ h3.rk-grade-titulo {
     outline-offset: 2px;
 }
 
+.rk-btn--filtro {
+    min-height: 38px;
+    padding: 8px 18px;
+    color: #ddd;
+    font-size: 0.72rem;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
+    background: transparent;
+    border-color: rgba(202, 202, 202, 0.64);
+    border-radius: 3px;
+}
+
+.rk-btn--filtro:hover:not(:disabled) {
+    color: #080808;
+    background: #fff;
+    border-color: #fff;
+}
+
 .rk-btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
@@ -804,32 +822,36 @@ h3.rk-grade-titulo {
 
 .rk-participar {
     display: grid;
-    gap: 18px;
-    margin: 22px 0;
-    padding: 22px;
+    gap: 16px;
+    margin: 20px 0;
+    padding: 18px;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #1a120b, #111 60%);
-    border: 1px solid #5a3d22;
-    border-radius: 12px;
+    background: #111;
+    border: 1px solid #303030;
+    border-radius: 6px;
 }
 
-.rk-rotulo {
-    color: #f0a160;
-    font: 600 0.66rem/1.5 'Poppins', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+.rk-participar-cabecalho {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #292929;
 }
 
 .rk-participar .rk-participar-titulo {
+    margin: 0;
+    color: #e7e7e7;
+    font: 700 0.96rem/1.4 'Poppins', sans-serif;
+}
+
+.rk-participar-cabecalho p {
     margin: 4px 0 0;
-    color: #f5f5f5;
-    font: 700 1.1rem/1.4 'Poppins', sans-serif;
+    color: #929292;
+    font: 400 0.72rem/1.5 'Poppins', sans-serif;
 }
 
 .rk-passos {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 0;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -838,43 +860,81 @@ h3.rk-grade-titulo {
 
 .rk-passos li {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: 10px;
-    color: #bbb;
-    font: 400 0.74rem/1.55 'Poppins', sans-serif;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 9px;
+    padding: 2px 14px;
+    color: #999;
+    font: 400 0.72rem/1.55 'Poppins', sans-serif;
     counter-increment: passo;
+}
+
+.rk-passos li:first-child {
+    padding-left: 0;
+}
+
+.rk-passos li + li {
+    border-left: 1px solid #303030;
 }
 
 .rk-passos li::before {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
-    color: #f0a160;
-    font-weight: 700;
-    background: #2a1a0d;
-    border: 1px solid #5a3d22;
-    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    color: #bbb;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: #191919;
+    border: 1px solid #3a3a3a;
+    border-radius: 3px;
     content: counter(passo);
 }
 
 .rk-passos strong {
     display: block;
-    color: #eee;
-    font-weight: 600;
+    margin-bottom: 3px;
+    color: #d5d5d5;
+    font-weight: 500;
+}
+
+.rk-passos li strong {
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.rk-passos li strong::after {
+    display: block;
+    width: 28px;
+    height: 2px;
+    margin-top: 5px;
+    background: #777;
+    content: "";
 }
 
 .rk-participar-acao {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px 16px;
-    padding-top: 16px;
-    border-top: 1px solid #3a2a1a;
+    gap: 10px 14px;
+    padding-top: 13px;
+    border-top: 1px solid #292929;
 }
 
 .rk-participar-acao .rk-btn--principal {
     min-width: 220px;
+}
+
+.rk-participar .rk-btn--principal {
+    color: #111;
+    background: #d4d0c8;
+    border-color: #d4d0c8;
+}
+
+.rk-participar .rk-btn--principal:hover:not(:disabled) {
+    color: #080808;
+    background: #eeeae2;
+    border-color: #eeeae2;
 }
 
 .rk-participar-prazo {
@@ -965,7 +1025,7 @@ h3.rk-grade-titulo {
 
 /* Atalho de envio acima da classificacao das builds. */
 .rk-envio-curto {
-    margin: 4px 0 20px;
+    margin: 14px 0 24px;
     padding: 14px 16px;
     background: #141414;
     border: 1px solid #303030;
@@ -981,10 +1041,22 @@ h3.rk-grade-titulo {
 @media (max-width: 720px) {
     .rk-passos {
         grid-template-columns: minmax(0, 1fr);
+        gap: 11px;
+    }
+
+    .rk-passos li,
+    .rk-passos li:first-child {
+        padding: 0;
+    }
+
+    .rk-passos li + li {
+        padding-top: 10px;
+        border-top: 1px solid #292929;
+        border-left: 0;
     }
 
     .rk-participar {
-        padding: 18px 16px;
+        padding: 16px;
     }
 
     .rk-participar-acao > .rk-btn {

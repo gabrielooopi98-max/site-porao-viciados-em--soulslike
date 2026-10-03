@@ -126,7 +126,7 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
             onClick={() => setDescricaoExpandida((anterior) => !anterior)}>{descricaoExpandida ? 'Mostrar menos' : 'Ler descrição completa'}</button>}
         </div>}
         {!resumo && p.atributos?.equipamentos && <details className="rk-dobra">
-          <summary>Equipamentos e estratégia</summary>
+          <summary>Equipamentos usados</summary>
           <div><p className="rk-descricao">{p.atributos.equipamentos}</p></div>
         </details>}
       </div>}

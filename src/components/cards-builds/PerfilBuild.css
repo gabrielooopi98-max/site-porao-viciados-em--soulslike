@@ -1,0 +1,194 @@
+/* Selos do perfil da build (nivel, foco e dano), no card, nos detalhes e no formulario. */
+
+.perfil-build-selos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.perfil-selo {
+    --perfil-cor: #bdbdbd;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    min-height: 28px;
+    box-sizing: border-box;
+    padding: 3px 10px 3px 4px;
+    color: #ececec;
+    font: 500 0.72rem/1.2 'Poppins', sans-serif;
+    background: color-mix(in srgb, var(--perfil-cor) 10%, #121212);
+    border: 1px solid color-mix(in srgb, var(--perfil-cor) 32%, transparent);
+    border-radius: 999px;
+}
+
+.perfil-selo-texto {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Nivel: emblema claro que abre a linha. */
+.perfil-selo--nivel {
+    gap: 5px;
+    padding: 3px 11px;
+    color: #160d05;
+    background: linear-gradient(180deg, #f1dfc2, #cfae7d);
+    border-color: #f1dfc2;
+    box-shadow: 0 0 12px rgba(226, 170, 100, 0.18);
+}
+
+.perfil-selo--nivel span {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    opacity: 0.75;
+}
+
+.perfil-selo--nivel b {
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Atributo: sigla em uma bolinha da cor do atributo. */
+.perfil-selo-sigla {
+    display: grid;
+    place-items: center;
+    min-width: 30px;
+    height: 20px;
+    padding: 0 5px;
+    box-sizing: border-box;
+    color: #111;
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: var(--perfil-cor);
+    border-radius: 999px;
+}
+
+.perfil-selo--atributo em {
+    color: var(--perfil-cor);
+    font-style: normal;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Dano: icone tingido. */
+.perfil-selo--dano {
+    padding-left: 8px;
+}
+
+.perfil-selo-icone {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    fill: color-mix(in srgb, var(--perfil-cor) 22%, transparent);
+    stroke: var(--perfil-cor);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Texto antigo que nao bate com a lista: selo neutro. */
+.perfil-selo--livre {
+    padding-left: 10px;
+    color: #cfcfcf;
+}
+
+.perfil-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ---------- Seletor do formulario ---------- */
+
+.perfil-seletor {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.perfil-seletor-dica {
+    margin: 0;
+    color: rgba(240, 240, 240, 0.55);
+    font: 400 0.74rem/1.5 'Poppins', sans-serif;
+}
+
+.perfil-seletor-grupo {
+    display: grid;
+    gap: 8px;
+}
+
+.perfil-seletor-cabecalho {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    color: #e6e6e6;
+    font: 600 0.78rem/1.4 'Poppins', sans-serif;
+}
+
+.perfil-seletor-cabecalho small {
+    color: rgba(240, 240, 240, 0.45);
+    font-size: 0.68rem;
+    font-weight: 400;
+}
+
+.perfil-seletor-opcoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.perfil-selo--opcao {
+    min-height: 36px;
+    padding-right: 12px;
+    color: rgba(240, 240, 240, 0.7);
+    background: #151515;
+    border-color: #2f2f2f;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+.perfil-selo--opcao .perfil-selo-sigla {
+    opacity: 0.55;
+}
+
+.perfil-selo--opcao:hover:not(:disabled) {
+    color: #fff;
+    border-color: color-mix(in srgb, var(--perfil-cor) 55%, transparent);
+}
+
+.perfil-selo--opcao[aria-pressed='true'] {
+    color: #fff;
+    background: color-mix(in srgb, var(--perfil-cor) 18%, #121212);
+    border-color: var(--perfil-cor);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--perfil-cor) 35%, transparent);
+}
+
+.perfil-selo--opcao[aria-pressed='true'] .perfil-selo-sigla {
+    opacity: 1;
+}
+
+.perfil-selo--opcao:focus-visible {
+    outline: 2px solid var(--perfil-cor);
+    outline-offset: 2px;
+}
+
+.perfil-selo--opcao:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}

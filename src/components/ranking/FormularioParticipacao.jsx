@@ -30,16 +30,16 @@ export default function FormularioParticipacao({ desafio, participacao = null, a
       if (midias.some((arquivo) => !/^(image|video)\//.test(arquivo.type))) throw new Error('Escolha somente imagens e vídeos.');
       if (desafio.tipo === 'build' && !manterMidias && (!midias.some((arquivo) => arquivo.type.startsWith('image/'))
         || !midias.some((arquivo) => arquivo.type.startsWith('video/')))) {
-        throw new Error('Anexe pelo menos uma imagem da build e um vídeo mostrando como ela funciona.');
+        throw new Error('Anexe uma imagem dos atributos do personagem e um vídeo mostrando a build em ação.');
       }
       const campos = new FormData(event.currentTarget);
       enviadas = await enviarMidias(midias, setStatus, pastaMidiasRanking(user.id));
       const dados = {
         titulo: desafio.tipo === 'build' ? campos.get('titulo') : desafio.titulo,
-        descricao: desafio.tipo === 'build' ? campos.get('descricao') : 'Prova do desafio enviada em mídia.',
+        descricao: desafio.tipo === 'build' ? null : 'Prova do desafio enviada em mídia.',
         ...(manterMidias ? {} : { midias: enviadas }),
         atributos: desafio.tipo === 'build' ? {
-          nivel: campos.get('nivel'), foco: campos.get('foco'), equipamentos: campos.get('equipamentos'),
+          nivel: campos.get('nivel'), equipamentos: campos.get('equipamentos'),
         } : {},
       };
       await (editando
@@ -74,20 +74,16 @@ export default function FormularioParticipacao({ desafio, participacao = null, a
         {desafio.tipo === 'build' && <>
           <legend className="rk-etapa-form"><span>1</span>Sobre a build</legend>
           <label><span>Nome da build <b className="rk-obrigatorio">*</b></span><input name="titulo" defaultValue={participacao?.titulo} required minLength={3} maxLength={160} placeholder="Ex.: Cavaleiro de Havel" /></label>
-          <label><span>Descrição <b className="rk-obrigatorio">*</b></span><textarea name="descricao" defaultValue={participacao?.descricao} required minLength={10} maxLength={6000} placeholder="Para que serve a build, como jogar com ela e por que ela funciona." /></label>
-          <div className="ranking-form-grid">
-            <label>Nível<input name="nivel" defaultValue={atributos.nivel ?? ''} type="number" min="1" max="9999" placeholder="Ex.: 120" /></label>
-            <label>Foco / atributos<input name="foco" defaultValue={atributos.foco ?? ''} maxLength={200} placeholder="Ex.: Inteligência 60, vigor 40…" /></label>
-          </div>
-          <label>Equipamentos e estratégia<textarea name="equipamentos" defaultValue={atributos.equipamentos ?? ''} maxLength={2000} placeholder="Armas e melhorias, itens, consumíveis, magias e milagres utilizados. Explique como usar a build." /></label>
+          <label>Nível do Personagem usado:<input name="nivel" defaultValue={atributos.nivel ?? ''} type="number" min="1" max="9999" placeholder="Ex.: 120" /></label>
+          <label>Equipamentos usados<textarea name="equipamentos" defaultValue={atributos.equipamentos ?? ''} maxLength={2000} placeholder="Liste armas, melhorias, itens, consumíveis, magias e milagres utilizados." /></label>
         </>}
       </fieldset>
       <fieldset disabled={ocupado}>
         <legend className="rk-etapa-form"><span>{desafio.tipo === 'build' ? 2 : 1}</span>{desafio.tipo === 'build' ? 'Imagem e vídeo' : 'Anexe sua prova'}</legend>
         <AnexosPublicacao id="ranking-anexos" midias={midias} setMidias={setMidias} publicando={ocupado} obrigatorio={!editando}
-          titulo={desafio.tipo === 'build' ? 'Imagem e vídeo da build' : 'Anexe sua prova'}
+          titulo={desafio.tipo === 'build' ? 'Imagem dos atributos e vídeo da build' : 'Anexe sua prova'}
           descricao={editando ? 'Deixe vazio para manter as mídias atuais. Se anexar arquivos, eles substituem todas as mídias (pelo menos uma imagem e um vídeo).'
-            : desafio.tipo === 'build' ? 'Obrigatório: pelo menos uma imagem e um vídeo da build em ação. Até oito arquivos no total.' : 'Anexe pelo menos uma imagem ou um vídeo. Até oito arquivos. Siga o que o ADM pediu nas regras.'} />
+            : desafio.tipo === 'build' ? 'Obrigatório: uma imagem dos atributos do personagem e um vídeo da build em ação contra um boss. Até oito arquivos no total.' : 'Anexe pelo menos uma imagem ou um vídeo. Até oito arquivos. Siga o que o ADM pediu nas regras.'} />
       </fieldset>
       {status && <p role="status">{status}</p>}
       {erro && <p className="ranking-erro" role="alert">{erro}</p>}

@@ -33,7 +33,7 @@ create table if not exists public.ranking_participacoes (
     autor_nome text not null,
     autor_avatar text,
     titulo text not null check (length(trim(titulo)) between 3 and 160),
-    descricao text not null check (length(trim(descricao)) between 10 and 6000),
+    descricao text check (descricao is null or length(trim(descricao)) between 10 and 6000),
     atributos jsonb not null default '{}'::jsonb check (
         jsonb_typeof(atributos) = 'object' and octet_length(atributos::text) <= 16000
         and coalesce(jsonb_typeof(atributos->'nivel'), 'null') in ('null', 'number', 'string')
@@ -48,6 +48,11 @@ create table if not exists public.ranking_participacoes (
     criado_em timestamptz not null default now(),
     unique (desafio_id, autor_id)
 );
+
+alter table public.ranking_participacoes alter column descricao drop not null;
+alter table public.ranking_participacoes drop constraint if exists ranking_participacoes_descricao_check;
+alter table public.ranking_participacoes add constraint ranking_participacoes_descricao_check
+    check (descricao is null or length(trim(descricao)) between 10 and 6000);
 
 create table if not exists public.ranking_votos (
     participacao_id uuid not null references public.ranking_participacoes(id),
@@ -242,7 +247,7 @@ begin
             update public.ranking_participacoes set etapa_max = 2
             where id in (
                 select p.id from public.ranking_participacoes p
-                left join public.ranking_votos v on v.participacao_id = p.id and v.etapa = 1
+                left join public.ranking_votos v on v.participacao_id = p.id and v.etapa <= 1
                 where p.desafio_id = d.id and p.status = 'aprovada' and p.etapa_max = 1
                 group by p.id order by count(v.usuario_id) desc, p.criado_em, p.id limit 2
             );
@@ -251,7 +256,7 @@ begin
         end if;
         if d.etapa = 2 and d.fim_final <= now() then
             select p.id into escolhido from public.ranking_participacoes p
-            left join public.ranking_votos v on v.participacao_id = p.id and v.etapa = 2
+            left join public.ranking_votos v on v.participacao_id = p.id and v.etapa <= 2
             where p.desafio_id = d.id and p.status = 'aprovada' and p.etapa_max = 2
             group by p.id having count(v.usuario_id) > 0
             order by count(v.usuario_id) desc, p.criado_em, p.id limit 1;
@@ -369,7 +374,7 @@ begin
     values (d.id, auth.uid(), coalesce(nullif(u->>'display_name', ''), nullif(u->>'nome', ''), nullif(u->>'full_name', ''), 'Jogador'),
         u->>'avatar_url',
         case when d.tipo = 'conquista' then d.titulo else trim(p_dados->>'titulo') end,
-        case when d.tipo = 'conquista' then 'Prova do desafio enviada em midia.' else trim(p_dados->>'descricao') end,
+        case when d.tipo = 'conquista' then 'Prova do desafio enviada em midia.' else null end,
         p_dados->'midias', coalesce(p_dados->'atributos', '{}'::jsonb),
         case when d.tipo = 'build' then 'aprovada' else 'pendente' end) returning id into resultado;
     return resultado;
@@ -402,7 +407,7 @@ begin
             and not exists(select 1 from jsonb_array_elements(novas) x where x->>'caminho' = m->>'caminho')
         on conflict do nothing;
     update public.ranking_participacoes set
-        titulo = trim(p_dados->>'titulo'), descricao = trim(p_dados->>'descricao'),
+        titulo = trim(p_dados->>'titulo'), descricao = null,
         atributos = coalesce(p_dados->'atributos', '{}'::jsonb), midias = novas
     where id = p.id;
 end;
@@ -474,6 +479,7 @@ declare
     d public.ranking_desafios%rowtype;
     p public.ranking_participacoes%rowtype;
     did uuid;
+    ja_votou boolean;
 begin
     if auth.uid() is null then raise exception 'Entre na sua conta para votar.'; end if;
     perform public.ranking_avancar();
@@ -488,8 +494,14 @@ begin
     if now() < d.inicio then raise exception 'Este desafio ainda nao comecou.'; end if;
     if d.etapa = 3 or now() >= d.fim_final then raise exception 'A votacao foi encerrada.'; end if;
     if p.status <> 'aprovada' or p.etapa_max < d.etapa then raise exception 'Esta build nao participa da etapa atual.'; end if;
-    delete from public.ranking_votos where participacao_id = p.id and usuario_id = auth.uid() and etapa = d.etapa;
-    if not found then
+    select exists(
+        select 1 from public.ranking_votos
+        where participacao_id = p.id and usuario_id = auth.uid() and etapa = d.etapa
+    ) into ja_votou;
+    delete from public.ranking_votos v using public.ranking_participacoes alvo
+    where v.participacao_id = alvo.id and alvo.desafio_id = d.id
+        and v.usuario_id = auth.uid() and v.etapa = d.etapa;
+    if not ja_votou then
         insert into public.ranking_votos (participacao_id, usuario_id, etapa) values (p.id, auth.uid(), d.etapa);
     end if;
 end;
@@ -574,7 +586,7 @@ begin
             select jsonb_agg(to_jsonb(t) order by t.criado_em desc) from (
                 select p.*, d.etapa, d.tipo, d.titulo as desafio_titulo, d.pontos_voto,
                     (select count(*) from public.ranking_votos v where v.participacao_id = p.id
-                        and v.etapa = least(d.etapa, 2)) as votos,
+                        and v.etapa <= least(d.etapa, 2)) as votos,
                     exists(select 1 from public.ranking_votos v where v.participacao_id = p.id
                         and v.etapa = least(d.etapa, 2) and v.usuario_id = auth.uid()) as votou,
                     (select jsonb_build_array(

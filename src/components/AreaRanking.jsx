@@ -42,8 +42,8 @@ function CompeticaoRanking({ desafio, participacoes, agora }) {
         <div><dt>{encerrada ? 'Final encerrada em' : 'Vote até'}</dt><dd><time dateTime={prazo}>{formatarDataRanking(prazo)}</time></dd></div>
       </dl>
       <p className="ranking-home-votacao">{encerrada ? 'Resultado disponível por 3 dias após a final.'
-        : desafio.etapa === 0 ? 'Vote nas suas favoritas: as 4 builds mais votadas avançam para a semifinal.'
-          : 'Nova etapa, novos votos. Você pode votar novamente nas builds que avançaram.'}</p>
+        : desafio.etapa === 0 ? 'Vote em uma build: os votos ficam acumulados e as 4 mais votadas avançam para a semifinal.'
+          : 'Você pode votar novamente nesta etapa. Os novos votos se somam ao total acumulado da build.'}</p>
       {inscricoesAbertas && <div className="rk-participar-acao rk-envio-curto">
         <Link className="rk-btn rk-btn--principal" to={`/ranking?desafio=${desafio.id}&participar=1`}>+ Enviar minha build</Link>
         <span className="rk-participar-prazo">Inscrições até <b>{formatarDataRanking(desafio.fim)}</b>. A build entra na disputa na hora.</span>

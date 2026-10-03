@@ -82,7 +82,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     for (let n = 2; n <= 8; n++) {
       await como(n);
       ids.push(await rpc('ranking_publicar', [desafio, {
-        titulo: `Build ${n}`, descricao: 'Descricao da prova e equipamentos.', midias: await midiasBuild(n),
+        titulo: `Build ${n}`, ...(n === 2 ? {} : { descricao: 'Descricao da prova e equipamentos.' }), midias: await midiasBuild(n),
         atributos: { nivel: 125, foco: 'Inteligencia' },
       }]));
     }
@@ -94,6 +94,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     let publicas = await rpc('ranking_painel', [desafio]);
     assert.equal(publicas.participacoes.length, 7);
     assert.equal(publicas.participacoes.every((p) => p.status === 'aprovada'), true);
+    assert.equal(publicas.participacoes.find((p) => p.id === ids[0]).descricao, null);
     assert.equal((await rpc('ranking_painel')).participacoes.length, 7);
     // O ADM so modera: remove uma build fora das regras e pode restaura-la.
     await como(1);
@@ -109,15 +110,27 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await rpc('ranking_votar', [ids[0]]);
     let painel = await rpc('ranking_painel', [desafio]);
     assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 1);
-    await rpc('ranking_votar', [ids[0]]);
+    await rpc('ranking_votar', [ids[1]]);
     painel = await rpc('ranking_painel', [desafio]);
     assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 0);
+    assert.equal(painel.participacoes.find((p) => p.id === ids[1]).votos, 1);
+    assert.equal(painel.participacoes.find((p) => p.id === ids[1]).votou, true);
+    await rpc('ranking_votar', [ids[1]]);
+    painel = await rpc('ranking_painel', [desafio]);
+    assert.equal(painel.participacoes.find((p) => p.id === ids[1]).votos, 0);
+    await rpc('ranking_votar', [ids[0]]);
+    painel = await rpc('ranking_painel', [desafio]);
+    assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 1);
     assert.equal(painel.jogadores.length, 0);
   });
-  await t.test('top 4, votos independentes na semifinal, top 2 e vencedor unico', async () => {
-    for (let i = 0; i < ids.length; i++) {
-      for (let v = 10; v < 17 - i; v++) {
-        await como(v);
+  await t.test('voto unico por pessoa a cada etapa, totais acumulados, top 4, top 2 e vencedor unico', async () => {
+    const votantesClassificatoria = [
+      [11, 12, 13, 14, 15, 16], [17, 18, 19, 20, 21, 22],
+      [23, 24, 25, 26, 27], [28, 29, 30], [], [], [],
+    ];
+    for (const [i, votantes] of votantesClassificatoria.entries()) {
+      for (const votante of votantes) {
+        await como(votante);
         await rpc('ranking_votar', [ids[i]]);
       }
     }
@@ -130,13 +143,17 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     etapaVoto = 1;
     assert.equal(painel.participacoes.filter((p) => p.etapa_max === 1).length, 4);
     assert.equal(painel.participacoes.find((p) => p.id === ids[4]).etapa_max, 0);
-    assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 0);
+    assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 7);
     assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votou, false);
     await assert.rejects(rpc('ranking_votar', [ids[6]]), /nao participa/);
     await assert.rejects(rpc('ranking_publicar', [desafio, { titulo: 'Tardia', descricao: 'Prova fora do prazo.', midias: [] }]), /fechadas/);
-    for (let i = 0; i < 4; i++) {
-      for (let v = 10; v < 16 - i; v++) {
-        await como(v);
+    const votantesSemifinal = [
+      [10, 11, 12, 13, 14, 15], [16, 17, 18, 19, 20],
+      [21, 22, 23, 24], [25, 26, 27],
+    ];
+    for (const [i, votantes] of votantesSemifinal.entries()) {
+      for (const votante of votantes) {
+        await como(votante);
         await rpc('ranking_votar', [ids[i]]);
       }
     }
@@ -149,8 +166,12 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(painel.participacoes.filter((p) => p.etapa_max === 2).length, 2);
     const primeiro = painel.participacoes.find((p) => p.id === ids[0]);
     assert.deepEqual(primeiro.historico_votos, [7, 6, 0]);
+    assert.equal(primeiro.votos, 13);
     assert.equal(primeiro.votou, false);
-    await rpc('ranking_votar', [ids[1]]);
+    for (const votante of [10, 11, 12]) {
+      await como(votante);
+      await rpc('ranking_votar', [ids[1]]);
+    }
     await superusuario();
     await db.query("update public.ranking_desafios set fim_final = now() - interval '1 minute' where id = $1", [desafio]);
     await como(10);
@@ -294,7 +315,10 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await como(10);
     painel = await rpc('ranking_painel', [pequeno]);
     assert.equal(painel.participacoes.filter((p) => p.etapa_max === 2).length, 2);
-    for (const id of entradas) await rpc('ranking_votar', [id, 2]);
+    for (const [i, id] of entradas.entries()) {
+      await como(10 + i);
+      await rpc('ranking_votar', [id, 2]);
+    }
     await superusuario();
     await db.query("update public.ranking_desafios set fim_final = now() - interval '1 minute' where id = $1", [pequeno]);
     await como(10);

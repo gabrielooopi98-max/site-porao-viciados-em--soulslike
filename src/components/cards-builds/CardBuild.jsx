@@ -10,6 +10,28 @@ import AcoesPublicacao from '../AcoesPublicacao';
 import CompartilharPublicacao from '../CompartilharPublicacao';
 import './CardBuild.css';
 
+const iconesAtributos = {
+    nivel: (
+        <svg viewBox="0 0 24 24">
+            <path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7Z" />
+            <path d="M12 8v8M9 12h6" />
+        </svg>
+    ),
+    foco: (
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="3.5" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        </svg>
+    ),
+    dano: (
+        <svg viewBox="0 0 24 24">
+            <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
+            <path d="m13 19 6-6M16 16l4 4M19 21l2-2" />
+        </svg>
+    ),
+};
+
 function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -227,6 +249,13 @@ function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
         }
     }
 
+    const atributos = [
+        build.nivel && { chave: 'nivel', rotulo: 'Nível', valor: build.nivel },
+        build.foco && { chave: 'foco', rotulo: 'Foco', valor: build.foco },
+        build.dano && { chave: 'dano', rotulo: 'Dano', valor: build.dano },
+    ].filter(Boolean);
+    const visualizacoes = (build.visualizacoes ?? 0).toLocaleString('pt-BR');
+
     return (
         <article
             ref={cardRef}
@@ -236,74 +265,63 @@ function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
             tabIndex={0}
             aria-label={`Build: ${build.titulo}`}
         >
-            <header className="build-card-cabecalho">
-                <div className="build-card-contexto">
-                    <span className="build-card-tipo">Build</span>
-                    {build.categoria && <span className="build-card-jogo">{build.categoria}</span>}
+            {/* Capa sem overflow no topo: os menus de acoes podem abrir para fora dela. */}
+            <div className="build-card-topo">
+                <div className={`build-card-capa${midias.length ? '' : ' build-card-capa--vazia'}`}>
+                    {midias.length > 0 ? (
+                        <MidiasPublicacao
+                            publicacao={build}
+                            itemClassName="build-card-capa-item"
+                            mediaClassName="build-card-capa-arquivo"
+                            modoPreviaVideo
+                        />
+                    ) : (
+                        <svg className="build-card-capa-emblema" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
+                            <path d="m13 19 6-6M16 16l4 4M19 21l2-2" />
+                        </svg>
+                    )}
                 </div>
-                <div className="publicacao-header-acoes">
-                    <CompartilharPublicacao publicacao={build} tipo="build" />
-                    <AcoesPublicacao publicacao={build} tipo="build" aoAtualizar={aoAtualizar} aoExcluir={aoExcluir} />
-                </div>
-                <h3 className="build-card-titulo">{build.titulo}</h3>
-            </header>
 
-            {midias.length > 0 && (
-                <div className="build-card-capa">
-                    <MidiasPublicacao
-                        publicacao={build}
-                        itemClassName="build-card-capa-item"
-                        mediaClassName="build-card-capa-arquivo"
-                        modoPreviaVideo
-                    />
-
-                    <div className="build-card-etiquetas">
-                        {temVideo && <span className="build-card-selo">Vídeo</span>}
-                        {midiasExtras > 0 && <span className="build-card-selo">+{midiasExtras}</span>}
+                <div className="build-card-sobre-capa">
+                    <div className="build-card-contexto">
+                        <span className="build-card-tipo">Build</span>
+                        {build.categoria && <span className="build-card-jogo">{build.categoria}</span>}
+                    </div>
+                    <div className="publicacao-header-acoes build-card-menu">
+                        <CompartilharPublicacao publicacao={build} tipo="build" />
+                        <AcoesPublicacao publicacao={build} tipo="build" aoAtualizar={aoAtualizar} aoExcluir={aoExcluir} />
                     </div>
                 </div>
-            )}
+
+                <div className="build-card-titulo-area">
+                    {(temVideo || midiasExtras > 0) && (
+                        <div className="build-card-etiquetas">
+                            {temVideo && (
+                                <span className="build-card-selo">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z" /></svg>
+                                    Vídeo
+                                </span>
+                            )}
+                            {midiasExtras > 0 && <span className="build-card-selo">+{midiasExtras} mídias</span>}
+                        </div>
+                    )}
+                    <h3 className="build-card-titulo">{build.titulo}</h3>
+                </div>
+            </div>
 
             <div className="build-card-corpo">
-                {(build.nivel || build.foco || build.dano) && (
-                    <dl className="build-card-atributos">
-                        {build.nivel && (
-                            <div>
-                                <span className="build-card-atributo-icone" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7Z" />
-                                        <path d="M12 8v8M9 12h6" />
-                                    </svg>
-                                </span>
-                                <dt>Nível</dt>
-                                <dd>{build.nivel}</dd>
+                {atributos.length > 0 && (
+                    <dl className="build-card-atributos" style={{ '--colunas': atributos.length }}>
+                        {atributos.map((atributo) => (
+                            <div key={atributo.chave}>
+                                <dt>
+                                    <span className="build-card-atributo-icone" aria-hidden="true">{iconesAtributos[atributo.chave]}</span>
+                                    {atributo.rotulo}
+                                </dt>
+                                <dd title={String(atributo.valor)}>{atributo.valor}</dd>
                             </div>
-                        )}
-                        {build.foco && (
-                            <div>
-                                <span className="build-card-atributo-icone" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24">
-                                        <circle cx="12" cy="12" r="8" />
-                                        <circle cx="12" cy="12" r="3.5" />
-                                        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-                                    </svg>
-                                </span>
-                                <dt>Foco</dt>
-                                <dd>{build.foco}</dd>
-                            </div>
-                        )}
-                        {build.dano && (
-                            <div>
-                                <span className="build-card-atributo-icone" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
-                                        <path d="m13 19 6-6M16 16l4 4M19 21l2-2" />
-                                    </svg>
-                                </span>
-                                <dt>Dano</dt>
-                                <dd>{build.dano}</dd>
-                            </div>
-                        )}
+                        ))}
                     </dl>
                 )}
                 {build.descricao?.trim() && (
@@ -382,15 +400,12 @@ function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
                         </svg>
                         <span>{totalComentarios.toLocaleString('pt-BR')}</span>
                     </button>
-                    <span
-                        className="build-card-views"
-                        aria-label={`${(build.visualizacoes ?? 0).toLocaleString('pt-BR')} visualizações`}
-                    >
+                    <span className="build-card-views" aria-label={`${visualizacoes} visualizações`}>
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
                             <circle cx="12" cy="12" r="3" />
                         </svg>
-                        {(build.visualizacoes ?? 0).toLocaleString('pt-BR')}
+                        {visualizacoes}
                     </span>
                 </div>
             </footer>

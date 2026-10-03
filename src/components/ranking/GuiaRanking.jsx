@@ -7,7 +7,7 @@ const modalidades = [
   {
     titulo: 'Competição de builds',
     resumo: 'A comunidade escolhe a melhor build.',
-    passos: ['Envie sua build durante a classificatória: ela entra na disputa na hora', 'As 4 mais votadas vão à semifinal', 'As 2 mais votadas disputam a final', 'A mais votada na final vence, leva o prêmio e escolhe um final de soulslike como título'],
+    passos: ['Envie sua build durante a classificatória: ela entra na disputa na hora', 'Vote em uma build por etapa; você pode trocar seu voto enquanto ela estiver aberta', 'Os votos ficam acumulados entre as etapas: as 4 maiores somas vão à semifinal e as 2 maiores disputam a final', 'A maior soma de votos ao fim da final vence, leva o prêmio e escolhe um final de soulslike como título'],
   },
   {
     titulo: 'Classificação geral',
@@ -28,7 +28,7 @@ const status = [
   { classe: 'pendente', nome: 'Aguardando ADM', texto: 'Prova de desafio enviada e ainda não conferida.' },
   { classe: 'aprovada', nome: 'Aprovada', texto: 'Prova conferida pelo ADM e valendo os pontos.' },
   { classe: 'recusada', nome: 'Recusada / Removida', texto: 'Prova recusada ou build removida por quebrar as regras. Só o autor e o ADM veem.' },
-  { classe: 'vencedor', nome: 'Vencedor', texto: 'Build mais votada na final. O autor escolhe seu final.' },
+  { classe: 'vencedor', nome: 'Vencedor', texto: 'Build com a maior soma de votos da competição. O autor escolhe seu final.' },
 ];
 
 export default function GuiaRanking() {

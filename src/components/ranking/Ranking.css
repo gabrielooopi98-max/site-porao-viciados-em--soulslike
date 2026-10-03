@@ -116,6 +116,7 @@
     background: #101010;
     border: 1px solid #292929;
     border-radius: 8px;
+    scroll-margin-top: 90px;
 }
 
 .ranking-desafios-titulo {
@@ -1667,8 +1668,35 @@
     font-size: 0.9rem;
 }
 
+.ranking-page .ranking-subtitulo,
+.ranking-page .ranking-linha-tempo h3 {
+    width: fit-content;
+    padding: 7px 11px;
+    color: #eee;
+    font-weight: 600;
+    background: #211a12;
+    border-left: 3px solid #c99455;
+    border-radius: 3px;
+}
+
+.ranking-descricao-regras {
+    padding-top: 16px;
+    margin-top: 22px;
+    background: linear-gradient(90deg, #80613d, #39332b 38%, transparent) top / 100% 1px no-repeat;
+}
+
+.ranking-page .ranking-descricao-regras .ranking-subtitulo {
+    margin-top: 0;
+}
+
 .ranking-linha-tempo {
-    margin-block: 8px 18px;
+    padding-top: 16px;
+    margin-block: 22px 18px;
+    background: linear-gradient(90deg, #80613d, #39332b 38%, transparent) top / 100% 1px no-repeat;
+}
+
+.ranking-page .ranking-linha-tempo h3 {
+    margin-top: 0;
 }
 
 .ranking-page .ranking-agora {
@@ -2287,47 +2315,119 @@
 
 .ranking-builds-primeiro {
     display: grid;
-    grid-template-columns: 64px minmax(0, 1fr) auto;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px 18px;
+    gap: 10px 12px;
     width: 100%;
+    max-width: 461px;
+    min-height: 167px;
     box-sizing: border-box;
     margin: 24px auto;
-    padding: 24px 20px;
+    padding: 14px;
     color: #eee;
     text-align: left;
-    background: #171513;
-    border: 1px solid #57412e;
-    border-radius: 8px;
+    border: 1px solid #fdfaf7a9;
+    border-radius: 7px;
 }
 
 .ranking-builds-primeiro--chama {
     background:
-        linear-gradient(90deg, rgb(12 12 12 / 94%) 0%, rgb(12 12 12 / 82%) 58%, rgb(12 12 12 / 55%) 100%),
+        linear-gradient(90deg, rgb(12 12 12 / 78%) 0%, rgb(12 12 12 / 58%) 58%, rgb(12 12 12 / 30%) 100%),
         url('/svg-animado/banner-cavaleiro-chama-1760x575-detalhado.svg') center / 100% auto no-repeat,
-        #171513;
+        #111;
+}
+
+.ranking-builds-previa-final {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin: -12px 0 20px;
+}
+
+.ranking-builds-previa-final .btn-filtro {
+    padding: 6px 10px;
+    font-size: 0.68rem;
+}
+
+.ranking-builds-previa-final > span {
+    color: #888;
+    font-size: 0.68rem;
 }
 
 .ranking-builds-primeiro-posicao {
-    grid-column: 1 / -1;
-    color: #dca16e;
-    font: 600 0.7rem/1.5 'Poppins', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    grid-column: 1 / 3;
+    grid-row: 1;
+    justify-self: start;
+    padding: 5px 8px;
+    color: #f8f6f3;
+    font: 600 0.68rem/1.3 'Poppins', sans-serif;
+    background: #ffffff08;
+    border: 1px solid #ffffff17;
+    border-radius: 4px;
 }
 
-.ranking-builds-primeiro img {
-    width: 56px;
-    height: 56px;
+.ranking-builds-primeiro-posicao b {
+    color: #f1f0ec;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-builds-primeiro-avatar {
+    grid-column: 1;
+    grid-row: 2;
+    display: block;
+    width: 42px;
+    height: 42px;
+}
+
+.ranking-builds-primeiro-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 1px solid #65503f;
+    border: 1px solid #61513c;
     border-radius: 50%;
 }
 
-.ranking-builds-classificacao .ranking-builds-primeiro h3 {
-    margin: 0;
-    font: 700 1.05rem/1.5 'Poppins', sans-serif;
-    text-align: left;
+.ranking-builds-primeiro-jogador,
+.ranking-builds-primeiro-build {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ranking-builds-primeiro-jogador {
+    grid-column: 2 / -1;
+    grid-row: 2;
+}
+
+.ranking-builds-primeiro-build {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding-top: 8px;
+    border-top: 1px solid #ffffff20;
+}
+
+.ranking-builds-primeiro-jogador > span,
+.ranking-builds-primeiro-build > span {
+    display: block;
+    margin-bottom: 4px;
+    color: #89847c;
+    font: 600 0.58rem/1.4 'Poppins', sans-serif;
+    letter-spacing: 0.08em;
+}
+
+.ranking-builds-primeiro-jogador > a,
+.ranking-builds-primeiro-build > a {
+    display: inline-block;
+    color: #eee;
+    font: 600 0.82rem/1.5 'Poppins', sans-serif;
     overflow-wrap: anywhere;
 }
 
@@ -2337,39 +2437,42 @@
 }
 
 .ranking-builds-primeiro a:hover {
+    color: #e4c58d;
     text-decoration: underline;
 }
 
-.ranking-builds-primeiro p {
-    margin: 0;
-    color: #aaa;
-    font: 400 0.75rem/1.6 'Poppins', sans-serif;
-}
-
-.ranking-builds-primeiro > strong {
-    color: #e4b38b;
-    font: 700 1.35rem/1.5 'Poppins', sans-serif;
-}
-
-.ranking-builds-primeiro small {
+.ranking-builds-primeiro-build small {
     display: block;
+    margin-top: 3px;
+    color: #d8ba8e;
+    font: 500 0.65rem/1.4 'Poppins', sans-serif;
+}
+
+.ranking-builds-primeiro-votos {
+    display: grid;
+    grid-column: 3;
+    grid-row: 1;
+    justify-items: end;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+.ranking-builds-primeiro-votos strong {
+    color: #e4c58d;
+    font: 700 1.25rem/1.2 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-builds-primeiro-votos span {
     color: #aaa;
-    font-size: 0.65rem;
-    font-weight: 400;
-}
-
-.ranking-builds-primeiro-identidade p {
-    margin-top: 5px;
-}
-
-.ranking-builds-primeiro > strong {
-    text-align: right;
+    font: 400 0.62rem/1.4 'Poppins', sans-serif;
 }
 
 .ranking-builds-primeiro-final {
     grid-column: 1 / -1;
-    padding-top: 16px;
-    border-top: 1px solid #493b2e;
+    grid-row: 4;
+    padding-top: 13px;
+    border-top: 1px solid #ffffff20;
 }
 
 .ranking-builds-primeiro-final > span {
@@ -2381,37 +2484,58 @@
 }
 
 .ranking-builds-primeiro-final > strong {
-    color: #e4b38b;
-    font: 700 1.1rem/1.5 'Poppins', sans-serif;
+    color: #e4c58d;
+    font: 600 0.95rem/1.5 'Poppins', sans-serif;
 }
 
 .ranking-builds-primeiro-final p {
+    margin: 0;
+    color: #aaa;
+    font: 400 0.75rem/1.6 'Poppins', sans-serif;
+}
+
+.ranking-builds-primeiro-final > p {
     margin-top: 5px;
 }
 
 @media (max-width: 600px) {
     .ranking-builds-primeiro {
-        grid-template-columns: 48px minmax(0, 1fr);
-        padding: 20px 16px;
-        gap: 12px;
-    }
-
-    .ranking-builds-primeiro img {
-        width: 44px;
-        height: 44px;
-    }
-
-    .ranking-builds-primeiro > strong {
-        grid-column: 2;
-        text-align: left;
+        padding: 12px;
     }
 }
 
 .ranking-builds-tabela {
     width: 100%;
+    min-width: 590px;
     border-collapse: collapse;
     color: #ddd;
     font: 400 0.8rem/1.6 'Poppins', sans-serif;
+}
+
+.ranking-builds-classificacao .ranking-builds-tabela th,
+.ranking-builds-classificacao .ranking-builds-tabela td {
+    padding: 12px 14px;
+}
+
+.ranking-builds-classificacao .ranking-builds-tabela th {
+    background: #151515;
+}
+
+.ranking-builds-classificacao .ranking-builds-tabela td:first-child {
+    width: 64px;
+    color: #c9ad7b;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-builds-classificacao .ranking-builds-tabela th:last-child,
+.ranking-builds-classificacao .ranking-builds-tabela td:last-child {
+    width: 90px;
+    text-align: center;
+}
+
+.ranking-builds-classificacao .ranking-builds-tabela td:last-child {
+    color: #e4c58d;
+    font-weight: 600;
 }
 
 .ranking-builds-tabela caption {
@@ -2583,6 +2707,33 @@
     border-color: #383838;
 }
 
+.ranking-page .ranking-link-geral.btn-filtro {
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 12px;
+    color: #ddd;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.35px;
+    text-align: center;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid #555;
+    border-radius: 3px;
+}
+
+.ranking-page .ranking-link-geral.btn-filtro:hover {
+    color: #080808;
+    background: #fff;
+    border-color: #fff;
+}
+
+.ranking-page .ranking-link-geral.btn-filtro.selecionado {
+    color: #080808;
+    background: #ffffffe3;
+    border-color: #aaa;
+}
+
 .ranking-desafios > button[aria-pressed="true"] {
     background: #1a1a1a;
     border-color: #555;
@@ -2634,39 +2785,29 @@
 }
 
 .ranking-indice {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    padding: 10px;
-    background: #101010;
-    border: 1px solid #292929;
-    border-radius: 7px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .ranking-indice a {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    min-width: 0;
-    min-height: 42px;
-    padding: 8px 10px;
-    color: #ddd;
-    font-size: 0.73rem;
-    background: #151515;
-    border: 1px solid #292929;
-    border-radius: 5px;
+    gap: 7px;
+    min-height: 38px;
+    padding: 8px 13px;
     text-decoration: none;
 }
 
-.ranking-indice a:hover {
-    background: #202020;
-    border-color: #555;
+.ranking-indice a:focus-visible {
+    outline: 2px solid var(--souls-destaque);
+    outline-offset: 2px;
 }
 
 .ranking-indice a > strong {
     flex: 0 0 auto;
-    color: #888;
-    font-size: 0.65rem;
+    color: inherit;
+    font-size: 0.7rem;
     font-variant-numeric: tabular-nums;
 }
 
@@ -2766,13 +2907,10 @@
         padding: 14px;
     }
 
-    .ranking-indice {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 6px;
-    }
-
     .ranking-indice a {
-        min-height: 38px;
+        min-height: 36px;
+        padding: 7px 10px;
+        font-size: 0.7rem;
     }
 
     .ranking-bloco {

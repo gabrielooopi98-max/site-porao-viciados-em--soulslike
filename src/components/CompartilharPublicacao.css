@@ -319,46 +319,6 @@
     flex-wrap: wrap;
 }
 
-.favoritos-lista .build-card-cabecalho {
-    gap: 6px;
-    padding: 10px 12px 12px;
-}
-
-.favoritos-lista .build-card-titulo {
-    font-size: 1rem;
-}
-
-.favoritos-lista .build-card-capa {
-    aspect-ratio: 16 / 9;
-    flex: 0 0 auto;
-}
-
-.favoritos-lista .build-card-corpo {
-    gap: 10px;
-    padding: 12px 12px 0;
-}
-
-.favoritos-lista .build-card-atributos {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 70px), 1fr));
-    gap: 6px;
-}
-
-.favoritos-lista .build-card-atributos div {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
-    padding: 8px;
-}
-
-.favoritos-lista .build-card-atributo-icone {
-    display: none;
-}
-
-.favoritos-lista .build-card-rodape {
-    gap: 6px;
-    margin-top: 10px;
-    padding: 10px 12px 6px;
-}
-
 @media (max-width: 768px) {
     .favoritos-lista {
         gap: 18px;
