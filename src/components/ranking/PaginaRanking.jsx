@@ -142,7 +142,7 @@ export default function PaginaRanking() {
                   <h2 id="ranking-builds-titulo">Classificação das builds</h2>
                   <p>Esta tabela mostra as posições das builds na competição selecionada. Os votos valem para a etapa atual.</p>
                 </header>
-                <ClassificacaoBuilds dados={dados} mostrarCards />
+                <ClassificacaoBuilds dados={dados} mostrarCards permitirPreviaFinal />
               </section>
             </> : desafio ? <>
               <div className="ranking-desafio-detalhe">

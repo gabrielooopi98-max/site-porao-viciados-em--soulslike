@@ -504,6 +504,42 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await como(10);
     await assert.rejects(rpc('ranking_comentar', ['00000000-0000-0000-0000-000000000999', 'Oi']), /nao encontrada/);
   });
+  await t.test('banner do perfil: somente final conquistado, persistencia e leitura publica', async () => {
+    await como(null);
+    assert.deepEqual(await rpc('ranking_banner_perfil', [usuario(30)]), { final_id: null, conquistados: [] });
+    await assert.rejects(rpc('ranking_aplicar_banner_perfil', ['er_chama']), /permission denied/);
+    await como(30);
+    await assert.rejects(rpc('ranking_aplicar_banner_perfil', ['er_chama']), /Conquiste/);
+    await assert.rejects(rpc('ranking_aplicar_banner_perfil', ['ds3_ligar']), /nao possui banner/);
+    await assert.rejects(db.query('insert into public.ranking_banners_perfil values ($1, $2)',
+      [usuario(30), 'er_chama']), /permission denied/);
+    await superusuario();
+    const { rows: [vitoria] } = await db.query(`insert into public.ranking_pontos
+      (participacao_id, usuario_id, pontos, origem, final_id) values
+      (gen_random_uuid(), $1, 100, 'build', 'er_chama') returning participacao_id`, [usuario(30)]);
+    await como(30);
+    await rpc('ranking_aplicar_banner_perfil', ['er_chama']);
+    assert.deepEqual(await rpc('ranking_banner_perfil', [usuario(30)]),
+      { final_id: 'er_chama', conquistados: ['er_chama'] });
+    await como(29);
+    await assert.rejects(rpc('ranking_aplicar_banner_perfil', ['er_chama']), /Conquiste/);
+    await rpc('ranking_aplicar_banner_perfil', [null]);
+    await como(null);
+    assert.deepEqual(await rpc('ranking_banner_perfil', [usuario(30)]),
+      { final_id: 'er_chama', conquistados: [] });
+    await superusuario();
+    await db.exec(migration);
+    await como(30);
+    assert.equal((await rpc('ranking_banner_perfil', [usuario(30)])).final_id, 'er_chama');
+    await rpc('ranking_aplicar_banner_perfil', [null]);
+    assert.deepEqual(await rpc('ranking_banner_perfil', [usuario(30)]),
+      { final_id: null, conquistados: ['er_chama'] });
+    await rpc('ranking_aplicar_banner_perfil', ['er_chama']);
+    await superusuario();
+    await db.query('delete from public.ranking_pontos where participacao_id = $1', [vitoria.participacao_id]);
+    await como(null);
+    assert.equal((await rpc('ranking_banner_perfil', [usuario(30)])).final_id, null);
+  });
   await t.test('tempo real: sinal publico muda a cada alteracao e nao a cada leitura', async () => {
     const sinal = async () => (await db.query('select atualizado_em from public.ranking_atualizacoes')).rows;
     await como(null);

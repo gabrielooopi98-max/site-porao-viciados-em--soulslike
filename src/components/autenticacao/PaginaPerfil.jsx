@@ -8,6 +8,8 @@ import CardBuild from '../cards-builds/CardBuild';
 import './Perfil.css';
 import { useRanking } from '../ranking/useRanking';
 import ColecaoFinais from '../ranking/ColecaoFinais';
+import BannerFinalPerfil from './BannerFinalPerfil';
+import useBannerFinalPerfil from './useBannerFinalPerfil';
 
 function PaginaPerfil() {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ function PaginaPerfil() {
   const [erroConta, setErroConta] = useState('');
   const [saindo, setSaindo] = useState(false);
   const ranking = useRanking();
+  const banner = useBannerFinalPerfil(user?.id, ranking.dados?.minhas_vitorias);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -132,6 +135,7 @@ function PaginaPerfil() {
 
       <main className="perfil-page perfil-organizado">
         <section className="perfil-painel" aria-labelledby="titulo-perfil">
+          <BannerFinalPerfil banner={banner} />
           <div className="perfil-cabecalho">
             {avatar ? (
               <VisualizadorAvatar className="perfil-avatar-grande" src={avatar} alt={`Foto de ${nome}`} style={avatarStyle} />
@@ -192,7 +196,7 @@ function PaginaPerfil() {
         </section>
 
         {ranking.dados && <ColecaoFinais finais={ranking.dados.finais} vitorias={ranking.dados.minhas_vitorias}
-          aoAtualizar={ranking.atualizar} />}
+          aoAtualizar={ranking.atualizar} banner={banner} />}
 
         <section className="perfil-conteudos" aria-labelledby="titulo-conteudos-perfil">
           <div className="perfil-conteudos-cabecalho">

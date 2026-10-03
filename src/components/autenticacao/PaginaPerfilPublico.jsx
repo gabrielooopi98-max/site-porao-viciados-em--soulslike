@@ -4,12 +4,15 @@ import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/useAuth';
 import { criarNotificacao } from '../../services/notificacoes';
 import VisualizadorAvatar from '../VisualizadorAvatar';
+import BannerFinalPerfil from './BannerFinalPerfil';
+import useBannerFinalPerfil from './useBannerFinalPerfil';
 import './Perfil.css';
 
 function PaginaPerfilPublico() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const banner = useBannerFinalPerfil(id);
   const [perfil, setPerfil] = useState(null);
   const [seguindo, setSeguindo] = useState(false);
   const [amizade, setAmizade] = useState(null);
@@ -206,6 +209,7 @@ function PaginaPerfilPublico() {
       </header>
       <main className="perfil-page perfil-organizado">
         <section className="perfil-painel" aria-labelledby="titulo-perfil-publico">
+          <BannerFinalPerfil banner={banner} />
           <div className="perfil-cabecalho">
             {perfil.avatar ? <VisualizadorAvatar className="perfil-avatar-grande" src={perfil.avatar} alt={`Foto de ${perfil.nome}`} style={{ objectPosition: `${perfil.avatarPosX}% ${perfil.avatarPosY}%`, transform: `scale(${perfil.avatarZoom})` }} /> : <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>}
             <div>

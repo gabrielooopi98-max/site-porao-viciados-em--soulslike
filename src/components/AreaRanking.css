@@ -493,8 +493,9 @@
 .ranking-header p {
     max-width: 440px;
     margin: 12px auto 0;
-    color: #d0d0d0;
+    color: #fff;
     font: 600 0.85rem/1.75 'Poppins', sans-serif;
+    text-shadow: 0 1px 3px #000, 0 2px 8px #000;
 }
 
 .ranking-ilustracao {
@@ -527,8 +528,8 @@
     max-width: none;
     transform: translateX(-50%);
     image-rendering: pixelated;
-    filter: grayscale(1);
-    opacity: 0.8;
+    filter: grayscale(1) brightness(1.35);
+    opacity: 1;
 }
 
 .ranking-apresentacao {

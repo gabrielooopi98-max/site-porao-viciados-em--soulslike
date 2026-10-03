@@ -724,6 +724,52 @@ begin
 end;
 $$;
 
+create table if not exists public.ranking_banners_perfil (
+    usuario_id uuid primary key references auth.users(id) on delete cascade,
+    final_id text not null references public.ranking_finais(id) check (final_id = 'er_chama')
+);
+alter table public.ranking_banners_perfil enable row level security;
+revoke all on public.ranking_banners_perfil from anon, authenticated;
+
+create or replace function public.ranking_banner_perfil(p_usuario uuid)
+returns jsonb language sql stable security definer set search_path = public
+as $$
+    select jsonb_build_object(
+        'final_id', (select b.final_id from public.ranking_banners_perfil b
+            where b.usuario_id = p_usuario and exists (
+                select 1 from public.ranking_pontos rp where rp.usuario_id = p_usuario
+                and rp.origem = 'build' and rp.final_id = b.final_id)),
+        'conquistados', case when p_usuario = auth.uid() then
+            coalesce((select jsonb_agg(distinct rp.final_id) from public.ranking_pontos rp
+                where rp.usuario_id = p_usuario and rp.origem = 'build'
+                and rp.final_id = 'er_chama'), '[]'::jsonb)
+            else '[]'::jsonb end
+    );
+$$;
+
+create or replace function public.ranking_aplicar_banner_perfil(p_final text)
+returns void language plpgsql security definer set search_path = public
+as $$
+begin
+    if auth.uid() is null then raise exception 'Entre na sua conta para aplicar o banner.'; end if;
+    if p_final is null then
+        delete from public.ranking_banners_perfil where usuario_id = auth.uid();
+        return;
+    end if;
+    if p_final <> 'er_chama' then raise exception 'Este final ainda nao possui banner disponivel.'; end if;
+    if not exists(select 1 from public.ranking_pontos where usuario_id = auth.uid()
+        and origem = 'build' and final_id = p_final) then
+        raise exception 'Conquiste este final antes de aplicar o banner.';
+    end if;
+    insert into public.ranking_banners_perfil(usuario_id, final_id) values (auth.uid(), p_final)
+        on conflict (usuario_id) do update set final_id = excluded.final_id;
+end;
+$$;
+revoke all on function public.ranking_banner_perfil(uuid),
+    public.ranking_aplicar_banner_perfil(text) from public, anon, authenticated;
+grant execute on function public.ranking_banner_perfil(uuid) to anon, authenticated;
+grant execute on function public.ranking_aplicar_banner_perfil(text) to authenticated;
+
 revoke all on function public.ranking_ler_desafio(uuid) from public, anon, authenticated;
 grant execute on function public.ranking_ler_desafio(uuid) to authenticated;
 

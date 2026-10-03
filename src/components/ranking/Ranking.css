@@ -14,6 +14,13 @@
     overflow-wrap: anywhere;
 }
 
+.area-ranking h1,
+.area-ranking h2,
+.ranking-page h1,
+.ranking-page h2 {
+    font-family: 'Cinzel', serif;
+}
+
 .ranking-page p {
     font-size: 0.85rem;
     line-height: 1.75;
@@ -30,7 +37,7 @@
 }
 
 .ranking-page-titulo h1 {
-    font: 600 clamp(1.8rem, 4vw, 2.5rem)/1.2 'Poppins', sans-serif;
+    font: 600 clamp(1.8rem, 4vw, 2.5rem)/1.2 'Cinzel', serif;
     letter-spacing: -0.035em;
 }
 

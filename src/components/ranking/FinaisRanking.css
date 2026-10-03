@@ -293,6 +293,45 @@
     font-size: 0.78rem;
 }
 
+.ranking-colecao-jogos li.ranking-final-com-banner {
+    padding: 0;
+}
+
+.ranking-final-aplicar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.ranking-final-informacoes {
+    min-width: 0;
+}
+
+.ranking-final-aplicar:hover:not(:disabled),
+.ranking-final-aplicar[aria-pressed="true"] {
+    background: #ffffff0a;
+}
+
+.ranking-final-aplicar:focus-visible {
+    outline: 2px solid #ddd;
+    outline-offset: 3px;
+}
+
+.ranking-final-aplicar:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
 .ranking-colecao-jogos li small {
     display: block;
     margin-top: 3px;
