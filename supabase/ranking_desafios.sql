@@ -215,7 +215,7 @@ begin
                 select p.id from public.ranking_participacoes p
                 left join public.ranking_votos v on v.participacao_id = p.id and v.etapa = 0
                 where p.desafio_id = d.id and p.status = 'aprovada'
-                group by p.id order by count(v.usuario_id) desc, p.criado_em, p.id limit 6
+                group by p.id order by count(v.usuario_id) desc, p.criado_em, p.id limit 4
             );
             update public.ranking_desafios set etapa = 1 where id = d.id;
             d.etapa := 1;
@@ -226,7 +226,7 @@ begin
                 select p.id from public.ranking_participacoes p
                 left join public.ranking_votos v on v.participacao_id = p.id and v.etapa = 1
                 where p.desafio_id = d.id and p.status = 'aprovada' and p.etapa_max = 1
-                group by p.id order by count(v.usuario_id) desc, p.criado_em, p.id limit 3
+                group by p.id order by count(v.usuario_id) desc, p.criado_em, p.id limit 2
             );
             update public.ranking_desafios set etapa = 2 where id = d.id;
             d.etapa := 2;

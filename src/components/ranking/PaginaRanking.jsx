@@ -41,8 +41,8 @@ function PaginaRankingDemonstracao() {
         <label>Visualizar etapa
           <select value={etapa} onChange={(event) => setEtapa(Number(event.target.value))}>
             <option value={0}>Classificação · 6 builds</option>
-            <option value={1}>Semifinal · 6 builds</option>
-            <option value={2}>Final · 3 builds</option>
+            <option value={1}>Semifinal · 4 builds</option>
+            <option value={2}>Final · 2 builds</option>
             <option value={3}>Encerrada · vencedor</option>
           </select>
         </label>
@@ -181,7 +181,7 @@ function PaginaRankingReal() {
                 <details className="ranking-regras">
                   <summary>Regras detalhadas e desempates</summary>
                 <p>{desafio.tipo === 'build'
-                  ? 'Os votos só definem quem avança: até 6 builds passam à semifinal e até 3 à final. Empates: participação enviada primeiro. Votos reabrem em cada etapa. Somente o vencedor recebe pontos no ranking geral.'
+                  ? 'Os votos só definem quem avança: até 4 builds passam à semifinal e até 2 à final. Empates: participação enviada primeiro. Votos reabrem em cada etapa. Somente o vencedor recebe pontos no ranking geral.'
                   : 'A comunidade vota e comenta; só o ADM confirma a conclusão e concede os pontos. A análise do ADM pode continuar por até 3 dias após o fim.'}</p>
                 {desafio.tipo === 'build' && <p>Somente builds aprovadas antes do fim da classificatória disputam vagas. Havendo menos participantes, avançam os disponíveis. Sem votos na final, a competição termina sem vencedor e sem prêmio.</p>}
                 <p>Três dias após o fim, o desafio, as participações e os comentários são removidos. Os pontos conquistados continuam no ranking geral.</p>

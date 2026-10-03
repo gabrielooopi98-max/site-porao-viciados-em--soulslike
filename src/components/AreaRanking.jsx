@@ -94,8 +94,8 @@ function ConteudoRanking({ dados, erro, carregando, atualizar, demonstracao = fa
           <label>Visualizar etapa
             <select value={etapa} onChange={(event) => aoMudarEtapa(Number(event.target.value))}>
               <option value={0}>Classificação · 6 builds</option>
-              <option value={1}>Semifinal · 6 builds</option>
-              <option value={2}>Final · 3 builds</option>
+              <option value={1}>Semifinal · 4 builds</option>
+              <option value={2}>Final · 2 builds</option>
               <option value={3}>Encerrada · vencedor e prêmio</option>
             </select>
           </label>

@@ -1,6 +1,6 @@
 const nomes = ['Guardião de Catarina', 'Lua de Lothric', 'Cinzas do Abismo', 'Caçadora de Yharnam', 'Fogueira Acesa', 'Peregrino de Astora'];
 const titulos = ['Cavaleiro pesado · Força e resistência', 'Feiticeira da lua · Inteligência pura', 'Espadachim do abismo · Qualidade', 'Piromante de combate · Fogo e destreza', 'Guardião solar · Fé e suporte', 'Lâminas gêmeas · Destreza'];
-const votos = { 0: [18, 15, 12, 9, 6, 3], 1: [42, 35, 29, 24, 18, 12], 2: [21, 17, 12], 3: [21, 17, 12] };
+const votos = { 0: [18, 15, 12, 9, 6, 3], 1: [42, 35, 29, 24], 2: [21, 17], 3: [21, 17] };
 
 // Mesma regra de ranking_votar: um voto por build em cada etapa, em quantas builds quiser.
 export function alternarVotoDemonstracao(votosSimulados, etapa, id) {

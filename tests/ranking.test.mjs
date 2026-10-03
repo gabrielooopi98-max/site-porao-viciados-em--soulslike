@@ -110,7 +110,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 0);
     assert.equal(painel.jogadores.length, 0);
   });
-  await t.test('top 6, votos independentes na semifinal, top 3 e vencedor unico', async () => {
+  await t.test('top 4, votos independentes na semifinal, top 2 e vencedor unico', async () => {
     for (let i = 0; i < ids.length; i++) {
       for (let v = 10; v < 17 - i; v++) {
         await como(v);
@@ -124,13 +124,13 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(painel.desafios[0].etapa, 1);
     await assert.rejects(rpc('ranking_votar', [ids[0], 0]), /etapa mudou/);
     etapaVoto = 1;
-    assert.equal(painel.participacoes.filter((p) => p.etapa_max === 1).length, 6);
-    assert.equal(painel.participacoes.find((p) => p.id === ids[6]).etapa_max, 0);
+    assert.equal(painel.participacoes.filter((p) => p.etapa_max === 1).length, 4);
+    assert.equal(painel.participacoes.find((p) => p.id === ids[4]).etapa_max, 0);
     assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votos, 0);
     assert.equal(painel.participacoes.find((p) => p.id === ids[0]).votou, false);
     await assert.rejects(rpc('ranking_votar', [ids[6]]), /nao participa/);
     await assert.rejects(rpc('ranking_publicar', [desafio, { titulo: 'Tardia', descricao: 'Prova fora do prazo.', midias: [] }]), /fechadas/);
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 4; i++) {
       for (let v = 10; v < 16 - i; v++) {
         await como(v);
         await rpc('ranking_votar', [ids[i]]);
@@ -142,7 +142,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     painel = await rpc('ranking_painel', [desafio]);
     assert.equal(painel.desafios[0].etapa, 2);
     etapaVoto = 2;
-    assert.equal(painel.participacoes.filter((p) => p.etapa_max === 2).length, 3);
+    assert.equal(painel.participacoes.filter((p) => p.etapa_max === 2).length, 2);
     const primeiro = painel.participacoes.find((p) => p.id === ids[0]);
     assert.deepEqual(primeiro.historico_votos, [7, 6, 0]);
     assert.equal(primeiro.votou, false);

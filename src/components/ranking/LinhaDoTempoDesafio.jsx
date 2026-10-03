@@ -4,9 +4,9 @@ function etapasDoDesafio(desafio) {
   const remocao = dataRemocaoDesafio(desafio);
   if (desafio.tipo === 'build') {
     return [
-      { nome: 'Classificatória', ate: desafio.fim, texto: 'Inscrições abertas. Os votos escolhem as 6 melhores builds.' },
-      { nome: 'Semifinal', ate: desafio.fim_semifinal, texto: 'Até 6 builds. Os votos recomeçam do zero.' },
-      { nome: 'Final', ate: desafio.fim_final, texto: 'Até 3 builds. A mais votada vence.' },
+      { nome: 'Classificatória', ate: desafio.fim, texto: 'Inscrições abertas. Os votos escolhem as 4 melhores builds.' },
+      { nome: 'Semifinal', ate: desafio.fim_semifinal, texto: 'Até 4 builds. Os votos recomeçam do zero.' },
+      { nome: 'Final', ate: desafio.fim_final, texto: 'Duelo entre 2 builds. A mais votada vence.' },
       { nome: 'Resultado', ate: remocao, texto: `O vencedor recebe ${desafio.pontos} pts. Depois o desafio é removido.` },
     ];
   }
@@ -29,7 +29,7 @@ function orientacao(desafio, atual) {
     return [
       `Envie sua build e vote nas builds aprovadas até ${data(desafio.fim)}.`,
       `Semifinal: vote nas builds classificadas até ${data(desafio.fim_semifinal)}.`,
-      `Final: vote na sua favorita entre as finalistas até ${data(desafio.fim_final)}.`,
+      `Final: vote na sua favorita entre as duas finalistas até ${data(desafio.fim_final)}.`,
       `Competição encerrada. Este desafio sai do site em ${data(dataRemocaoDesafio(desafio))}; os pontos ficam.`,
     ][atual];
   }

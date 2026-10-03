@@ -128,7 +128,7 @@ e as restricoes especificas, sem alterar desafios de conquista.
   O ADM pode analisar depois do prazo. Recusar uma aprovacao anterior
   revoga os pontos daquela prova. Aprovar novamente nao duplica pontos.
 - Builds: precisam ser aprovadas antes do fim da classificatoria. Os
-  votos selecionam ate seis semifinalistas, depois ate tres finalistas
+  votos selecionam ate quatro semifinalistas, depois dois finalistas
   e um vencedor. Cada etapa tem prazo proprio definido pelo ADM.
 - Cada pessoa pode votar em varias builds, uma vez em cada por etapa;
   pode retirar o voto e nao pode votar em si. Votos reabrem a cada etapa,
@@ -165,7 +165,7 @@ funcao (normalmente `postgres`), nao como usuario anonimo.
 
 `npm run test:ranking` executa a migration e os fluxos em PostgreSQL
 embutido (PGlite), sem acessar o Supabase real. Cobre permissoes, datas,
-aprovacao, retirada de votos, etapas 6/3/1, historico, empate, poucos
+aprovacao, retirada de votos, etapas 4/2/1, historico, empate, poucos
 inscritos, avisos por conta e premios sem duplicacao.
 Depois, execute `npm run lint` e `npm run build`.
 
@@ -276,8 +276,8 @@ No celular, paineis, datas e cards se organizam em uma coluna.
 Em desenvolvimento (`npm run dev`), a home mostra por padrao uma
 demonstracao visual local do ranking. A pagina `/ranking` abre os desafios
 reais; sua demonstracao fica em `/ranking?rankingDemo=1`.
-O seletor alterna seis semifinalistas,
-tres finalistas e o encerramento com vencedor e premio simulado.
+O seletor alterna quatro semifinalistas,
+dois finalistas e o encerramento com vencedor e premio simulado.
 Os dados sao identificados como ficticios, com imagens ilustrativas,
 sem consultas do painel real, links para perfis falsos ou gravacao no banco.
 Os votos simulados seguem a regra real: um voto por build em cada etapa,

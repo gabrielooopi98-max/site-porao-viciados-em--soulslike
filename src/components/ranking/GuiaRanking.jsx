@@ -7,7 +7,7 @@ const modalidades = [
   {
     titulo: 'Competição de builds',
     resumo: 'A comunidade escolhe a melhor build.',
-    passos: ['Envie sua build durante a classificatória', 'As 6 mais votadas vão à semifinal', 'As 3 mais votadas vão à final', 'A mais votada na final vence, leva o prêmio e escolhe um final de soulslike como título'],
+    passos: ['Envie sua build durante a classificatória', 'As 4 mais votadas vão à semifinal', 'As 2 mais votadas disputam a final', 'A mais votada na final vence, leva o prêmio e escolhe um final de soulslike como título'],
   },
   {
     titulo: 'Classificação geral',

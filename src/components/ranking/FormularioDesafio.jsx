@@ -89,8 +89,8 @@ export default function FormularioDesafio({ desafio, aoSalvar, aoFechar }) {
           <label>Início<input name="inicio" type="datetime-local" required value={formulario.inicio} onChange={alterar} /></label>
           <label>{formulario.tipo === 'build' ? 'Fim da classificatória e das inscrições' : 'Fim das inscrições e votos'}<input name="fim" type="datetime-local" required value={formulario.fim} onChange={alterar} /></label>
           {formulario.tipo === 'build' && <>
-            <label>Fim da semifinal (até 6 builds)<input name="fim_semifinal" type="datetime-local" required value={formulario.fim_semifinal} onChange={alterar} /></label>
-            <label>Fim da final (até 3 builds)<input name="fim_final" type="datetime-local" required value={formulario.fim_final} onChange={alterar} /></label>
+            <label>Fim da semifinal (até 4 builds)<input name="fim_semifinal" type="datetime-local" required value={formulario.fim_semifinal} onChange={alterar} /></label>
+            <label>Fim da final (duelo entre 2 builds)<input name="fim_final" type="datetime-local" required value={formulario.fim_final} onChange={alterar} /></label>
           </>}
         </div>
       </fieldset>
