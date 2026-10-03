@@ -282,6 +282,9 @@ do vencedor.
 No proprio perfil, clicar na Chama Frenetica conquistada na "Colecao de finais"
 aplica seu banner; clicar novamente remove a arte. A escolha fica salva
 no banco e aparece tambem no perfil publico, com preenchimento responsivo.
+Quando o final ainda esta bloqueado, a Chama Frenetica oferece uma previa
+local ao clicar na colecao: nao salva, nao concede titulo e nao aparece no
+perfil publico. Clicar novamente fecha a previa; recarregar tambem a remove.
 Outros finais continuam na colecao, mas ainda nao possuem arte de banner.
 Reaplique `supabase/ranking_desafios.sql` no Supabase para ativar a tabela e
 as RPCs de banners. O banco valida a conquista antes de salvar, e a previa

@@ -13,6 +13,7 @@ export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar,
           <h2 id="titulo-colecao-finais">Coleção de finais</h2>
           <p>Vença competições de builds para desbloquear os finais dos soulslike.</p>
           {banner && <p>Clique em um final conquistado com banner disponível para usá-lo no perfil.</p>}
+          {banner && <p>A Chama Frenética também pode ser testada sem conquista: a prévia não salva nem concede título.</p>}
         </div>
         <div className="ranking-colecao-total">
           <strong>{conquistados.size}<small> / {finais.length}</small></strong>
@@ -45,14 +46,19 @@ export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar,
               {lista.map((f) => {
                 const desbloqueado = conquistados.has(f.id);
                 const temBanner = f.id === 'er_chama';
+                const teste = !desbloqueado && temBanner && Boolean(banner);
+                const clicavel = temBanner && Boolean(banner);
                 const aplicado = banner?.dados?.final_id === f.id;
                 const conteudo = <>
                   <span className="ranking-final-icone" aria-hidden="true">
                     {desbloqueado ? <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>
                       : <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>}
                   </span>
-                  <span className="ranking-final-informacoes"><strong>{desbloqueado ? f.titulo : 'Título bloqueado'}</strong><small>{f.final}</small>
+                  <span className="ranking-final-informacoes"><strong>{desbloqueado ? f.titulo : teste ? 'Testar banner da Chama Frenética' : 'Título bloqueado'}</strong><small>{f.final}</small>
                     <span className="ranking-final-status">{desbloqueado ? 'Conquistado' : 'Ainda não conquistado'}</span>
+                    {teste && <span className="ranking-final-status">
+                      {banner.previa ? 'Prévia em uso · Clique para fechar' : 'Clique para testar · Não salva'}
+                    </span>}
                     {desbloqueado && temBanner && banner && <span className="ranking-final-status">
                       {banner.salvando ? 'Salvando…' : aplicado ? 'Banner em uso · Clique para remover' : 'Clique para aplicar o banner'}
                     </span>}
@@ -60,10 +66,10 @@ export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar,
                   </span>
                 </>;
                 return (
-                  <li key={f.id} className={`${desbloqueado ? 'desbloqueado' : ''}${desbloqueado && temBanner && banner ? ' ranking-final-com-banner' : ''}`}>
-                    {desbloqueado && temBanner && banner ? <button className="ranking-final-aplicar" type="button"
-                      aria-pressed={aplicado} disabled={banner.salvando || !banner.dados}
-                      onClick={() => banner.aplicar(aplicado ? null : f.id)}>{conteudo}</button> : conteudo}
+                  <li key={f.id} className={`${desbloqueado ? 'desbloqueado' : ''}${clicavel ? ' ranking-final-com-banner' : ''}`}>
+                    {clicavel ? <button className="ranking-final-aplicar" type="button"
+                      aria-pressed={teste ? banner.previa : aplicado} disabled={!teste && (banner.salvando || !banner.dados)}
+                      onClick={() => teste ? banner.alternarPrevia() : banner.aplicar(aplicado ? null : f.id)}>{conteudo}</button> : conteudo}
                   </li>
                 );
               })}

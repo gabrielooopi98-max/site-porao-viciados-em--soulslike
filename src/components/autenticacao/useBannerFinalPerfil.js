@@ -6,6 +6,7 @@ export default function useBannerFinalPerfil(usuarioId, vitorias) {
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [tentativa, setTentativa] = useState(0);
+  const [usuarioPrevia, setUsuarioPrevia] = useState(null);
 
   useEffect(() => {
     if (!usuarioId) return undefined;
@@ -36,5 +37,10 @@ export default function useBannerFinalPerfil(usuarioId, vitorias) {
     }
   }
 
-  return { dados, erro, salvando, aplicar, tentarNovamente: () => setTentativa((atual) => atual + 1) };
+  const previa = Boolean(usuarioId && usuarioPrevia === usuarioId);
+  return {
+    dados, erro, salvando, aplicar, previa,
+    alternarPrevia: () => setUsuarioPrevia((atual) => atual === usuarioId ? null : usuarioId),
+    tentarNovamente: () => setTentativa((atual) => atual + 1),
+  };
 }
