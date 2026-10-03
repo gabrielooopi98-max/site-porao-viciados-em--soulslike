@@ -4,6 +4,7 @@ import { useRanking } from './useRanking';
 import { etapaDesafio, formatarDataRanking } from '../../services/ranking';
 import { classificarBuilds, tituloEtapaBuilds } from '../../services/classificacaoBuilds';
 import CardParticipacao from './CardParticipacao';
+import { BANNERS_FINAIS } from '../../services/bannersFinais';
 
 function TabelaBuilds({ desafio, participacoes, mostrarCards = false, permitirPreviaFinal = false }) {
   const [mostrarTodos, setMostrarTodos] = useState(false);
@@ -12,12 +13,15 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false, permitirPr
   const builds = classificarBuilds(desafio, participacoes);
   const posicoesVisiveis = mostrarTodos ? builds : builds.slice(0, 6);
   const lider = builds[0];
+  const arte = BANNERS_FINAIS[previaChama ? 'er_chama'
+    : desafio.vencedor_id === lider?.id ? desafio.final_vencedor?.id : null];
   return builds.length ? (
     <>
     {desafio.etapa === 3 && !desafio.vencedor_id && <p className="ranking-vazio" role="status">
       A final terminou sem votos: a competição foi encerrada sem vencedor e sem prêmio.
     </p>}
-    <article className={`ranking-builds-primeiro${(previaChama || (desafio.vencedor_id === lider.id && desafio.final_vencedor?.id === 'er_chama')) ? ' ranking-builds-primeiro--chama' : ''}`} aria-label="Primeiro lugar da competição">
+    <article className={`ranking-builds-primeiro${arte ? ' ranking-builds-primeiro--chama' : ''}`}
+      style={arte ? { '--ranking-banner': `url("${arte.src}")` } : undefined} aria-label="Primeiro lugar da competição">
       <span className="ranking-builds-primeiro-posicao"><b>01</b></span>
       <Link className="ranking-builds-primeiro-avatar" to={`/perfil/${lider.autor_id}`} aria-label={`Perfil de ${lider.autor_nome}`}>
         <img src={lider.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />

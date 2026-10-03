@@ -2340,7 +2340,7 @@
 .ranking-builds-primeiro--chama {
     background:
         linear-gradient(90deg, rgb(12 12 12 / 78%) 0%, rgb(12 12 12 / 58%) 58%, rgb(12 12 12 / 30%) 100%),
-        url('/svg-animado/banner-cavaleiro-chama-1760x575-detalhado.svg') center / cover no-repeat,
+        var(--ranking-banner) center / cover no-repeat,
         #111;
 }
 

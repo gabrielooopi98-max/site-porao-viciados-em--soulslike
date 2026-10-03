@@ -279,12 +279,25 @@ da Chama Frenetica tambem aparece no site publicado. A previa e local a cada
 pagina e nao e mantida ao navegar. Ele alterna apenas o banner do primeiro lugar, sem salvar
 um final, conceder titulos ou alterar votos. A escolha real continua exclusiva
 do vencedor.
-No proprio perfil, clicar na Chama Frenetica conquistada na "Colecao de finais"
+No proprio perfil, clicar na Chama Frenetica ou Era do Fogo conquistada na "Colecao de finais"
 aplica seu banner; clicar novamente remove a arte. A escolha fica salva
 no banco e aparece tambem no perfil publico, com preenchimento responsivo.
-Quando o final ainda esta bloqueado, a Chama Frenetica oferece uma previa
+O card de perfil integra o banner na proporcao 1760x575, com avatar e nome
+dentro da capa e estatisticas e acoes abaixo. A largura acompanha o container,
+com capa de altura minima de 200px no celular, avatar de 64px ao lado do nome
+e estatisticas e botoes compactos, sem margens extras dentro da capa. O mesmo componente
+estrutura o perfil proprio e o publico, com ajustes para celular.
+Quando o final ainda esta bloqueado, os dois banners oferecem uma previa
 local ao clicar na colecao: nao salva, nao concede titulo e nao aparece no
 perfil publico. Clicar novamente fecha a previa; recarregar tambem a remove.
+A opcao de previa mostra a arte SVG clicavel com um cadeado aberto no topo
+e o nome do final discretamente sobre o canto inferior direito da imagem.
+Isso nao altera a contagem de finais
+conquistados.
+O status "Equipado" identifica apenas o banner visivel; trocar a previa
+substitui a anterior. Era do Fogo (Dark Souls Remastered, `ds1_chama`) usa
+`banner-caverna-fogo-1760x575.svg` e o titulo Herdeiro da Chama. A arte tambem
+aparece no primeiro lugar do ranking quando o vencedor escolhe esse final.
 Outros finais continuam na colecao, mas ainda nao possuem arte de banner.
 Reaplique `supabase/ranking_desafios.sql` no Supabase para ativar a tabela e
 as RPCs de banners. O banco valida a conquista antes de salvar, e a previa

@@ -726,8 +726,11 @@ $$;
 
 create table if not exists public.ranking_banners_perfil (
     usuario_id uuid primary key references auth.users(id) on delete cascade,
-    final_id text not null references public.ranking_finais(id) check (final_id = 'er_chama')
+    final_id text not null references public.ranking_finais(id)
 );
+alter table public.ranking_banners_perfil drop constraint if exists ranking_banners_perfil_final_id_check;
+alter table public.ranking_banners_perfil add constraint ranking_banners_perfil_final_id_check
+    check (final_id in ('er_chama', 'ds1_chama'));
 alter table public.ranking_banners_perfil enable row level security;
 revoke all on public.ranking_banners_perfil from anon, authenticated;
 
@@ -742,7 +745,7 @@ as $$
         'conquistados', case when p_usuario = auth.uid() then
             coalesce((select jsonb_agg(distinct rp.final_id) from public.ranking_pontos rp
                 where rp.usuario_id = p_usuario and rp.origem = 'build'
-                and rp.final_id = 'er_chama'), '[]'::jsonb)
+                and rp.final_id in ('er_chama', 'ds1_chama')), '[]'::jsonb)
             else '[]'::jsonb end
     );
 $$;
@@ -756,7 +759,7 @@ begin
         delete from public.ranking_banners_perfil where usuario_id = auth.uid();
         return;
     end if;
-    if p_final <> 'er_chama' then raise exception 'Este final ainda nao possui banner disponivel.'; end if;
+    if p_final not in ('er_chama', 'ds1_chama') then raise exception 'Este final ainda nao possui banner disponivel.'; end if;
     if not exists(select 1 from public.ranking_pontos where usuario_id = auth.uid()
         and origem = 'build' and final_id = p_final) then
         raise exception 'Conquiste este final antes de aplicar o banner.';

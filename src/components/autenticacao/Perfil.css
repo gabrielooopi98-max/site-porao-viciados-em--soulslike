@@ -24,31 +24,87 @@
     content: none;
 }
 
-.perfil-banner-final {
-    position: relative;
-    height: clamp(151px, 25vw, 260px);
-    margin-bottom: 24px;
-    overflow: hidden;
-    border: 1px solid #444;
-    border-radius: 6px;
-    background: #111;
+.perfil-organizado .perfil-card {
+    padding: 0;
+    border-radius: 8px;
 }
 
-.perfil-banner-final img {
+.perfil-card-conteudo {
+    padding: 28px;
+}
+
+.perfil-card > .perfil-erro-amizade {
+    margin: 16px 28px;
+}
+
+.perfil-banner-final {
+    position: relative;
+    display: grid;
+    width: 100%;
+    max-width: 1760px;
+    aspect-ratio: 1760 / 575;
+    min-height: 151px;
+    overflow: hidden;
+    border-bottom: 1px solid #383838;
+    border-radius: 7px 7px 0 0;
+    background: linear-gradient(135deg, #242424, #111);
+}
+
+.perfil-banner-final > .perfil-banner-arte {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.perfil-banner-final strong {
-    position: absolute;
-    inset: auto 0 0;
-    padding: 28px 16px 16px;
+.perfil-banner-identidade {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    min-height: inherit;
+    box-sizing: border-box;
+    padding: clamp(16px, 3vw, 36px);
+    background: linear-gradient(90deg, #0008, transparent 75%), linear-gradient(0deg, #0009, transparent 65%);
+}
+
+.perfil-banner-identidade .perfil-cabecalho {
+    width: 100%;
+}
+
+.perfil-organizado .perfil-banner-identidade .perfil-cabecalho h1,
+.perfil-organizado .perfil-banner-identidade .perfil-cabecalho p,
+.perfil-banner-identidade .perfil-card-etiqueta {
     color: #fff;
-    background: linear-gradient(transparent, #000c);
-    font: 700 clamp(0.85rem, 2vw, 1.15rem)/1.5 'Cinzel', serif;
     text-shadow: 0 1px 4px #000;
+}
+
+.perfil-card-conteudo > .perfil-estatisticas {
+    margin-top: 0;
+}
+
+.perfil-card-etiqueta {
+    display: block;
+    margin-bottom: 6px;
+    color: #999;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.perfil-organizado .perfil-card--com-banner .perfil-avatar-grande {
+    position: relative;
+    border: 4px solid #111;
+    box-shadow: 0 0 0 1px #444;
+}
+
+.perfil-organizado .perfil-card-titulo-final {
+    margin: 8px 0 0;
+    color: #d8ba8e;
+    font-size: 0.78rem;
 }
 
 .perfil-organizado .perfil-avatar-grande {
@@ -332,6 +388,79 @@
     .perfil-organizado .perfil-cabecalho > .perfil-avatar-grande {
         width: 96px;
         margin-inline: auto;
+    }
+
+    .perfil-organizado .perfil-card {
+        padding: 0;
+    }
+
+    .perfil-card-conteudo {
+        padding: 16px;
+    }
+
+    .perfil-card .perfil-banner-final {
+        aspect-ratio: auto;
+        min-height: 200px;
+    }
+
+    .perfil-card .perfil-banner-identidade {
+        padding: 64px 16px 18px;
+        background: linear-gradient(0deg, #000c, #0004 65%, transparent);
+    }
+
+    .perfil-organizado .perfil-card .perfil-cabecalho {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .perfil-organizado .perfil-card .perfil-cabecalho > .perfil-avatar-grande {
+        width: 64px;
+        height: 64px;
+        flex: 0 0 64px;
+        margin: 0;
+        border-width: 2px;
+    }
+
+    .perfil-organizado .perfil-card .perfil-cabecalho > div:last-child {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .perfil-organizado .perfil-card .perfil-cabecalho h1 {
+        font-size: 1.1rem;
+        line-height: 1.4;
+        text-align: left;
+    }
+
+    .perfil-organizado .perfil-card .perfil-cabecalho p {
+        margin-top: 6px;
+        font-size: 0.7rem;
+        line-height: 1.5;
+    }
+
+    .perfil-card .perfil-card-etiqueta {
+        font-size: 0.55rem;
+        margin-bottom: 4px;
+    }
+
+    .perfil-card .perfil-card-conteudo > .perfil-estatisticas {
+        margin-top: 0;
+    }
+
+    .perfil-organizado .perfil-card .perfil-estatisticas div {
+        min-height: 60px;
+        padding: 10px 4px;
+    }
+
+    .perfil-organizado .perfil-card .perfil-acoes {
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .perfil-card .perfil-acoes > button {
+        flex: 1 1 140px;
     }
 
     .perfil-organizado .perfil-estatisticas {

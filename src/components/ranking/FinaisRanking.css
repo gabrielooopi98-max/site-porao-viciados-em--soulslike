@@ -299,6 +299,7 @@
 
 .ranking-final-aplicar {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 10px;
     width: 100%;
@@ -314,7 +315,85 @@
 }
 
 .ranking-final-informacoes {
+    flex: 1;
     min-width: 0;
+}
+
+.ranking-final-banner {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1760 / 575;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.ranking-final-com-banner .ranking-final-aplicar {
+    padding: 0;
+}
+
+.ranking-final-capa {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.ranking-final-liberado {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: #eee;
+    background: #111c;
+    border: 1px solid #ffffff40;
+    border-radius: 5px;
+}
+
+.ranking-final-liberado svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ranking-final-capa-nome {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    display: block;
+    max-width: calc(100% - 28px);
+    color: #ddd;
+    text-align: right;
+    text-shadow: 0 1px 3px #000, 0 2px 7px #000;
+}
+
+.ranking-colecao-jogos .ranking-final-capa-nome strong {
+    color: #ddd;
+    font: 600 clamp(0.7rem, 1.5vw, 0.85rem)/1.5 'Cinzel', serif;
+}
+
+.ranking-final-aplicar[aria-pressed="true"] .ranking-final-liberado {
+    border-color: #d8ba8e;
+    color: #d8ba8e;
+}
+
+.ranking-final-usando {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 9px;
+    color: #eee;
+    background: #111c;
+    border: 1px solid #ffffff30;
+    border-radius: 4px;
+    font: 600 0.65rem/1.5 'Poppins', sans-serif;
 }
 
 .ranking-final-aplicar:hover:not(:disabled),

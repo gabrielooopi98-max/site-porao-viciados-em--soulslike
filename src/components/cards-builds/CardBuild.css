@@ -310,32 +310,75 @@
     padding: 14px 14px 0;
 }
 
-.build-card-atributos {
+/* Ficha: nivel em destaque a esquerda, foco e dano em linhas com selos. */
+.build-card-ficha {
     display: grid;
-    grid-template-columns: repeat(var(--colunas, 3), minmax(0, 1fr));
-    margin: 0;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
     border: 1px solid var(--build-borda);
     border-radius: 10px;
 }
 
-.build-card-atributos div {
+.build-card-ficha--sem-nivel {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.build-card-nivel {
     display: grid;
-    align-content: start;
-    gap: 5px;
+    align-content: center;
+    justify-items: center;
+    gap: 2px;
+    min-width: 60px;
+    max-width: 96px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    text-align: center;
+    background: rgba(var(--build-brasa), 0.07);
+    border: 1px solid rgba(var(--build-brasa), 0.25);
+    border-radius: 8px;
+}
+
+.build-card-nivel span {
+    color: rgba(var(--build-brasa), 0.85);
+    font: 600 0.55rem/1.2 'Poppins', sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.build-card-nivel strong {
+    max-width: 100%;
+    overflow: hidden;
+    color: #f6e7cf;
+    font: 700 1.35rem/1.15 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.build-card-perfil {
+    display: grid;
+    align-content: center;
+    gap: 8px;
     min-width: 0;
-    padding: 10px 12px;
+    margin: 0;
 }
 
-.build-card-atributos div + div {
-    border-left: 1px solid var(--build-borda);
-}
-
-.build-card-atributos dt {
-    display: flex;
+.build-card-perfil div {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    min-width: 0;
+}
+
+.build-card-perfil div + div {
+    padding-top: 8px;
+    border-top: 1px solid var(--build-borda);
+}
+
+.build-card-perfil dt {
     margin: 0;
     color: var(--build-texto-fraco);
     font: 600 0.58rem/1.2 'Poppins', sans-serif;
@@ -343,34 +386,23 @@
     text-transform: uppercase;
 }
 
-.build-card-atributo-icone {
-    display: grid;
-    flex: 0 0 auto;
-    place-items: center;
-    color: rgba(var(--build-brasa), 0.85);
-}
-
-.build-card-atributo-icone svg {
-    width: 13px;
-    height: 13px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.9;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.build-card-atributos dd {
-    display: -webkit-box;
+.build-card-perfil dd {
+    min-width: 0;
     margin: 0;
-    overflow: hidden;
-    color: #f5f5f5;
-    font: 600 0.84rem/1.3 'Poppins', sans-serif;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+}
+
+.build-card-perfil .perfil-build-selos {
+    gap: 5px;
+}
+
+.build-card-perfil .perfil-selo {
+    min-height: 24px;
+    font-size: 0.68rem;
+}
+
+.build-card-perfil .perfil-selo-sigla {
+    min-width: 28px;
+    height: 18px;
 }
 
 .build-card-texto {
@@ -591,31 +623,33 @@ button.build-card-nome:hover {
     }
 }
 
-/* Muito estreito: atributos viram lista, um por linha. */
-@container (max-width: 250px) {
-    .build-card-atributos {
+/* Estreito: nivel vira uma faixa no topo e os rotulos ficam acima dos selos. */
+@container (max-width: 300px) {
+    .build-card-ficha {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    .build-card-atributos div {
-        grid-template-columns: auto minmax(0, 1fr);
-        align-items: center;
         gap: 10px;
-        padding: 8px 10px;
     }
 
-    .build-card-atributos div + div {
-        border-top: 1px solid var(--build-borda);
-        border-left: 0;
+    .build-card-nivel {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        max-width: none;
+        padding: 6px 10px;
     }
 
-    .build-card-atributos dd {
-        display: block;
-        text-align: right;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    .build-card-nivel strong {
+        font-size: 1.05rem;
     }
 
+    .build-card-perfil div {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+}
+
+/* Muito estreito: some o nome do jogo no topo. */
+@container (max-width: 250px) {
     .build-card-jogo {
         display: none;
     }

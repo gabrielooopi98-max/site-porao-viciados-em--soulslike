@@ -4,7 +4,8 @@ import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/useAuth';
 import { criarNotificacao } from '../../services/notificacoes';
 import VisualizadorAvatar from '../VisualizadorAvatar';
-import BannerFinalPerfil from './BannerFinalPerfil';
+import CardPerfil from './CardPerfil';
+import { BANNERS_FINAIS } from '../../services/bannersFinais';
 import useBannerFinalPerfil from './useBannerFinalPerfil';
 import './Perfil.css';
 
@@ -208,16 +209,17 @@ function PaginaPerfilPublico() {
         </div>
       </header>
       <main className="perfil-page perfil-organizado">
-        <section className="perfil-painel" aria-labelledby="titulo-perfil-publico">
-          <BannerFinalPerfil banner={banner} />
+        <CardPerfil banner={banner} tituloId="titulo-perfil-publico" cabecalho={
           <div className="perfil-cabecalho">
             {perfil.avatar ? <VisualizadorAvatar className="perfil-avatar-grande" src={perfil.avatar} alt={`Foto de ${perfil.nome}`} style={{ objectPosition: `${perfil.avatarPosX}% ${perfil.avatarPosY}%`, transform: `scale(${perfil.avatarZoom})` }} /> : <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>}
             <div>
-              <span className="banner-kicker">Perfil da comunidade</span>
+              <span className="perfil-card-etiqueta">Perfil da comunidade</span>
               <h1 id="titulo-perfil-publico">{perfil.nome}</h1>
+              {BANNERS_FINAIS[banner.dados?.final_id] && <p className="perfil-card-titulo-final">{BANNERS_FINAIS[banner.dados.final_id].titulo}</p>}
               <p>Faça conexões e acompanhe a participação deste jogador.</p>
             </div>
           </div>
+        }>
           <div className="perfil-estatisticas">
             <div><strong>{perfil.posts}</strong><span>Posts</span></div>
             <div><strong>{perfil.builds}</strong><span>Builds</span></div>
@@ -245,7 +247,7 @@ function PaginaPerfilPublico() {
             )}
           </div>
           {erroAmizade && <p className="perfil-erro-amizade" role="alert">{erroAmizade}</p>}
-        </section>
+        </CardPerfil>
       </main>
     </>
   );

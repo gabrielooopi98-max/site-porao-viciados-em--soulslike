@@ -540,6 +540,29 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await como(null);
     assert.equal((await rpc('ranking_banner_perfil', [usuario(30)])).final_id, null);
   });
+  await t.test('Era do Fogo: conquista exigida, troca de banner e migration preserva escolha', async () => {
+    await como(30);
+    await assert.rejects(rpc('ranking_aplicar_banner_perfil', ['ds1_chama']), /Conquiste/);
+    await superusuario();
+    await db.query(`insert into public.ranking_pontos
+      (participacao_id, usuario_id, pontos, origem, final_id) values
+      (gen_random_uuid(), $1, 100, 'build', 'ds1_chama'),
+      (gen_random_uuid(), $1, 100, 'build', 'er_chama')`, [usuario(30)]);
+    await como(30);
+    await rpc('ranking_aplicar_banner_perfil', ['er_chama']);
+    await rpc('ranking_aplicar_banner_perfil', ['ds1_chama']);
+    const banner = await rpc('ranking_banner_perfil', [usuario(30)]);
+    assert.equal(banner.final_id, 'ds1_chama');
+    assert.deepEqual(banner.conquistados.sort(), ['ds1_chama', 'er_chama']);
+    await superusuario();
+    await db.exec(migration);
+    await como(null);
+    assert.deepEqual(await rpc('ranking_banner_perfil', [usuario(30)]),
+      { final_id: 'ds1_chama', conquistados: [] });
+    await como(30);
+    await rpc('ranking_aplicar_banner_perfil', [null]);
+    assert.equal((await rpc('ranking_banner_perfil', [usuario(30)])).final_id, null);
+  });
   await t.test('tempo real: sinal publico muda a cada alteracao e nao a cada leitura', async () => {
     const sinal = async () => (await db.query('select atualizado_em from public.ranking_atualizacoes')).rows;
     await como(null);

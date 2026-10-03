@@ -8,7 +8,8 @@ import CardBuild from '../cards-builds/CardBuild';
 import './Perfil.css';
 import { useRanking } from '../ranking/useRanking';
 import ColecaoFinais from '../ranking/ColecaoFinais';
-import BannerFinalPerfil from './BannerFinalPerfil';
+import CardPerfil from './CardPerfil';
+import { BANNERS_FINAIS } from '../../services/bannersFinais';
 import useBannerFinalPerfil from './useBannerFinalPerfil';
 
 function PaginaPerfil() {
@@ -134,8 +135,7 @@ function PaginaPerfil() {
       </header>
 
       <main className="perfil-page perfil-organizado">
-        <section className="perfil-painel" aria-labelledby="titulo-perfil">
-          <BannerFinalPerfil banner={banner} />
+        <CardPerfil banner={banner} tituloId="titulo-perfil" cabecalho={
           <div className="perfil-cabecalho">
             {avatar ? (
               <VisualizadorAvatar className="perfil-avatar-grande" src={avatar} alt={`Foto de ${nome}`} style={avatarStyle} />
@@ -143,10 +143,12 @@ function PaginaPerfil() {
               <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>
             )}
             <div>
+              <span className="perfil-card-etiqueta">Meu perfil</span>
               <h1 id="titulo-perfil">{nome}</h1>
+              {!banner.previa && BANNERS_FINAIS[banner.dados?.final_id] && <p className="perfil-card-titulo-final">{BANNERS_FINAIS[banner.dados.final_id].titulo}</p>}
             </div>
           </div>
-
+        }>
           <div className="perfil-estatisticas">
             <div><strong>{estatisticas.posts}</strong><span>Posts</span></div>
             <div><strong>{estatisticas.builds}</strong><span>Builds</span></div>
@@ -159,7 +161,7 @@ function PaginaPerfil() {
               Editar perfil
             </button>
           </div>
-        </section>
+        </CardPerfil>
 
         <nav className="perfil-atalhos" aria-label="Atalhos do seu perfil">
           <button className="perfil-atalho-favoritos" type="button" onClick={() => navigate('/favoritos')}>

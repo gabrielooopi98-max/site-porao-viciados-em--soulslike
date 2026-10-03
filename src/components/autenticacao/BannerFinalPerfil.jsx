@@ -1,15 +1,15 @@
-const BANNER_CHAMA = '/svg-animado/banner-cavaleiro-chama-1760x575-detalhado.svg';
+import { BANNERS_FINAIS, finalBannerAtivo } from '../../services/bannersFinais';
 
-export default function BannerFinalPerfil({ banner }) {
+export default function BannerFinalPerfil({ banner, children }) {
   const { dados, erro, tentarNovamente, previa } = banner;
-  const aplicado = previa || dados?.final_id === 'er_chama';
+  const arte = BANNERS_FINAIS[finalBannerAtivo(banner)];
 
   return (
     <>
-      {aplicado && <div className="perfil-banner-final">
-        <img src={BANNER_CHAMA} alt={previa ? 'Prévia do banner da Chama Frenética' : 'Banner conquistado da Chama Frenética'} />
-        <strong>{previa ? 'Prévia da Chama Frenética · Não salva' : 'Lorde da Chama Frenética'}</strong>
-      </div>}
+      <div className="perfil-banner-final">
+        {arte && <img className="perfil-banner-arte" src={arte.src} alt={`${previa ? 'Prévia' : 'Banner conquistado'} de ${arte.nome}`} />}
+        <div className="perfil-banner-identidade">{children}</div>
+      </div>
       {erro && <p className="perfil-erro-amizade" role="alert">
         {erro}{' '}
         {!dados && <button className="btn-filtro" type="button" onClick={tentarNovamente}>Tentar novamente</button>}

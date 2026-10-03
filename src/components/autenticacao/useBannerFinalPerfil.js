@@ -6,7 +6,7 @@ export default function useBannerFinalPerfil(usuarioId, vitorias) {
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [tentativa, setTentativa] = useState(0);
-  const [usuarioPrevia, setUsuarioPrevia] = useState(null);
+  const [selecaoPrevia, setSelecaoPrevia] = useState(null);
 
   useEffect(() => {
     if (!usuarioId) return undefined;
@@ -30,6 +30,7 @@ export default function useBannerFinalPerfil(usuarioId, vitorias) {
     try {
       await executarRanking('ranking_aplicar_banner_perfil', { p_final: finalId });
       setDados((atual) => ({ ...atual, final_id: finalId }));
+      setSelecaoPrevia(null);
     } catch (error) {
       setErro(error.message);
     } finally {
@@ -37,10 +38,11 @@ export default function useBannerFinalPerfil(usuarioId, vitorias) {
     }
   }
 
-  const previa = Boolean(usuarioId && usuarioPrevia === usuarioId);
+  const previa = usuarioId && selecaoPrevia?.usuarioId === usuarioId ? selecaoPrevia.finalId : null;
   return {
     dados, erro, salvando, aplicar, previa,
-    alternarPrevia: () => setUsuarioPrevia((atual) => atual === usuarioId ? null : usuarioId),
+    alternarPrevia: (finalId) => setSelecaoPrevia((atual) =>
+      atual?.usuarioId === usuarioId && atual.finalId === finalId ? null : { usuarioId, finalId }),
     tentarNovamente: () => setTentativa((atual) => atual + 1),
   };
 }

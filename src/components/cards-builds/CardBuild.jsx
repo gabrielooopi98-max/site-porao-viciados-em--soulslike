@@ -8,29 +8,9 @@ import { criarNotificacao } from '../../services/notificacoes';
 import MidiasPublicacao from '../MidiasPublicacao';
 import AcoesPublicacao from '../AcoesPublicacao';
 import CompartilharPublicacao from '../CompartilharPublicacao';
+import { interpretarDano, interpretarFoco } from '../../services/perfilBuild';
+import { SeloDano, SeloFoco } from './SelosPerfilBuild';
 import './CardBuild.css';
-
-const iconesAtributos = {
-    nivel: (
-        <svg viewBox="0 0 24 24">
-            <path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7Z" />
-            <path d="M12 8v8M9 12h6" />
-        </svg>
-    ),
-    foco: (
-        <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="8" />
-            <circle cx="12" cy="12" r="3.5" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-        </svg>
-    ),
-    dano: (
-        <svg viewBox="0 0 24 24">
-            <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
-            <path d="m13 19 6-6M16 16l4 4M19 21l2-2" />
-        </svg>
-    ),
-};
 
 function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
     const navigate = useNavigate();
@@ -249,11 +229,10 @@ function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
         }
     }
 
-    const atributos = [
-        build.nivel && { chave: 'nivel', rotulo: 'Nível', valor: build.nivel },
-        build.foco && { chave: 'foco', rotulo: 'Foco', valor: build.foco },
-        build.dano && { chave: 'dano', rotulo: 'Dano', valor: build.dano },
-    ].filter(Boolean);
+    const nivel = String(build.nivel ?? '').trim();
+    const focos = interpretarFoco(build.foco);
+    const danos = interpretarDano(build.dano);
+    const temFicha = Boolean(nivel) || focos.length > 0 || danos.length > 0;
     const visualizacoes = (build.visualizacoes ?? 0).toLocaleString('pt-BR');
 
     return (
@@ -311,18 +290,39 @@ function CardBuild({ build, aoAbrirBuild, aoAtualizar, aoExcluir }) {
             </div>
 
             <div className="build-card-corpo">
-                {atributos.length > 0 && (
-                    <dl className="build-card-atributos" style={{ '--colunas': atributos.length }}>
-                        {atributos.map((atributo) => (
-                            <div key={atributo.chave}>
-                                <dt>
-                                    <span className="build-card-atributo-icone" aria-hidden="true">{iconesAtributos[atributo.chave]}</span>
-                                    {atributo.rotulo}
-                                </dt>
-                                <dd title={String(atributo.valor)}>{atributo.valor}</dd>
+                {temFicha && (
+                    <div className={`build-card-ficha${nivel ? '' : ' build-card-ficha--sem-nivel'}`}>
+                        {nivel && (
+                            <div className="build-card-nivel" title={`Nível ${nivel}`}>
+                                <span>Nível</span>
+                                <strong>{nivel}</strong>
                             </div>
-                        ))}
-                    </dl>
+                        )}
+                        {(focos.length > 0 || danos.length > 0) && (
+                            <dl className="build-card-perfil">
+                                {focos.length > 0 && (
+                                    <div>
+                                        <dt>Foco</dt>
+                                        <dd>
+                                            <ul className="perfil-build-selos">
+                                                {focos.map((item) => <SeloFoco key={item.id || item.rotulo} item={item} />)}
+                                            </ul>
+                                        </dd>
+                                    </div>
+                                )}
+                                {danos.length > 0 && (
+                                    <div>
+                                        <dt>Dano</dt>
+                                        <dd>
+                                            <ul className="perfil-build-selos">
+                                                {danos.map((item) => <SeloDano key={item.id || item.rotulo} item={item} />)}
+                                            </ul>
+                                        </dd>
+                                    </div>
+                                )}
+                            </dl>
+                        )}
+                    </div>
                 )}
                 {build.descricao?.trim() && (
                     <p className="build-card-texto">{build.descricao}</p>
