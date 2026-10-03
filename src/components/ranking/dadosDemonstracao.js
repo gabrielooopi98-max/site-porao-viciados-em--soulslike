@@ -15,6 +15,7 @@ export function dadosDemonstracaoRanking(etapa) {
     fim_semifinal: '2026-10-10T00:00:00Z',
     fim_final: '2026-10-15T00:00:00Z',
     vencedor_id: etapa === 3 ? 'demo-build-0' : null,
+    final_vencedor: etapa === 3 ? { id: 'ds3_ligar', titulo: 'Lorde das Cinzas', final: 'Ligar a Primeira Chama', jogo: 'Dark Souls III' } : null,
   };
   return {
     agora: { 1: '2026-10-06T12:00:00Z', 2: '2026-10-11T12:00:00Z', 3: '2026-10-16T12:00:00Z' }[etapa],
@@ -22,6 +23,8 @@ export function dadosDemonstracaoRanking(etapa) {
     jogadores: nomes.map((nome, index) => ({
       usuario_id: `demo-jogador-${index}`,
       nome,
+      titulo: ['Lorde das Cinzas', 'Shura', null, 'Caçador Desperto', null, null][index] || undefined,
+      finais: [3, 1, 0, 2, 0, 0][index],
       avatar: '/svg-animado/icone-usuario.svg',
       pontos: [860, 720, 610, 480, 350, 240][index] + (etapa === 3 && index === 0 ? 200 : 0),
     })),

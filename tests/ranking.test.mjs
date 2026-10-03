@@ -149,6 +149,30 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await como(1);
     await assert.rejects(rpc('ranking_avaliar', [ids[1], false, 'Revisao tardia']), /antes do fim/);
   });
+  await t.test('somente o vencedor escolhe um final, uma unica vez', async () => {
+    await como(3);
+    let painel = await rpc('ranking_painel', [desafio]);
+    assert.equal(painel.finais.length, 24);
+    assert.deepEqual(painel.minhas_vitorias.map((v) => [v.participacao_id, v.final_id]), [[ids[1], null]]);
+    assert.equal(painel.desafios.find((d) => d.id === desafio).final_vencedor, null);
+    await assert.rejects(rpc('ranking_escolher_final', [ids[1], 'final_inexistente']), /Final invalido/);
+    await como(2);
+    await assert.rejects(rpc('ranking_escolher_final', [ids[1], 'ds3_ligar']), /Somente o vencedor/);
+    await como(1);
+    await assert.rejects(rpc('ranking_escolher_final', [ids[1], 'ds3_ligar']), /Somente o vencedor/);
+    await como(3);
+    await rpc('ranking_escolher_final', [ids[1], 'ds3_ligar']);
+    await assert.rejects(rpc('ranking_escolher_final', [ids[1], 'er_chama']), /ja foi escolhido/);
+    painel = await rpc('ranking_painel', [desafio]);
+    assert.equal(painel.desafios.find((d) => d.id === desafio).final_vencedor.titulo, 'Lorde das Cinzas');
+    assert.equal(painel.minhas_vitorias[0].final_id, 'ds3_ligar');
+    const campeao = painel.jogadores.find((j) => j.usuario_id === usuario(3));
+    assert.equal(campeao.titulo, 'Lorde das Cinzas');
+    assert.equal(campeao.finais, 1);
+    await como(null);
+    assert.deepEqual((await rpc('ranking_painel')).minhas_vitorias, []);
+    await assert.rejects(rpc('ranking_escolher_final', [ids[1], 'ds3_ligar']), /permission denied/);
+  });
   await t.test('conquistas: votos nao concedem pontos, aprovacao idempotente e revogacao', async () => {
     etapaVoto = 0;
     await como(1);
@@ -316,6 +340,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(geral.desafios.some((d) => d.tipo === 'conquista'), false);
     assert.equal(geral.participacoes.some((p) => p.desafio_id === desafio), false);
     assert.equal(geral.jogadores.find((j) => j.usuario_id === usuario(3)).pontos, pontosAntes);
+    assert.equal(geral.jogadores.find((j) => j.usuario_id === usuario(3)).titulo, 'Lorde das Cinzas');
     await superusuario();
     const { rows } = await db.query(`select
       (select count(*) from public.ranking_participacoes where desafio_id = $1)::int as participacoes,

@@ -92,6 +92,51 @@ create table if not exists public.ranking_midias_remover (
     criado_em timestamptz not null default now()
 );
 
+-- Finais que o vencedor de uma competicao de builds pode escolher como titulo.
+create table if not exists public.ranking_finais (
+    id text primary key,
+    jogo text not null,
+    final text not null,
+    titulo text not null,
+    ordem integer not null
+);
+
+insert into public.ranking_finais (id, jogo, final, titulo, ordem) values
+    ('ds1_chama', 'Dark Souls Remastered', 'Era do Fogo', 'Herdeiro da Chama', 10),
+    ('ds1_trevas', 'Dark Souls Remastered', 'Era das Trevas', 'Lorde Sombrio', 11),
+    ('ds2_trono', 'Dark Souls II', 'Trono do Desejo', 'Monarca de Drangleic', 20),
+    ('ds2_recusa', 'Dark Souls II', 'Trono Recusado', 'Aquele que Recusou o Trono', 21),
+    ('ds3_ligar', 'Dark Souls III', 'Ligar a Primeira Chama', 'Lorde das Cinzas', 30),
+    ('ds3_fim', 'Dark Souls III', 'Fim do Fogo', 'Aquele que Apagou a Chama', 31),
+    ('ds3_traicao', 'Dark Souls III', 'Fim do Fogo (traição)', 'Traidor da Guardiã do Fogo', 32),
+    ('ds3_usurpacao', 'Dark Souls III', 'Usurpação do Fogo', 'Lorde dos Vazios', 33),
+    ('er_fratura', 'Elden Ring', 'Era da Fratura', 'Lorde Prístino', 40),
+    ('er_ordem', 'Elden Ring', 'Era da Ordem Perfeita', 'Lorde da Ordem Perfeita', 41),
+    ('er_estrelas', 'Elden Ring', 'Era das Estrelas', 'Consorte da Lua', 42),
+    ('er_desespero', 'Elden Ring', 'Bênção do Desespero', 'Lorde da Maldição', 43),
+    ('er_crepusculo', 'Elden Ring', 'Era do Crepúsculo', 'Lorde dos Nascidos no Crepúsculo', 44),
+    ('er_chama', 'Elden Ring', 'Senhor da Chama Frenética', 'Lorde da Chama Frenética', 45),
+    ('bb_amanhecer', 'Bloodborne', 'Amanhecer em Yharnam', 'Caçador Desperto', 50),
+    ('bb_desejos', 'Bloodborne', 'Honrando Desejos', 'Caçador do Sonho', 51),
+    ('bb_infancia', 'Bloodborne', 'O Início da Infância', 'Grande Infante', 52),
+    ('sk_shura', 'Sekiro: Shadows Die Twice', 'Shura', 'Shura', 60),
+    ('sk_imortalidade', 'Sekiro: Shadows Die Twice', 'Imortalidade Cortada', 'Lobo Leal', 61),
+    ('sk_purificacao', 'Sekiro: Shadows Die Twice', 'Purificação', 'Lobo Purificado', 62),
+    ('sk_retorno', 'Sekiro: Shadows Die Twice', 'Retorno', 'Guardião do Herdeiro Divino', 63),
+    ('lp_cordas', 'Lies of P', 'Livre das Cordas', 'Marionete de Geppetto', 70),
+    ('lp_ascensao', 'Lies of P', 'Ascensão de P', 'P Ascendido', 71),
+    ('lp_menino', 'Lies of P', 'Menino de Verdade', 'Menino de Verdade', 72)
+on conflict (id) do update set jogo = excluded.jogo, final = excluded.final,
+    titulo = excluded.titulo, ordem = excluded.ordem;
+
+-- Historico da vitoria fica no ponto: o desafio e removido, o final escolhido permanece.
+alter table public.ranking_pontos add column if not exists origem text check (origem in ('conquista', 'build'));
+alter table public.ranking_pontos add column if not exists desafio_titulo text;
+alter table public.ranking_pontos add column if not exists final_id text references public.ranking_finais(id);
+alter table public.ranking_pontos add column if not exists final_em timestamptz;
+update public.ranking_pontos rp set origem = d.tipo, desafio_titulo = d.titulo
+    from public.ranking_desafios d where d.id = rp.desafio_id and rp.origem is null;
+
 create index if not exists ranking_participacoes_desafio_idx on public.ranking_participacoes(desafio_id);
 create index if not exists ranking_votos_etapa_idx on public.ranking_votos(etapa, participacao_id);
 create index if not exists ranking_comentarios_participacao_idx on public.ranking_comentarios(participacao_id, criado_em);
@@ -105,11 +150,13 @@ alter table public.ranking_comentarios enable row level security;
 alter table public.ranking_pontos enable row level security;
 alter table public.ranking_avisos_lidos enable row level security;
 alter table public.ranking_midias_remover enable row level security;
+alter table public.ranking_finais enable row level security;
 
 -- Toda alteracao passa por RPC: o cliente nao pode conceder pontos ou etapas.
 revoke all on public.ranking_administradores, public.ranking_desafios,
     public.ranking_participacoes, public.ranking_votos, public.ranking_comentarios,
-    public.ranking_pontos, public.ranking_avisos_lidos, public.ranking_midias_remover from anon, authenticated;
+    public.ranking_pontos, public.ranking_avisos_lidos, public.ranking_midias_remover,
+    public.ranking_finais from anon, authenticated;
 grant select on public.ranking_desafios to anon, authenticated;
 drop policy if exists ranking_desafios_leitura on public.ranking_desafios;
 create policy ranking_desafios_leitura on public.ranking_desafios for select using (true);
@@ -192,8 +239,8 @@ begin
             order by count(v.usuario_id) desc, p.criado_em, p.id limit 1;
             update public.ranking_desafios set etapa = 3, vencedor_id = escolhido where id = d.id;
             if escolhido is not null then
-                insert into public.ranking_pontos (participacao_id, desafio_id, usuario_id, pontos)
-                select id, d.id, autor_id, d.pontos from public.ranking_participacoes where id = escolhido
+                insert into public.ranking_pontos (participacao_id, desafio_id, usuario_id, pontos, origem, desafio_titulo)
+                select id, d.id, autor_id, d.pontos, 'build', d.titulo from public.ranking_participacoes where id = escolhido
                 on conflict (participacao_id) do nothing;
             end if;
         end if;
@@ -310,8 +357,8 @@ begin
     where id = p.id;
     if d.tipo = 'conquista' then
         if p_aprovar then
-            insert into public.ranking_pontos (participacao_id, desafio_id, usuario_id, pontos)
-            values (p.id, d.id, p.autor_id, d.pontos) on conflict (participacao_id) do nothing;
+            insert into public.ranking_pontos (participacao_id, desafio_id, usuario_id, pontos, origem, desafio_titulo)
+            values (p.id, d.id, p.autor_id, d.pontos, 'conquista', d.titulo) on conflict (participacao_id) do nothing;
         else
             delete from public.ranking_pontos where participacao_id = p.id;
         end if;
@@ -381,8 +428,16 @@ begin
         'admin', eh_admin,
         'agora', now(),
         'meus_pontos', coalesce((select sum(pontos) from public.ranking_pontos where usuario_id = auth.uid()), 0),
-        'desafios', coalesce((select jsonb_agg(to_jsonb(d) order by d.criado_em desc)
+        'desafios', coalesce((select jsonb_agg(to_jsonb(d) || jsonb_build_object('final_vencedor', (
+                select jsonb_build_object('id', f.id, 'titulo', f.titulo, 'final', f.final, 'jogo', f.jogo)
+                from public.ranking_pontos rp join public.ranking_finais f on f.id = rp.final_id
+                where rp.participacao_id = d.vencedor_id)) order by d.criado_em desc)
             from public.ranking_desafios d), '[]'::jsonb),
+        'finais', coalesce((select jsonb_agg(to_jsonb(f) order by f.ordem) from public.ranking_finais f), '[]'::jsonb),
+        'minhas_vitorias', coalesce((select jsonb_agg(jsonb_build_object(
+                'participacao_id', rp.participacao_id, 'desafio_titulo', rp.desafio_titulo,
+                'pontos', rp.pontos, 'criado_em', rp.criado_em, 'final_id', rp.final_id) order by rp.criado_em desc)
+            from public.ranking_pontos rp where rp.usuario_id = auth.uid() and rp.origem = 'build'), '[]'::jsonb),
         'participacoes', coalesce((
             select jsonb_agg(to_jsonb(t) order by t.criado_em desc) from (
                 select p.*, d.etapa, d.tipo, d.titulo as desafio_titulo, d.pontos_voto,
@@ -410,7 +465,9 @@ begin
             select caminho from public.ranking_midias_remover order by criado_em limit 100) t), '[]'::jsonb)
             else '[]'::jsonb end,
         'jogadores', coalesce((select jsonb_agg(to_jsonb(t) order by t.pontos desc, t.usuario_id) from (
-            select rp.usuario_id, sum(rp.pontos) as pontos,
+            select rp.usuario_id, sum(rp.pontos) as pontos, count(distinct rp.final_id) as finais,
+                (select f.titulo from public.ranking_pontos x join public.ranking_finais f on f.id = x.final_id
+                    where x.usuario_id = rp.usuario_id order by x.final_em desc limit 1) as titulo,
                 coalesce(nullif(u.raw_user_meta_data->>'display_name', ''), nullif(u.raw_user_meta_data->>'nome', ''), nullif(u.raw_user_meta_data->>'full_name', ''), 'Jogador') as nome,
                 u.raw_user_meta_data->>'avatar_url' as avatar
             from public.ranking_pontos rp join auth.users u on u.id = rp.usuario_id
@@ -495,6 +552,22 @@ create policy "ADM remove midias de desafios removidos"
     on storage.objects for delete to authenticated
     using (bucket_id = 'midias' and public.ranking_pode_remover_midia(name));
 
+create or replace function public.ranking_escolher_final(p_participacao uuid, p_final text)
+returns void language plpgsql security definer set search_path = public
+as $$
+declare
+    vitoria public.ranking_pontos%rowtype;
+begin
+    if auth.uid() is null then raise exception 'Entre na sua conta para escolher o final.'; end if;
+    select * into vitoria from public.ranking_pontos
+        where participacao_id = p_participacao and usuario_id = auth.uid() and origem = 'build' for update;
+    if not found then raise exception 'Somente o vencedor da competicao pode escolher o final.'; end if;
+    if vitoria.final_id is not null then raise exception 'O final desta vitoria ja foi escolhido.'; end if;
+    if not exists(select 1 from public.ranking_finais where id = p_final) then raise exception 'Final invalido.'; end if;
+    update public.ranking_pontos set final_id = p_final, final_em = now() where participacao_id = p_participacao;
+end;
+$$;
+
 revoke all on function public.ranking_ler_desafio(uuid) from public, anon, authenticated;
 grant execute on function public.ranking_ler_desafio(uuid) to authenticated;
 
@@ -504,13 +577,13 @@ revoke all on function public.ranking_eh_admin(), public.ranking_avancar(),
     public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text), public.ranking_avisos(boolean),
     public.ranking_participacao_visivel(text, text, uuid, boolean), public.ranking_apagar_desafio(uuid, boolean),
     public.ranking_excluir_desafio(uuid), public.ranking_pode_remover_midia(text),
-    public.ranking_confirmar_midias_removidas(text[]) from public, anon, authenticated;
+    public.ranking_confirmar_midias_removidas(text[]), public.ranking_escolher_final(uuid, text) from public, anon, authenticated;
 grant execute on function public.ranking_painel(uuid) to anon, authenticated;
 grant execute on function public.ranking_eh_admin(), public.ranking_salvar_desafio(jsonb, uuid),
     public.ranking_publicar(uuid, jsonb), public.ranking_avaliar(uuid, boolean, text),
     public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text), public.ranking_avisos(boolean),
     public.ranking_excluir_desafio(uuid), public.ranking_pode_remover_midia(text),
-    public.ranking_confirmar_midias_removidas(text[]) to authenticated;
+    public.ranking_confirmar_midias_removidas(text[]), public.ranking_escolher_final(uuid, text) to authenticated;
 
 notify pgrst, 'reload schema';
 commit;

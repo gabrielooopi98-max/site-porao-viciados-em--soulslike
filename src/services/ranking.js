@@ -46,6 +46,13 @@ export async function limparMidiasRemovidas(caminhos) {
   await executarRanking('ranking_confirmar_midias_removidas', { p_caminhos: caminhos });
 }
 
+// Finais agrupados por jogo, na ordem do catalogo, para <optgroup> e para a colecao.
+export function agruparFinais(finais) {
+  const grupos = new Map();
+  for (const final of finais) grupos.set(final.jogo, [...(grupos.get(final.jogo) || []), final]);
+  return [...grupos];
+}
+
 // Empatados dividem a posicao (1º, 1º, 3º).
 export function posicoesRanking(jogadores) {
   return jogadores.map((jogador, index) => {

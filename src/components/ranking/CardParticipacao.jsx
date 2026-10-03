@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import MidiasPublicacao from '../MidiasPublicacao';
+import EscolhaFinal, { SeloFinal } from './EscolhaFinal';
 import { executarRanking, podeVotarRanking } from '../../services/ranking';
 
-export default function CardParticipacao({ participacao, desafio, user, admin = false, comentarios = [], aoAtualizar, resumo = false, agora = 0, demonstracao = false }) {
+export default function CardParticipacao({ participacao, desafio, user, admin = false, comentarios = [], finais = [], aoAtualizar, resumo = false, agora = 0, demonstracao = false }) {
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState('');
   const [motivo, setMotivo] = useState('');
@@ -35,6 +36,9 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
         <span className={`ranking-status-chip ${vencedor ? 'vencedor' : p.status}`}>{vencedor ? 'Vencedor' : { pendente: 'Aguardando ADM', aprovada: 'Validada pelo ADM', recusada: 'Recusada' }[p.status]}</span>
       </header>
       <h3>{p.titulo}</h3>
+      {vencedor && (desafio.final_vencedor ? <SeloFinal final={desafio.final_vencedor} />
+        : !resumo && p.autor_id === user?.id ? <EscolhaFinal finais={finais} participacaoId={p.id} aoEscolhido={aoAtualizar} />
+          : <p className="ranking-aguardando-final">Aguardando o vencedor escolher o final.</p>)}
       {!resumo && <p className="ranking-texto">{p.descricao}</p>}
       {p.midias.length > 0 && <MidiasPublicacao publicacao={resumo ? { ...p, midias: p.midias.slice(0, 1) } : p}
         itemClassName="ranking-midia-item" mediaClassName="ranking-midia" permitirAmpliar />}

@@ -1,0 +1,244 @@
+/* Escolha do final pelo vencedor da competicao de builds */
+.ranking-escolha-final {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 18px;
+    color: #ddd;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(180deg, #24180c, #15110d);
+    border: 1px solid #8a5f2c;
+    border-radius: 8px;
+}
+
+.ranking-escolha-final h4 {
+    margin: 0;
+    color: #ffd08a;
+    font-size: 1rem;
+}
+
+.ranking-escolha-final > p {
+    margin: 0;
+    color: #bbb;
+    font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.ranking-escolha-final label {
+    display: grid;
+    gap: 6px;
+    color: #ccc;
+    font-size: 0.75rem;
+}
+
+.ranking-escolha-final select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    color: #eee;
+    font: inherit;
+    font-size: 0.85rem;
+    background: #111;
+    border: 1px solid #5c4128;
+    border-radius: 5px;
+}
+
+.ranking-escolha-final select:focus-visible {
+    outline: 2px solid #e88945;
+    outline-offset: 2px;
+}
+
+.ranking-escolha-final button {
+    justify-self: start;
+    min-height: 44px;
+    padding: 10px 18px;
+    color: #111;
+    font: 600 0.8rem 'Poppins', sans-serif;
+    background: #e88945;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.ranking-escolha-final button:hover:not(:disabled) {
+    background: #f39a58;
+}
+
+.ranking-escolha-final button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.ranking-selo-final {
+    display: grid;
+    gap: 2px;
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    background: #2a1d0e;
+    border: 1px solid #8a5f2c;
+    border-left: 3px solid #ffd08a;
+    border-radius: 5px;
+}
+
+.ranking-escolha-final .ranking-selo-final {
+    margin: 0;
+}
+
+.ranking-selo-final span {
+    color: #e9b48b;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ranking-selo-final strong {
+    color: #ffd08a;
+    font-size: 1rem;
+}
+
+.ranking-selo-final small {
+    color: #bba58a;
+    font-size: 0.72rem;
+}
+
+.ranking-aguardando-final {
+    margin: 12px 0 0;
+    color: #bba58a;
+    font-size: 0.75rem;
+}
+
+/* Titulo ao lado do nome na classificacao geral */
+.ranking-real-lista li > .ranking-nome-lista {
+    display: block;
+    width: auto;
+    height: auto;
+    color: #ddd;
+    font-weight: inherit;
+    text-align: left;
+    background: transparent;
+    border-radius: 0;
+}
+
+.ranking-titulo-jogador {
+    display: block;
+    color: #e9b48b;
+    font-size: 0.66rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Colecao de finais no perfil */
+.ranking-colecao-finais {
+    display: grid;
+    gap: 18px;
+    width: 100%;
+    padding: 24px;
+    color: #ddd;
+    font-family: 'Poppins', sans-serif;
+    background: #111;
+    border: 1px solid #2b2b2b;
+    border-radius: 8px;
+}
+
+.ranking-colecao-finais > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ranking-colecao-finais h2 {
+    margin: 4px 0;
+    font-size: 1rem;
+    text-align: left;
+}
+
+.ranking-colecao-finais > header p {
+    margin: 0;
+    color: #999;
+    font-size: 0.78rem;
+}
+
+.ranking-colecao-finais > header > strong {
+    color: #ffd08a;
+    font-size: 1.6rem;
+    white-space: nowrap;
+}
+
+.ranking-colecao-finais > header small {
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.ranking-vitoria-pendente > p {
+    margin: 0;
+    color: #ccc;
+    font-size: 0.8rem;
+    line-height: 1.6;
+}
+
+.ranking-colecao-jogos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+}
+
+.ranking-colecao-jogos > div {
+    min-width: 0;
+    padding: 14px;
+    background: #181818;
+    border-radius: 6px;
+}
+
+.ranking-colecao-jogos h3 {
+    margin: 0 0 10px;
+    color: #e9b48b;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.ranking-colecao-jogos ul {
+    display: grid;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.ranking-colecao-jogos li {
+    display: grid;
+    padding: 8px 10px;
+    color: #666;
+    background: #121212;
+    border: 1px dashed #333;
+    border-radius: 4px;
+}
+
+.ranking-colecao-jogos li strong {
+    font-size: 0.78rem;
+}
+
+.ranking-colecao-jogos li small {
+    font-size: 0.66rem;
+}
+
+.ranking-colecao-jogos li.desbloqueado {
+    color: #bba58a;
+    background: #2a1d0e;
+    border: 1px solid #8a5f2c;
+}
+
+.ranking-colecao-jogos li.desbloqueado strong {
+    color: #ffd08a;
+}
+
+@media (max-width: 768px) {
+    .ranking-colecao-finais {
+        padding: 18px;
+    }
+
+    .ranking-escolha-final button {
+        justify-self: stretch;
+    }
+}

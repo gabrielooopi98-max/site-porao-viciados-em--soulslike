@@ -150,7 +150,7 @@ export default function PaginaRanking() {
               </div>
               {!participacoes.length && <p className="ranking-vazio">Nenhuma participação neste filtro.</p>}
               {participacoes.slice(0, limite).map((p) => <div id={`participacao-${p.id}`} key={p.id}>
-                <CardParticipacao participacao={p} desafio={desafio} user={user} admin={dados.admin}
+                <CardParticipacao participacao={p} desafio={desafio} user={user} admin={dados.admin} finais={dados.finais}
                   comentarios={dados.comentarios.filter((c) => c.participacao_id === p.id)} aoAtualizar={atualizar} agora={agora} />
               </div>)}
               {participacoes.length > limite && <button type="button" onClick={() => setPagina(Math.ceil(limite / 12) + 1)}>Ver mais participações</button>}

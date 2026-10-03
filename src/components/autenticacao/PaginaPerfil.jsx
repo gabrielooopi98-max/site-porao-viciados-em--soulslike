@@ -7,6 +7,7 @@ import CardPost from '../cards-posts/CardPost';
 import CardBuild from '../cards-builds/CardBuild';
 import './Perfil.css';
 import { useRanking } from '../ranking/useRanking';
+import ColecaoFinais from '../ranking/ColecaoFinais';
 
 function PaginaPerfil() {
   const navigate = useNavigate();
@@ -189,6 +190,9 @@ function PaginaPerfil() {
             Ver ranking
           </button>
         </section>
+
+        {ranking.dados && <ColecaoFinais finais={ranking.dados.finais} vitorias={ranking.dados.minhas_vitorias}
+          aoAtualizar={ranking.atualizar} />}
 
         <section className="perfil-conteudos" aria-labelledby="titulo-conteudos-perfil">
           <div className="perfil-conteudos-cabecalho">
