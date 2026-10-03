@@ -11,8 +11,11 @@ import { classificarBuilds, tituloEtapaBuilds } from '../services/classificacaoB
 import './AreaRanking.css';
 import './ranking/Ranking.css';
 
-function CompeticaoRanking({ desafio, participacoes }) {
+const CARDS_NA_HOME = 6;
+
+function CompeticaoRanking({ desafio, participacoes, agora }) {
   const encerrada = desafio.etapa === 3;
+  const inscricoesAbertas = agora < Date.parse(desafio.fim);
   const prazo = desafio.etapa === 0 ? desafio.fim : desafio.etapa === 1 ? desafio.fim_semifinal : desafio.fim_final;
   const builds = classificarBuilds(desafio, participacoes);
 
@@ -38,13 +41,21 @@ function CompeticaoRanking({ desafio, participacoes }) {
         <div className="ranking-home-premio"><dt>Prêmio do vencedor</dt><dd>{desafio.pontos} pts</dd></div>
         <div><dt>{encerrada ? 'Final encerrada em' : 'Vote até'}</dt><dd><time dateTime={prazo}>{formatarDataRanking(prazo)}</time></dd></div>
       </dl>
-      {encerrada ? <p className="ranking-home-votacao">Resultado disponível por 3 dias após a final.</p>
-        : <p className="ranking-home-votacao">Nova etapa, novos votos. Você pode votar novamente nas builds que avançaram.</p>}
+      <p className="ranking-home-votacao">{encerrada ? 'Resultado disponível por 3 dias após a final.'
+        : desafio.etapa === 0 ? 'Vote nas suas favoritas: as 4 builds mais votadas avançam para a semifinal.'
+          : 'Nova etapa, novos votos. Você pode votar novamente nas builds que avançaram.'}</p>
+      {inscricoesAbertas && <div className="rk-participar-acao rk-envio-curto">
+        <Link className="rk-btn rk-btn--principal" to={`/ranking?desafio=${desafio.id}&participar=1`}>+ Enviar minha build</Link>
+        <span className="rk-participar-prazo">Inscrições até <b>{formatarDataRanking(desafio.fim)}</b>. A build entra na disputa na hora.</span>
+      </div>}
       <h5 className="ranking-home-builds-titulo">{tituloEtapaBuilds(desafio.etapa)}</h5>
       <div className="rk-grade">
-        {builds.map((p, index) => <CardParticipacao key={p.id} participacao={p} desafio={desafio} resumo posicao={index + 1} />)}
+        {builds.slice(0, CARDS_NA_HOME).map((p, index) => <CardParticipacao key={p.id} participacao={p} desafio={desafio} resumo posicao={index + 1} />)}
       </div>
-      {!builds.length && <p className="ranking-vazio">Nenhuma build validada para esta competição.</p>}
+      {builds.length > CARDS_NA_HOME && <Link className="ranking-home-link ranking-home-ver-todas" to={`/ranking?desafio=${desafio.id}`}>
+        Ver todas as {builds.length} builds <span aria-hidden="true">→</span>
+      </Link>}
+      {!builds.length && <p className="ranking-vazio">{inscricoesAbertas ? 'Nenhuma build enviada ainda. Seja o primeiro!' : 'Nenhuma build nesta etapa.'}</p>}
     </section>
   );
 }
@@ -52,9 +63,8 @@ function CompeticaoRanking({ desafio, participacoes }) {
 export default function AreaRanking() {
   const { user } = useAuth();
   const { dados, erro, carregando, atualizar } = useRanking();
-  const competicoes = dados?.desafios.filter(competicaoEmDestaque) || [];
-  const etapas = dados?.desafios.filter((d) => d.tipo === 'build').map((d) => d.etapa) || [];
-  const tituloDisputas = tituloEtapaBuilds(Math.max(0, ...etapas));
+  const agora = dados ? Date.parse(dados.agora) : 0;
+  const competicoes = dados?.desafios.filter((d) => competicaoEmDestaque(d, agora)) || [];
   return (
     <section className="area-ranking ranking-comunidade" id="ranking" aria-labelledby="ranking-titulo">
       <DivisoriaSecao />
@@ -72,6 +82,20 @@ export default function AreaRanking() {
         {carregando && <p className="ranking-home-status" role="status">Carregando ranking…</p>}
         {erro && <p className="ranking-erro" role="alert">{erro} <button type="button" onClick={atualizar}>Tentar novamente</button></p>}
         {dados && !erro && <>
+          <section className="ranking-home-disputas" aria-labelledby="ranking-home-disputas-titulo">
+            <header className="ranking-home-secao-topo">
+              <div>
+                <h3 id="ranking-home-disputas-titulo">Competições de builds</h3>
+                <p>Da classificatória à final, a comunidade vota e decide quem leva o prêmio.</p>
+              </div>
+            </header>
+            {competicoes.map((d) => <CompeticaoRanking key={d.id} desafio={d} participacoes={dados.participacoes} agora={agora} />)}
+            {!competicoes.length && <div className="ranking-home-sem-disputa">
+              <strong>As próximas disputas aparecem aqui</strong>
+              <p>Quando uma competição de builds abrir, as builds aparecem aqui para você votar.</p>
+              <Link className="ranking-home-link" to="/ranking">Ver desafios e participar <span aria-hidden="true">→</span></Link>
+            </div>}
+          </section>
           <section className="ranking-home-classificacao" aria-labelledby="ranking-home-geral-titulo">
             <header className="ranking-home-secao-topo">
               <div>
@@ -91,20 +115,6 @@ export default function AreaRanking() {
               <Link className="ranking-home-link" to="/ranking">Ver competições <span aria-hidden="true">→</span></Link>
             </header>
             <ClassificacaoBuilds dados={dados} />
-          </section>
-          <section className="ranking-home-disputas" aria-labelledby="ranking-home-disputas-titulo">
-            <header className="ranking-home-secao-topo">
-              <div>
-                <h3 id="ranking-home-disputas-titulo">{tituloDisputas}</h3>
-                <p>Da semifinal à final, a comunidade decide quem leva o prêmio.</p>
-              </div>
-            </header>
-            {competicoes.map((d) => <CompeticaoRanking key={d.id} desafio={d} participacoes={dados.participacoes} />)}
-            {!competicoes.length && <div className="ranking-home-sem-disputa">
-              <strong>As próximas disputas aparecem aqui</strong>
-              <p>As votações das builds começam quando o desafio avançar para a semifinal.</p>
-              <Link className="ranking-home-link" to="/ranking">Ver desafios e participar <span aria-hidden="true">→</span></Link>
-            </div>}
           </section>
         </>}
       </div>

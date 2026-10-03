@@ -27,7 +27,7 @@ function orientacao(desafio, atual) {
   if (atual === -1) return `As inscrições abrem em ${data(desafio.inicio)}.`;
   if (desafio.tipo === 'build') {
     return [
-      `Envie sua build e vote nas builds aprovadas até ${data(desafio.fim)}.`,
+      `Envie sua build e vote nas builds da comunidade até ${data(desafio.fim)}.`,
       `Semifinal: vote nas builds classificadas até ${data(desafio.fim_semifinal)}.`,
       `Final: vote na sua favorita entre as duas finalistas até ${data(desafio.fim_final)}.`,
       `Competição encerrada. Este desafio sai do site em ${data(dataRemocaoDesafio(desafio))}; os pontos ficam.`,

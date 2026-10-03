@@ -28,9 +28,9 @@ export function dataRemocaoDesafio(desafio) {
   return new Date(Date.parse(fim) + 3 * 24 * 3600000).toISOString();
 }
 
-// O banco remove desafios 3 dias apos o fim; a home mostra builds da semifinal em diante.
-export function competicaoEmDestaque(desafio) {
-  return desafio.tipo === 'build' && desafio.etapa >= 1;
+// O banco remove desafios 3 dias apos o fim; a home mostra builds desde a classificatoria.
+export function competicaoEmDestaque(desafio, agora) {
+  return desafio.tipo === 'build' && agora >= Date.parse(desafio.inicio);
 }
 
 // Pasta exclusiva das provas: a limpeza automatica nunca alcanca midias de posts.

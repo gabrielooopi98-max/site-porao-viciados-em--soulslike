@@ -64,7 +64,7 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
       </div>
     </section>}
     </>
-  ) : <p className="ranking-vazio">Ainda não há builds aprovadas nesta etapa.</p>;
+  ) : <p className="ranking-vazio">Ainda não há builds nesta etapa.</p>;
 }
 
 function ClassificacaoReal({ desafioId, mostrarCards }) {

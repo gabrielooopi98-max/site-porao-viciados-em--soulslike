@@ -77,6 +77,79 @@ h3.rk-grade-titulo {
     border-color: #f07818;
 }
 
+.rk-btn--compacto {
+    min-height: 36px;
+    padding: 8px 14px;
+}
+
+.rk-btn--comentarios {
+    min-width: 64px;
+}
+
+.rk-btn--ativo {
+    color: #fff;
+    background: #262626;
+    border-color: #666;
+}
+
+.rk-icone {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Editar e excluir: icones discretos ao lado do status. */
+.rk-icones {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.rk-icone-btn {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: #aaa;
+    background: #181818;
+    border: 1px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.rk-icone-btn .rk-icone {
+    width: 16px;
+    height: 16px;
+}
+
+.rk-icone-btn:hover:not(:disabled) {
+    color: #fff;
+    background: #262626;
+    border-color: #666;
+}
+
+.rk-icone-btn--perigo:hover:not(:disabled) {
+    color: #ffb4b4;
+    background: #3a1414;
+    border-color: #b33a3a;
+}
+
+.rk-icone-btn:focus-visible {
+    outline: 2px solid #f07818;
+    outline-offset: 2px;
+}
+
+.rk-icone-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* ---------- Card ---------- */
 
 .rk-card {
@@ -179,7 +252,14 @@ h3.rk-grade-titulo {
     text-decoration: underline;
 }
 
-.rk-card-topo > .ranking-status-chip {
+.rk-card-lateral {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.rk-card-lateral > .ranking-status-chip {
     white-space: nowrap;
 }
 
@@ -303,6 +383,11 @@ h3.rk-grade-titulo {
 
 /* ---------- Texto ---------- */
 
+.rk-card-info {
+    display: grid;
+    gap: 10px;
+}
+
 .rk-card .rk-descricao {
     margin: 0;
     color: #c4c4c4;
@@ -351,24 +436,36 @@ h3.rk-grade-titulo {
 }
 
 .rk-historico {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     margin: 0;
     padding: 0;
+    overflow: hidden;
     list-style: none;
+    background: #0c0c0c;
+    border: 1px solid #242424;
+    border-radius: 8px;
 }
 
 .rk-historico li {
-    padding: 4px 9px;
-    color: #aaa;
-    font: 400 0.66rem/1.5 'Poppins', sans-serif;
-    background: #181818;
-    border-radius: 999px;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 4px;
+    color: #888;
+    font: 400 0.62rem/1.3 'Poppins', sans-serif;
+    text-align: center;
+}
+
+.rk-historico li + li {
+    border-left: 1px solid #242424;
 }
 
 .rk-historico b {
     color: #eee;
+    font-size: 0.95rem;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
 
@@ -452,21 +549,218 @@ h3.rk-grade-titulo {
     letter-spacing: 0.06em;
 }
 
-.rk-comentario {
+/* Comentarios: avatar, balao, reacoes e respostas em um nivel. */
+.rk-coments {
+    display: grid;
+    gap: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #242424;
+}
+
+.rk-coments-vazio {
     margin: 0;
-    padding-bottom: 10px;
+    color: #888;
+    font: 400 0.74rem/1.5 'Poppins', sans-serif;
+}
+
+.rk-coments-vazio a {
+    color: #f0a160;
+}
+
+.rk-coments-lista {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rk-coment {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+}
+
+.rk-coment-avatar {
+    display: block;
+    width: 34px;
+    height: 34px;
+    overflow: hidden;
+    object-fit: cover;
+    background: #1c1c1c;
+    border: 1px solid #3a3a3a;
+    border-radius: 50%;
+}
+
+.rk-coment-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rk-coment-corpo {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.rk-coment-balao {
+    padding: 8px 12px 10px;
+    background: #181818;
+    border: 1px solid #262626;
+    border-radius: 4px 12px 12px 12px;
+}
+
+.rk-coment-cabecalho {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    font: 400 0.7rem/1.4 'Poppins', sans-serif;
+}
+
+.rk-coment-cabecalho a {
+    color: #eee;
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.rk-coment-cabecalho a:hover {
+    text-decoration: underline;
+}
+
+.rk-coment-cabecalho time {
+    color: #777;
+    font-size: 0.64rem;
+}
+
+.rk-coment-balao p {
+    margin: 4px 0 0;
     color: #ccc;
     font: 400 0.76rem/1.6 'Poppins', sans-serif;
-    border-bottom: 1px solid #222;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
-.rk-comentario a {
-    display: block;
+.rk-coment-acoes {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+.rk-coment-acao {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 4px 8px;
+    color: #999;
+    font: 600 0.68rem/1 'Poppins', sans-serif;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.rk-coment-acao:hover:not(:disabled) {
     color: #eee;
-    font-weight: 600;
-    text-decoration: none;
+    background: #1d1d1d;
+}
+
+.rk-coment-acao:focus-visible {
+    outline: 2px solid #f07818;
+    outline-offset: 1px;
+}
+
+.rk-coment-acao:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rk-coment-reacao svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.rk-coment-reacao span {
+    font-variant-numeric: tabular-nums;
+}
+
+.rk-coment-reacao[aria-pressed="true"] {
+    color: #f0a160;
+}
+
+.rk-coment-reacao[aria-pressed="true"] svg {
+    fill: rgba(240, 120, 24, 0.25);
+}
+
+.rk-coment-reacao--neg[aria-pressed="true"] {
+    color: #e88a8a;
+}
+
+.rk-coment-reacao--neg[aria-pressed="true"] svg {
+    fill: rgba(200, 70, 70, 0.25);
+}
+
+.rk-coment-respostas {
+    display: grid;
+    gap: 12px;
+    margin: 10px 0 0 17px;
+    padding-left: 16px;
+    border-left: 2px solid #262626;
+}
+
+.rk-coment-respostas .rk-coment {
+    grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.rk-coment-respostas .rk-coment-avatar {
+    width: 28px;
+    height: 28px;
+}
+
+.rk-coment-toggle {
+    width: fit-content;
+    color: #f0a160;
+}
+
+.rk-coment-form {
+    display: grid;
+    gap: 8px;
+}
+
+.rk-coment-form textarea {
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    color: #eee;
+    font: 400 16px/1.5 'Poppins', sans-serif;
+    background: #151515;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.rk-coment-form textarea:focus {
+    border-color: #f07818;
+    outline: none;
+}
+
+.rk-coment-form-acoes {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
 }
 
 .rk-bloco label {
@@ -492,6 +786,18 @@ h3.rk-grade-titulo {
 .rk-bloco--adm {
     background: #14110c;
     border-color: #4a3a22;
+}
+
+.rk-bloco > summary {
+    color: #c9a777;
+    font: 600 0.7rem/1.5 'Poppins', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+}
+
+.rk-bloco > .rk-btn {
+    width: fit-content;
 }
 
 /* ---------- Painel "Como participar" ---------- */
@@ -691,17 +997,22 @@ h3.rk-grade-titulo {
         padding: 14px;
     }
 
-    .rk-card-topo {
+    .rk-card-topo,
+    .rk-card--prova .rk-card-topo {
         grid-template-columns: auto minmax(0, 1fr);
     }
 
-    .rk-card-topo > .ranking-status-chip {
-        grid-column: 1 / -1;
-        width: fit-content;
+    .rk-card-topo--sem-posicao,
+    .rk-card--prova .rk-card-topo {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .rk-card--prova .rk-card-topo > .ranking-status-chip {
-        grid-column: auto;
+    /* Status e icones viram uma linha propria abaixo do titulo. */
+    .rk-card-lateral {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .rk-card-rodape {
@@ -711,5 +1022,14 @@ h3.rk-grade-titulo {
 
     .rk-acoes > .rk-btn {
         flex: 1 1 0;
+    }
+
+    .rk-acoes > .rk-btn--comentarios {
+        flex: 0 0 auto;
+    }
+
+    .rk-coment-respostas {
+        margin-left: 8px;
+        padding-left: 10px;
     }
 }

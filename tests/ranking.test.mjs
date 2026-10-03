@@ -78,7 +78,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await assert.rejects(rpc('ranking_salvar_desafio', [dadosDesafio, desafio]), /iniciado/);
   });
   const ids = [];
-  await t.test('uma prova por jogador, aprovacao do ADM e proibicao de voto proprio', async () => {
+  await t.test('uma build por jogador, entra na disputa sem o ADM e proibicao de voto proprio', async () => {
     for (let n = 2; n <= 8; n++) {
       await como(n);
       ids.push(await rpc('ranking_publicar', [desafio, {
@@ -91,16 +91,20 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await assert.rejects(rpc('ranking_votar', [ids[0]]), /propria/);
     await assert.rejects(rpc('ranking_avaliar', [ids[1], true, '']), /Somente o ADM/);
     await como(10);
-    await assert.rejects(rpc('ranking_votar', [ids[0]]), /nao participa/);
-    let pendentes = await rpc('ranking_painel', [desafio]);
-    assert.equal(pendentes.participacoes.length, 0);
-    await como(2);
-    pendentes = await rpc('ranking_painel', [desafio]);
-    assert.deepEqual(pendentes.participacoes.map((p) => p.id), [ids[0]]);
+    let publicas = await rpc('ranking_painel', [desafio]);
+    assert.equal(publicas.participacoes.length, 7);
+    assert.equal(publicas.participacoes.every((p) => p.status === 'aprovada'), true);
+    assert.equal((await rpc('ranking_painel')).participacoes.length, 7);
+    // O ADM so modera: remove uma build fora das regras e pode restaura-la.
     await como(1);
-    assert.equal((await rpc('ranking_painel', [desafio])).participacoes.length, 7);
     await assert.rejects(rpc('ranking_avaliar', [ids[0], false, '']), /motivo/);
-    for (const id of ids) await rpc('ranking_avaliar', [id, true, 'Prova conferida.']);
+    await rpc('ranking_avaliar', [ids[0], false, 'Sem os atributos.']);
+    await como(10);
+    publicas = await rpc('ranking_painel', [desafio]);
+    assert.equal(publicas.participacoes.some((p) => p.id === ids[0]), false);
+    await assert.rejects(rpc('ranking_votar', [ids[0]]), /nao participa/);
+    await como(1);
+    await rpc('ranking_avaliar', [ids[0], true, '']);
     await como(10);
     await rpc('ranking_votar', [ids[0]]);
     let painel = await rpc('ranking_painel', [desafio]);
@@ -276,7 +280,9 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await como(1);
     for (const id of entradas) await rpc('ranking_avaliar', [id, true, '']);
     const propria = await rpc('ranking_publicar', [pequeno, { titulo: 'Build do ADM', descricao: 'Descricao valida e longa.', midias: await midiasBuild(1) }]);
-    await assert.rejects(rpc('ranking_avaliar', [propria, true, '']), /Outro ADM/);
+    await assert.rejects(rpc('ranking_avaliar', [propria, false, 'Removendo a minha.']), /Outro ADM/);
+    await rpc('ranking_excluir_participacao', [propria]);
+    await rpc('ranking_confirmar_midias_removidas', [(await rpc('ranking_painel')).midias_para_remover]);
     await superusuario();
     await db.query("update public.ranking_participacoes set criado_em = now() - interval '1 hour' where desafio_id = $1", [pequeno]);
     await db.query("update public.ranking_desafios set fim = now() - interval '3 minutes' where id = $1", [pequeno]);
@@ -312,6 +318,98 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(encerrado.vencedor_id, null);
     assert.equal(painel.participacoes[0].etapa_max, 2);
     assert.equal(painel.jogadores.some((p) => p.usuario_id === usuario(4)), false);
+  });
+  await t.test('autor edita ou exclui a propria build ate o fim das inscricoes', async () => {
+    await como(1);
+    const aberto = await rpc('ranking_salvar_desafio', [dadosDesafio]);
+    await superusuario();
+    await db.query("update public.ranking_desafios set inicio = now() - interval '1 hour' where id = $1", [aberto]);
+    await como(2);
+    const originais = await midiasBuild(2);
+    const build = await rpc('ranking_publicar', [aberto, {
+      titulo: 'Build original', descricao: 'Descricao valida e longa.', midias: originais,
+    }]);
+    await como(10);
+    await rpc('ranking_votar', [build, 0]);
+    await rpc('ranking_comentar', [build, 'Gostei.']);
+
+    // Respostas em um nivel e like/deslike alternaveis.
+    await como(11);
+    const principal = (await rpc('ranking_painel', [aberto])).comentarios[0];
+    assert.equal(principal.autor_nome, 'Jogador 10');
+    await rpc('ranking_comentar', [build, 'Concordo.', principal.id]);
+    let coments = (await rpc('ranking_painel', [aberto])).comentarios;
+    const resposta = coments.find((c) => c.texto === 'Concordo.');
+    assert.equal(resposta.resposta_a, principal.id);
+    await rpc('ranking_comentar', [build, 'Resposta da resposta.', resposta.id]);
+    coments = (await rpc('ranking_painel', [aberto])).comentarios;
+    assert.equal(coments.find((c) => c.texto === 'Resposta da resposta.').resposta_a, principal.id);
+    await assert.rejects(rpc('ranking_comentar', [build, 'Fio errado.', '00000000-0000-0000-0000-000000000999']), /Comentario nao encontrado/);
+    await assert.rejects(rpc('ranking_reagir_comentario', [principal.id, 2]), /Reacao invalida/);
+    await rpc('ranking_reagir_comentario', [principal.id, 1]);
+    await como(12);
+    await rpc('ranking_reagir_comentario', [principal.id, -1]);
+    let reacoes = (await rpc('ranking_painel', [aberto])).comentarios.find((c) => c.id === principal.id);
+    assert.deepEqual([reacoes.likes, reacoes.deslikes, reacoes.minha_reacao], [1, 1, -1]);
+    await rpc('ranking_reagir_comentario', [principal.id, 1]);
+    reacoes = (await rpc('ranking_painel', [aberto])).comentarios.find((c) => c.id === principal.id);
+    assert.deepEqual([reacoes.likes, reacoes.deslikes, reacoes.minha_reacao], [2, 0, 1]);
+    await rpc('ranking_reagir_comentario', [principal.id, 1]);
+    reacoes = (await rpc('ranking_painel', [aberto])).comentarios.find((c) => c.id === principal.id);
+    assert.deepEqual([reacoes.likes, reacoes.minha_reacao], [1, null]);
+    await como(null);
+    await assert.rejects(rpc('ranking_reagir_comentario', [principal.id, 1]), /permission denied/);
+
+    await como(3);
+    const editar = (dados) => rpc('ranking_editar_participacao', [build, dados]);
+    await assert.rejects(editar({ titulo: 'Invasor', descricao: 'Descricao valida e longa.' }), /nao encontrada/);
+    await assert.rejects(rpc('ranking_excluir_participacao', [build]), /nao encontrada/);
+    await como(2);
+    await editar({ titulo: 'Build revisada', descricao: 'Nova descricao valida.', atributos: { nivel: 150 } });
+    let minha = (await rpc('ranking_painel', [aberto])).participacoes[0];
+    assert.equal(minha.titulo, 'Build revisada');
+    assert.equal(minha.atributos.nivel, 150);
+    assert.deepEqual(minha.midias, originais);
+    // A edicao nao tira a build da disputa nem zera os votos.
+    await como(10);
+    const vista = (await rpc('ranking_painel', [aberto])).participacoes[0];
+    assert.deepEqual([vista.titulo, vista.status, vista.votos], ['Build revisada', 'aprovada', 1]);
+
+    await como(2);
+    await assert.rejects(editar({ titulo: 'Build', descricao: 'Descricao valida.', midias: [originais[0]] }), /imagem e um video/);
+    const novas = await midiasBuild(2);
+    await assert.rejects(editar({ titulo: 'Build', descricao: 'Descricao valida.', midias: [...novas, novas[0]] }), /midia invalido/);
+    await editar({ titulo: 'Build com video novo', descricao: 'Descricao valida.', midias: [originais[0], novas[1]] });
+    minha = (await rpc('ranking_painel', [aberto])).participacoes[0];
+    assert.deepEqual(minha.midias, [originais[0], novas[1]]);
+    await como(1);
+    assert.deepEqual((await rpc('ranking_painel')).midias_para_remover, [originais[1].caminho]);
+    await rpc('ranking_confirmar_midias_removidas', [[originais[1].caminho]]);
+
+    await como(2);
+    await rpc('ranking_excluir_participacao', [build]);
+    assert.equal((await rpc('ranking_painel', [aberto])).participacoes.length, 0);
+    await superusuario();
+    const { rows } = await db.query(`select
+      (select count(*) from public.ranking_votos where participacao_id = $1)::int as votos,
+      (select count(*) from public.ranking_comentarios where participacao_id = $1)::int as comentarios,
+      (select count(*) from public.ranking_reacoes_comentarios)::int as reacoes`, [build]);
+    assert.deepEqual(rows[0], { votos: 0, comentarios: 0, reacoes: 0 });
+    await como(1);
+    assert.deepEqual((await rpc('ranking_painel')).midias_para_remover.sort(), [originais[0].caminho, novas[1].caminho].sort());
+    await rpc('ranking_confirmar_midias_removidas', [[originais[0].caminho, novas[1].caminho]]);
+
+    await como(2);
+    const nova = await rpc('ranking_publicar', [aberto, {
+      titulo: 'Segunda tentativa', descricao: 'Descricao valida e longa.', midias: await midiasBuild(2),
+    }]);
+    await superusuario();
+    await db.query("update public.ranking_desafios set fim = now() - interval '1 minute' where id = $1", [aberto]);
+    await como(2);
+    await assert.rejects(rpc('ranking_editar_participacao', [nova, { titulo: 'Tarde', descricao: 'Descricao valida.' }]), /terminaram/);
+    await assert.rejects(rpc('ranking_excluir_participacao', [nova]), /terminaram/);
+    await como(null);
+    await assert.rejects(rpc('ranking_excluir_participacao', [nova]), /permission denied/);
   });
   await t.test('midias somente do Storage do proprio jogador', async () => {
     await como(1);

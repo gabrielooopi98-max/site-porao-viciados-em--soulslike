@@ -7,7 +7,7 @@ const modalidades = [
   {
     titulo: 'Competição de builds',
     resumo: 'A comunidade escolhe a melhor build.',
-    passos: ['Envie sua build durante a classificatória', 'As 4 mais votadas vão à semifinal', 'As 2 mais votadas disputam a final', 'A mais votada na final vence, leva o prêmio e escolhe um final de soulslike como título'],
+    passos: ['Envie sua build durante a classificatória: ela entra na disputa na hora', 'As 4 mais votadas vão à semifinal', 'As 2 mais votadas disputam a final', 'A mais votada na final vence, leva o prêmio e escolhe um final de soulslike como título'],
   },
   {
     titulo: 'Classificação geral',
@@ -24,9 +24,10 @@ const ciclo = [
 ];
 
 const status = [
-  { classe: 'pendente', nome: 'Aguardando ADM', texto: 'Enviada e ainda não conferida.' },
-  { classe: 'aprovada', nome: 'Validada pelo ADM', texto: 'Conferida e valendo no desafio.' },
-  { classe: 'recusada', nome: 'Recusada', texto: 'Com o motivo do ADM. Só o autor e o ADM veem.' },
+  { classe: 'aprovada', nome: 'Na disputa', texto: 'Build publicada e recebendo votos da comunidade.' },
+  { classe: 'pendente', nome: 'Aguardando ADM', texto: 'Prova de desafio enviada e ainda não conferida.' },
+  { classe: 'aprovada', nome: 'Aprovada', texto: 'Prova conferida pelo ADM e valendo os pontos.' },
+  { classe: 'recusada', nome: 'Recusada / Removida', texto: 'Prova recusada ou build removida por quebrar as regras. Só o autor e o ADM veem.' },
   { classe: 'vencedor', nome: 'Vencedor', texto: 'Build mais votada na final. O autor escolhe seu final.' },
 ];
 

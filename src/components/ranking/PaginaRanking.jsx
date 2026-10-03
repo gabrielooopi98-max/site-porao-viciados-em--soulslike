@@ -161,9 +161,9 @@ export default function PaginaRanking() {
                 <p>{desafio.tipo === 'build'
                   ? 'Os votos só definem quem avança: até 4 builds passam à semifinal e até 2 à final. Empates: participação enviada primeiro. Votos reabrem em cada etapa. Somente o vencedor recebe pontos no ranking geral.'
                   : 'Todo jogador com a prova aprovada pelo ADM recebe os pontos. Não há votação: a comunidade comenta as provas e pode apontar problemas, e o ADM decide. A análise do ADM pode continuar por até 3 dias após o fim.'}</p>
-                {desafio.tipo === 'build' && <p>Somente builds aprovadas antes do fim da classificatória disputam vagas. Havendo menos participantes, avançam os disponíveis. Sem votos na final, a competição termina sem vencedor e sem prêmio.</p>}
+                {desafio.tipo === 'build' && <p>Toda build enviada durante a classificatória entra na disputa na hora; o ADM só remove builds que quebrem as regras. Havendo menos participantes, avançam os disponíveis. Sem votos na final, a competição termina sem vencedor e sem prêmio.</p>}
                 <p>Três dias após o fim, o desafio, as participações e os comentários são removidos. Os pontos conquistados continuam no ranking geral.</p>
-                <p>Participações recusadas ficam visíveis apenas para o autor e o ADM.</p>
+                <p>Provas recusadas e builds removidas ficam visíveis apenas para o autor e o ADM.</p>
                 </details>
                 {dados.admin && <div className="ranking-acoes ranking-acoes-adm">
                   <span className="ranking-secao-label">Administração</span>
@@ -175,8 +175,8 @@ export default function PaginaRanking() {
               <div className="ranking-feed-filtros">
                 <h3>{desafio.tipo === 'build' ? `${tituloEtapaBuilds(desafio.etapa)} (${naEtapa.length})` : `Provas enviadas (${participacoes.length})`}</h3>
                 <label>Mostrar<select value={filtro} onChange={(event) => { setFiltro(event.target.value); setPagina(1); }}>
-                  <option value="todos">Todas</option><option value="pendente">Aguardando ADM</option>
-                  <option value="aprovada">Aprovadas</option><option value="recusada">Recusadas</option>
+                  <option value="todos">Todas</option>{desafio.tipo === 'conquista' && <option value="pendente">Aguardando ADM</option>}
+                  <option value="aprovada">{desafio.tipo === 'build' ? 'Na disputa' : 'Aprovadas'}</option><option value="recusada">{desafio.tipo === 'build' ? 'Removidas' : 'Recusadas'}</option>
                 </select></label>
               </div>
               {!participacoes.length && <p className="ranking-vazio">{filtro === 'todos'

@@ -5,7 +5,7 @@ import './CardsRanking.css';
 const passos = {
   build: [
     ['Monte e envie sua build', 'Nome, atributos, equipamentos, uma imagem e um vídeo.'],
-    ['O ADM valida', 'Só builds validadas antes do fim da classificatória disputam.'],
+    ['Entra na disputa na hora', 'Sem espera: assim que você envia, a comunidade já pode votar.'],
     ['A comunidade vota', 'Top 4 vão à semifinal, top 2 à final. O vencedor leva os pontos.'],
   ],
   conquista: [
@@ -15,7 +15,10 @@ const passos = {
   ],
 };
 
-const statusMinha = { pendente: 'aguardando o ADM', aprovada: 'aprovada', recusada: 'recusada' };
+const statusMinha = {
+  build: { pendente: 'aguardando o ADM', aprovada: 'na disputa', recusada: 'removida pelo ADM' },
+  conquista: { pendente: 'aguardando o ADM', aprovada: 'aprovada', recusada: 'recusada' },
+};
 
 // Bloco de chamada para participar, no topo do desafio: explica os passos e mostra a acao certa para cada situacao.
 export default function PainelParticipacao({ desafio, agora, user, minhaParticipacao, formularioAberto, aoAbrir, aoFechar }) {
@@ -29,7 +32,7 @@ export default function PainelParticipacao({ desafio, agora, user, minhaParticip
     acao = <p className="rk-participar-estado">As inscrições abrem em {formatarDataRanking(desafio.inicio)}.</p>;
   } else if (minhaParticipacao) {
     acao = <p className="rk-participar-estado">
-      Você já enviou sua {nome}: <span className={`ranking-status-chip ${minhaParticipacao.status}`}>{statusMinha[minhaParticipacao.status]}</span>
+      Você já enviou sua {nome}: <span className={`ranking-status-chip ${minhaParticipacao.status}`}>{statusMinha[desafio.tipo][minhaParticipacao.status]}</span>
       <a className="rk-btn" href={`#participacao-${minhaParticipacao.id}`}>Ver minha {nome}</a>
     </p>;
   } else if (agora >= encerramento) {

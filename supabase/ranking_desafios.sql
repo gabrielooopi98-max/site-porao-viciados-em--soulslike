@@ -66,6 +66,18 @@ create table if not exists public.ranking_comentarios (
     criado_em timestamptz not null default now()
 );
 
+-- Respostas ficam em um unico nivel, sempre presas ao comentario principal.
+alter table public.ranking_comentarios add column if not exists resposta_a uuid
+    references public.ranking_comentarios(id) on delete cascade;
+
+create table if not exists public.ranking_reacoes_comentarios (
+    comentario_id uuid not null references public.ranking_comentarios(id) on delete cascade,
+    usuario_id uuid not null references auth.users(id),
+    tipo smallint not null check (tipo in (1, -1)),
+    criado_em timestamptz not null default now(),
+    primary key (comentario_id, usuario_id)
+);
+
 create table if not exists public.ranking_pontos (
     participacao_id uuid primary key,
     usuario_id uuid not null references auth.users(id),
@@ -137,6 +149,11 @@ alter table public.ranking_pontos add column if not exists final_em timestamptz;
 update public.ranking_pontos rp set origem = d.tipo, desafio_titulo = d.titulo
     from public.ranking_desafios d where d.id = rp.desafio_id and rp.origem is null;
 
+-- Builds deixaram de passar pelo ADM: as que aguardavam em classificatorias abertas entram na disputa.
+update public.ranking_participacoes p set status = 'aprovada'
+    from public.ranking_desafios d
+    where d.id = p.desafio_id and d.tipo = 'build' and d.etapa = 0 and p.status = 'pendente';
+
 create index if not exists ranking_participacoes_desafio_idx on public.ranking_participacoes(desafio_id);
 create index if not exists ranking_votos_etapa_idx on public.ranking_votos(etapa, participacao_id);
 create index if not exists ranking_comentarios_participacao_idx on public.ranking_comentarios(participacao_id, criado_em);
@@ -147,6 +164,7 @@ alter table public.ranking_desafios enable row level security;
 alter table public.ranking_participacoes enable row level security;
 alter table public.ranking_votos enable row level security;
 alter table public.ranking_comentarios enable row level security;
+alter table public.ranking_reacoes_comentarios enable row level security;
 alter table public.ranking_pontos enable row level security;
 alter table public.ranking_avisos_lidos enable row level security;
 alter table public.ranking_midias_remover enable row level security;
@@ -156,7 +174,7 @@ alter table public.ranking_finais enable row level security;
 revoke all on public.ranking_administradores, public.ranking_desafios,
     public.ranking_participacoes, public.ranking_votos, public.ranking_comentarios,
     public.ranking_pontos, public.ranking_avisos_lidos, public.ranking_midias_remover,
-    public.ranking_finais from anon, authenticated;
+    public.ranking_finais, public.ranking_reacoes_comentarios from anon, authenticated;
 grant select on public.ranking_desafios to anon, authenticated;
 drop policy if exists ranking_desafios_leitura on public.ranking_desafios;
 create policy ranking_desafios_leitura on public.ranking_desafios for select using (true);
@@ -291,29 +309,20 @@ begin
 end;
 $$;
 
-create or replace function public.ranking_publicar(p_desafio uuid, p_dados jsonb)
-returns uuid language plpgsql security definer set search_path = public
+-- Somente arquivos do proprio jogador, enviados ao Storage do site na pasta do ranking.
+-- p_ignorar permite que a edicao mantenha as midias que ja eram da propria participacao.
+create or replace function public.ranking_validar_midias(p_tipo text, p_midias jsonb, p_ignorar uuid default null)
+returns void language plpgsql stable security definer set search_path = public
 as $$
 declare
-    d public.ranking_desafios%rowtype;
-    u jsonb;
-    resultado uuid;
     m jsonb;
 begin
-    if auth.uid() is null then raise exception 'Entre na sua conta para participar.'; end if;
-    select * into d from public.ranking_desafios where id = p_desafio for update;
-    if not found then raise exception 'Desafio nao encontrado.'; end if;
-    if now() < d.inicio or now() >= d.fim then raise exception 'As inscricoes deste desafio estao fechadas.'; end if;
-    if exists(select 1 from public.ranking_participacoes where desafio_id = d.id and autor_id = auth.uid()) then
-        raise exception 'Voce ja enviou uma participacao neste desafio.';
-    end if;
-    if jsonb_typeof(p_dados->'midias') is distinct from 'array' then raise exception 'Midias invalidas.'; end if;
-    if jsonb_array_length(p_dados->'midias') > 8 then raise exception 'Envie no maximo oito midias.'; end if;
-    if d.tipo = 'conquista' and jsonb_array_length(p_dados->'midias') = 0 then
+    if jsonb_typeof(p_midias) is distinct from 'array' then raise exception 'Midias invalidas.'; end if;
+    if jsonb_array_length(p_midias) > 8 then raise exception 'Envie no maximo oito midias.'; end if;
+    if p_tipo = 'conquista' and jsonb_array_length(p_midias) = 0 then
         raise exception 'Anexe pelo menos uma imagem ou um video como prova do desafio.';
     end if;
-    -- Somente arquivos do proprio jogador, enviados ao Storage do site na pasta do ranking.
-    for m in select value from jsonb_array_elements(p_dados->'midias') loop
+    for m in select value from jsonb_array_elements(p_midias) loop
         if coalesce(m->>'tipo_midia', '') !~ '^(image|video)/'
             or coalesce(m->>'midia_url', '') !~ '^https://'
             or coalesce(m->>'caminho', '') !~ ('^ranking/' || auth.uid()::text || '/[^/]+$')
@@ -322,25 +331,106 @@ begin
             or not exists(select 1 from storage.objects o where o.bucket_id = 'midias'
                 and o.name = m->>'caminho' and o.owner_id = auth.uid()::text)
             or exists(select 1 from public.ranking_participacoes rp, jsonb_array_elements(rp.midias) x
-                where rp.autor_id = auth.uid() and x->>'caminho' = m->>'caminho') then
+                where rp.autor_id = auth.uid() and rp.id is distinct from p_ignorar
+                    and x->>'caminho' = m->>'caminho')
+            or (select count(*) from jsonb_array_elements(p_midias) x where x->>'caminho' = m->>'caminho') > 1 then
             raise exception 'Formato de midia invalido.';
         end if;
     end loop;
-    if d.tipo = 'build' and (
-        not exists(select 1 from jsonb_array_elements(p_dados->'midias') x where x->>'tipo_midia' like 'image/%')
-        or not exists(select 1 from jsonb_array_elements(p_dados->'midias') x where x->>'tipo_midia' like 'video/%')
+    if p_tipo = 'build' and (
+        not exists(select 1 from jsonb_array_elements(p_midias) x where x->>'tipo_midia' like 'image/%')
+        or not exists(select 1 from jsonb_array_elements(p_midias) x where x->>'tipo_midia' like 'video/%')
     ) then
         raise exception 'Anexe pelo menos uma imagem e um video da build.';
     end if;
+end;
+$$;
+
+create or replace function public.ranking_publicar(p_desafio uuid, p_dados jsonb)
+returns uuid language plpgsql security definer set search_path = public
+as $$
+declare
+    d public.ranking_desafios%rowtype;
+    u jsonb;
+    resultado uuid;
+begin
+    if auth.uid() is null then raise exception 'Entre na sua conta para participar.'; end if;
+    select * into d from public.ranking_desafios where id = p_desafio for update;
+    if not found then raise exception 'Desafio nao encontrado.'; end if;
+    if now() < d.inicio or now() >= d.fim then raise exception 'As inscricoes deste desafio estao fechadas.'; end if;
+    if exists(select 1 from public.ranking_participacoes where desafio_id = d.id and autor_id = auth.uid()) then
+        raise exception 'Voce ja enviou uma participacao neste desafio.';
+    end if;
+    perform public.ranking_validar_midias(d.tipo, p_dados->'midias');
     select raw_user_meta_data into u from auth.users where id = auth.uid();
+    -- Builds entram na disputa na hora (a comunidade decide); provas aguardam o ADM.
     insert into public.ranking_participacoes
-        (desafio_id, autor_id, autor_nome, autor_avatar, titulo, descricao, midias, atributos)
+        (desafio_id, autor_id, autor_nome, autor_avatar, titulo, descricao, midias, atributos, status)
     values (d.id, auth.uid(), coalesce(nullif(u->>'display_name', ''), nullif(u->>'nome', ''), nullif(u->>'full_name', ''), 'Jogador'),
         u->>'avatar_url',
         case when d.tipo = 'conquista' then d.titulo else trim(p_dados->>'titulo') end,
         case when d.tipo = 'conquista' then 'Prova do desafio enviada em midia.' else trim(p_dados->>'descricao') end,
-        p_dados->'midias', coalesce(p_dados->'atributos', '{}'::jsonb)) returning id into resultado;
+        p_dados->'midias', coalesce(p_dados->'atributos', '{}'::jsonb),
+        case when d.tipo = 'build' then 'aprovada' else 'pendente' end) returning id into resultado;
     return resultado;
+end;
+$$;
+
+-- O autor altera a propria build ate o fim da classificatoria; ela segue na disputa.
+-- Sem 'midias' no p_dados, as midias atuais sao mantidas.
+create or replace function public.ranking_editar_participacao(p_participacao uuid, p_dados jsonb)
+returns void language plpgsql security definer set search_path = public
+as $$
+declare
+    p public.ranking_participacoes%rowtype;
+    d public.ranking_desafios%rowtype;
+    did uuid;
+    novas jsonb;
+begin
+    if auth.uid() is null then raise exception 'Entre na sua conta para editar sua build.'; end if;
+    select desafio_id into did from public.ranking_participacoes where id = p_participacao;
+    select * into d from public.ranking_desafios where id = did for update;
+    select * into p from public.ranking_participacoes where id = p_participacao for update;
+    if not found or p.autor_id <> auth.uid() then raise exception 'Participacao nao encontrada.'; end if;
+    if d.tipo <> 'build' then raise exception 'Provas de desafios nao podem ser editadas.'; end if;
+    if now() >= d.fim then raise exception 'As inscricoes terminaram: a build nao pode mais ser alterada.'; end if;
+    novas := coalesce(p_dados->'midias', p.midias);
+    perform public.ranking_validar_midias(d.tipo, novas, p.id);
+    insert into public.ranking_midias_remover(caminho)
+        select m->>'caminho' from jsonb_array_elements(p.midias) m
+        where coalesce(m->>'caminho', '') <> ''
+            and not exists(select 1 from jsonb_array_elements(novas) x where x->>'caminho' = m->>'caminho')
+        on conflict do nothing;
+    update public.ranking_participacoes set
+        titulo = trim(p_dados->>'titulo'), descricao = trim(p_dados->>'descricao'),
+        atributos = coalesce(p_dados->'atributos', '{}'::jsonb), midias = novas
+    where id = p.id;
+end;
+$$;
+
+-- O autor apaga a propria build ate o fim da classificatoria e pode enviar outra.
+create or replace function public.ranking_excluir_participacao(p_participacao uuid)
+returns void language plpgsql security definer set search_path = public
+as $$
+declare
+    p public.ranking_participacoes%rowtype;
+    d public.ranking_desafios%rowtype;
+    did uuid;
+begin
+    if auth.uid() is null then raise exception 'Entre na sua conta para excluir sua build.'; end if;
+    select desafio_id into did from public.ranking_participacoes where id = p_participacao;
+    select * into d from public.ranking_desafios where id = did for update;
+    select * into p from public.ranking_participacoes where id = p_participacao for update;
+    if not found or p.autor_id <> auth.uid() then raise exception 'Participacao nao encontrada.'; end if;
+    if d.tipo <> 'build' then raise exception 'Provas de desafios nao podem ser excluidas.'; end if;
+    if now() >= d.fim then raise exception 'As inscricoes terminaram: a build nao pode mais ser excluida.'; end if;
+    insert into public.ranking_midias_remover(caminho)
+        select m->>'caminho' from jsonb_array_elements(p.midias) m
+        where coalesce(m->>'caminho', '') <> ''
+        on conflict do nothing;
+    delete from public.ranking_votos where participacao_id = p.id;
+    delete from public.ranking_comentarios where participacao_id = p.id;
+    delete from public.ranking_participacoes where id = p.id;
 end;
 $$;
 
@@ -405,11 +495,13 @@ begin
 end;
 $$;
 
-create or replace function public.ranking_comentar(p_participacao uuid, p_texto text)
+drop function if exists public.ranking_comentar(uuid, text);
+create or replace function public.ranking_comentar(p_participacao uuid, p_texto text, p_resposta_a uuid default null)
 returns void language plpgsql security definer set search_path = public
 as $$
 declare
     nome text;
+    principal uuid;
 begin
     if auth.uid() is null then raise exception 'Entre na sua conta para comentar.'; end if;
     if not exists(select 1 from public.ranking_participacoes p join public.ranking_desafios d on d.id = p.desafio_id
@@ -417,10 +509,40 @@ begin
             and public.ranking_participacao_visivel(p.status, d.tipo, p.autor_id, public.ranking_eh_admin())) then
         raise exception 'Participacao nao encontrada.';
     end if;
+    if p_resposta_a is not null then
+        -- Resposta a uma resposta entra no mesmo fio do comentario principal.
+        select coalesce(resposta_a, id) into principal from public.ranking_comentarios
+            where id = p_resposta_a and participacao_id = p_participacao;
+        if principal is null then raise exception 'Comentario nao encontrado.'; end if;
+    end if;
     select coalesce(nullif(raw_user_meta_data->>'display_name', ''), nullif(raw_user_meta_data->>'nome', ''), nullif(raw_user_meta_data->>'full_name', ''), 'Jogador')
         into nome from auth.users where id = auth.uid();
-    insert into public.ranking_comentarios(participacao_id, autor_id, autor_nome, texto)
-        values(p_participacao, auth.uid(), nome, trim(p_texto));
+    insert into public.ranking_comentarios(participacao_id, autor_id, autor_nome, texto, resposta_a)
+        values(p_participacao, auth.uid(), nome, trim(p_texto), principal);
+end;
+$$;
+
+-- Like (1) ou deslike (-1); repetir a mesma reacao a retira.
+create or replace function public.ranking_reagir_comentario(p_comentario uuid, p_tipo integer)
+returns void language plpgsql security definer set search_path = public
+as $$
+begin
+    if auth.uid() is null then raise exception 'Entre na sua conta para reagir.'; end if;
+    if p_tipo is null or p_tipo not in (1, -1) then raise exception 'Reacao invalida.'; end if;
+    if not exists(select 1 from public.ranking_comentarios c
+        join public.ranking_participacoes p on p.id = c.participacao_id
+        join public.ranking_desafios d on d.id = p.desafio_id
+        where c.id = p_comentario
+            and public.ranking_participacao_visivel(p.status, d.tipo, p.autor_id, public.ranking_eh_admin())) then
+        raise exception 'Comentario nao encontrado.';
+    end if;
+    delete from public.ranking_reacoes_comentarios
+        where comentario_id = p_comentario and usuario_id = auth.uid() and tipo = p_tipo;
+    if not found then
+        insert into public.ranking_reacoes_comentarios(comentario_id, usuario_id, tipo)
+            values (p_comentario, auth.uid(), p_tipo)
+            on conflict (comentario_id, usuario_id) do update set tipo = excluded.tipo, criado_em = now();
+    end if;
 end;
 $$;
 
@@ -463,12 +585,22 @@ begin
                 from public.ranking_participacoes p join public.ranking_desafios d on d.id = p.desafio_id
                 where (p_desafio is not null and p.desafio_id = p_desafio
                         and public.ranking_participacao_visivel(p.status, d.tipo, p.autor_id, eh_admin))
-                    or (p_desafio is null and d.tipo = 'build' and d.etapa >= 1
+                    or (p_desafio is null and d.tipo = 'build'
                         and p.status = 'aprovada' and p.etapa_max >= least(d.etapa, 2))
             ) t), '[]'::jsonb),
-        'comentarios', coalesce((select jsonb_agg(to_jsonb(c) order by c.criado_em)
+        'comentarios', coalesce((select jsonb_agg(to_jsonb(c) || jsonb_build_object(
+                'autor_nome', coalesce(nullif(u.raw_user_meta_data->>'display_name', ''), nullif(u.raw_user_meta_data->>'nome', ''), nullif(u.raw_user_meta_data->>'full_name', ''), c.autor_nome),
+                'autor_avatar', u.raw_user_meta_data->>'avatar_url',
+                'avatar_zoom', u.raw_user_meta_data->'avatar_zoom',
+                'avatar_pos_x', u.raw_user_meta_data->'avatar_pos_x',
+                'avatar_pos_y', u.raw_user_meta_data->'avatar_pos_y',
+                'likes', (select count(*) from public.ranking_reacoes_comentarios r where r.comentario_id = c.id and r.tipo = 1),
+                'deslikes', (select count(*) from public.ranking_reacoes_comentarios r where r.comentario_id = c.id and r.tipo = -1),
+                'minha_reacao', (select r.tipo from public.ranking_reacoes_comentarios r
+                    where r.comentario_id = c.id and r.usuario_id = auth.uid())) order by c.criado_em)
             from public.ranking_comentarios c join public.ranking_participacoes p on p.id = c.participacao_id
             join public.ranking_desafios d on d.id = p.desafio_id
+            left join auth.users u on u.id = c.autor_id
             where p.desafio_id = p_desafio
                 and public.ranking_participacao_visivel(p.status, d.tipo, p.autor_id, eh_admin)), '[]'::jsonb),
         'midias_para_remover', case when eh_admin then coalesce((select jsonb_agg(caminho) from (
@@ -586,14 +718,19 @@ grant execute on function public.ranking_ler_desafio(uuid) to authenticated;
 revoke all on function public.ranking_eh_admin(), public.ranking_avancar(),
     public.ranking_painel(uuid), public.ranking_salvar_desafio(jsonb, uuid),
     public.ranking_publicar(uuid, jsonb), public.ranking_avaliar(uuid, boolean, text),
-    public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text), public.ranking_avisos(boolean),
+    public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text, uuid),
+    public.ranking_reagir_comentario(uuid, integer), public.ranking_avisos(boolean),
     public.ranking_participacao_visivel(text, text, uuid, boolean), public.ranking_apagar_desafio(uuid, boolean),
     public.ranking_excluir_desafio(uuid), public.ranking_pode_remover_midia(text),
-    public.ranking_confirmar_midias_removidas(text[]), public.ranking_escolher_final(uuid, text) from public, anon, authenticated;
+    public.ranking_confirmar_midias_removidas(text[]), public.ranking_escolher_final(uuid, text),
+    public.ranking_validar_midias(text, jsonb, uuid), public.ranking_editar_participacao(uuid, jsonb),
+    public.ranking_excluir_participacao(uuid) from public, anon, authenticated;
 grant execute on function public.ranking_painel(uuid) to anon, authenticated;
 grant execute on function public.ranking_eh_admin(), public.ranking_salvar_desafio(jsonb, uuid),
-    public.ranking_publicar(uuid, jsonb), public.ranking_avaliar(uuid, boolean, text),
-    public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text), public.ranking_avisos(boolean),
+    public.ranking_publicar(uuid, jsonb), public.ranking_editar_participacao(uuid, jsonb),
+    public.ranking_excluir_participacao(uuid), public.ranking_avaliar(uuid, boolean, text),
+    public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text, uuid),
+    public.ranking_reagir_comentario(uuid, integer), public.ranking_avisos(boolean),
     public.ranking_excluir_desafio(uuid), public.ranking_pode_remover_midia(text),
     public.ranking_confirmar_midias_removidas(text[]), public.ranking_escolher_final(uuid, text) to authenticated;
 
@@ -626,7 +763,7 @@ declare
     tabela text;
 begin
     foreach tabela in array array['ranking_desafios', 'ranking_participacoes', 'ranking_votos',
-        'ranking_comentarios', 'ranking_pontos'] loop
+        'ranking_comentarios', 'ranking_reacoes_comentarios', 'ranking_pontos'] loop
         execute format('drop trigger if exists ranking_sinalizar on public.%I', tabela);
         execute format('create trigger ranking_sinalizar after insert or update or delete on public.%I
             for each statement execute function public.ranking_sinalizar()', tabela);
