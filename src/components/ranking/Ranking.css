@@ -161,7 +161,7 @@
     border-radius: 3px;
 }
 
-.ranking-page button,
+.ranking-page button:not(.btn-filtro),
 .ranking-competicoes button {
     padding: 10px 14px;
     color: #ddd;
@@ -188,6 +188,7 @@
 
 .ranking-page-titulo > button {
     flex: 0 0 auto;
+    min-height: 44px;
 }
 
 .ranking-botao-principal > span {
@@ -195,8 +196,8 @@
     font-size: 1.1rem;
 }
 
-.ranking-page button:hover:not(:disabled),
-.ranking-page button[aria-pressed="true"] {
+.ranking-page button:not(.btn-filtro):hover:not(:disabled),
+.ranking-page button:not(.btn-filtro)[aria-pressed="true"] {
     color: #fff;
     background: #303030;
     border-color: #777;
@@ -807,6 +808,618 @@
     }
 }
 
+/* Hierarquia visual da pagina publica de ranking */
+.ranking-page {
+    --ranking-acento: #e88945;
+    padding-top: 30px;
+}
+
+.ranking-page-titulo {
+    position: relative;
+    min-height: 170px;
+    align-items: center;
+    padding: 26px 30px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 85% 10%, rgba(232, 137, 69, 0.13), transparent 38%),
+        linear-gradient(120deg, #151515, #0d0d0d 72%);
+    border: 1px solid #302a25;
+    border-radius: 10px;
+}
+
+.ranking-page-titulo::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ranking-acento), transparent);
+    opacity: 0.7;
+}
+
+.ranking-page-titulo > div {
+    position: relative;
+    z-index: 1;
+}
+
+.ranking-page-titulo h1 {
+    margin: 0 0 8px;
+    color: #f1f1f1;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+}
+
+.ranking-page-titulo p {
+    max-width: 610px;
+    line-height: 1.8;
+}
+
+.ranking-page-titulo .posts-sobretitulo {
+    display: inline-block;
+    padding: 5px 9px;
+    margin-bottom: 10px;
+    color: #efb184;
+    background: #281b12;
+    border: 1px solid #49301f;
+    border-radius: 4px;
+    letter-spacing: 0.09em;
+}
+
+.ranking-page button.ranking-botao-principal {
+    position: relative;
+    z-index: 1;
+    min-height: 48px;
+    padding-inline: 18px;
+    color: #17110c;
+    background: #e9a16b;
+    border-color: #e9a16b;
+    border-radius: 6px;
+    box-shadow: 0 5px 18px #0005;
+}
+
+.ranking-page button.ranking-botao-principal:hover:not(:disabled) {
+    color: #17110c;
+    background: #f4b17e;
+    border-color: #f4b17e;
+}
+
+.ranking-page-layout {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 24px;
+}
+
+.ranking-page-indicadores {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    gap: 12px;
+    margin-bottom: 2px;
+}
+
+.ranking-page-indicadores > div {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #141414, #101010);
+    border: 1px solid #292929;
+    border-radius: 7px;
+}
+
+.ranking-page-indicadores span {
+    color: #999;
+    font-size: 0.69rem;
+}
+
+.ranking-page-indicadores strong {
+    color: #e8e8e8;
+    font-size: 1.05rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-page-indicadores strong small {
+    color: #aaa;
+    font-size: 0.68rem;
+    font-weight: 400;
+}
+
+.ranking-page-indicadores i {
+    color: var(--ranking-acento);
+    font-style: normal;
+}
+
+.ranking-desafios {
+    position: sticky;
+    top: 90px;
+    gap: 9px;
+    padding: 16px;
+    background: #0e0e0e;
+    border-color: #292929;
+    box-shadow: 0 12px 32px #0002;
+}
+
+.ranking-desafios-titulo {
+    padding: 2px 2px 13px;
+}
+
+.ranking-desafios-titulo h2 {
+    font-size: 0.95rem;
+}
+
+.ranking-desafios-titulo > span {
+    min-width: 28px;
+    color: #e7b18a;
+    text-align: center;
+    background: #2a1d13;
+}
+
+.ranking-page .ranking-link-geral {
+    padding: 13px 12px;
+    color: #ddd;
+    font-weight: 600;
+    background: #151515;
+    border: 1px solid transparent;
+}
+
+.ranking-page .ranking-link-geral.selecionado {
+    color: #f1c29f;
+    background: #21170f;
+    border-color: #493321;
+}
+
+.ranking-desafios > button {
+    padding: 13px;
+    background: #131313;
+    border-color: #292929;
+    transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.ranking-desafios > button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.ranking-desafios > button[aria-pressed="true"] {
+    background: #1b1713;
+    border-color: #765132;
+    box-shadow: inset 3px 0 var(--ranking-acento);
+}
+
+.ranking-desafios > button .ranking-desafio-status {
+    color: #e8b182;
+    background: #281c13;
+}
+
+.ranking-feed {
+    padding: 22px;
+    background: #0d0d0d;
+    border: 1px solid #292929;
+    border-radius: 9px;
+    box-shadow: 0 14px 38px #0002;
+}
+
+.ranking-classificacao-header {
+    position: relative;
+    padding: 0 0 20px;
+    margin-bottom: 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-page .ranking-classificacao-header h2 {
+    margin-bottom: 6px;
+    font-size: 1.3rem;
+}
+
+.ranking-classificacao-header p {
+    line-height: 1.7;
+}
+
+.ranking-page .ranking-classificacao-header p a {
+    display: inline-block;
+    margin-left: 5px;
+    color: #e9a16b;
+    font-weight: 600;
+}
+
+.ranking-lista-legenda {
+    display: grid;
+    grid-template-columns: 44px 42px minmax(0, 1fr) auto;
+    gap: 14px;
+    padding: 13px 16px 8px;
+    margin-top: 10px;
+    color: #777;
+    font-size: 0.63rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.ranking-lista-legenda span:nth-child(2) {
+    grid-column: 3;
+}
+
+.ranking-lista-legenda span:last-child {
+    grid-column: 4;
+}
+
+.ranking-page .ranking-real-lista {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid #242424;
+}
+
+.ranking-page .ranking-real-lista li {
+    grid-template-columns: 40px 42px minmax(0, 1fr) auto;
+    min-width: 0;
+    min-height: 68px;
+    padding: 12px 16px;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #242424;
+    border-radius: 0;
+    transition: background 150ms ease;
+}
+
+.ranking-page .ranking-real-lista li:hover {
+    background: #141414;
+}
+
+.ranking-page .ranking-real-lista li > span:first-child {
+    width: 32px;
+    height: 32px;
+    color: #aaa;
+    background: #1c1c1c;
+    border: 1px solid #303030;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.ranking-page .ranking-real-lista li > .ranking-avatar-lista {
+    width: 42px;
+    height: 42px;
+}
+
+.ranking-page .ranking-real-lista li > .ranking-nome-lista {
+    min-width: 0;
+    color: #e1e1e1;
+    font-size: 0.82rem;
+}
+
+.ranking-page .ranking-real-lista li > .ranking-nome-lista a {
+    font-weight: 600;
+}
+
+.ranking-page .ranking-real-lista li > strong {
+    color: #e7e7e7;
+    font-size: 0.84rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-page .ranking-real-lista li:first-child {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 10px;
+    padding: 24px 16px 26px;
+    margin: 12px 0;
+    background:
+        radial-gradient(ellipse at 50% 0, rgba(232, 137, 69, 0.12), transparent 66%),
+        #111;
+    border: 1px solid #493523;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.ranking-page .ranking-real-lista li:first-child > span:first-child {
+    width: auto;
+    height: auto;
+    padding: 4px 10px;
+    color: #f2bc91;
+    background: #2b1e14;
+    border-color: #63452d;
+}
+
+.ranking-page .ranking-real-lista li:first-child > .ranking-avatar-lista {
+    width: 76px;
+    height: 76px;
+    border: 2px solid #a9784c;
+    box-shadow: 0 0 0 5px #a9784c1a;
+}
+
+.ranking-page .ranking-real-lista li:first-child > .ranking-nome-lista {
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.ranking-page .ranking-real-lista li:first-child > strong {
+    color: #efb184;
+    font-size: 1rem;
+}
+
+.ranking-page .ranking-vazio {
+    padding: 22px;
+    margin: 18px 0 0;
+    background: #121212;
+    border: 1px dashed #393939;
+    border-radius: 6px;
+}
+
+.ranking-page .ranking-desafio-detalhe {
+    padding: 22px;
+    background:
+        linear-gradient(145deg, rgba(232, 137, 69, 0.045), transparent 44%),
+        #111;
+    border-color: #302a25;
+}
+
+.ranking-provas-galeria {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 20px;
+}
+
+.ranking-provas-galeria > div {
+    min-width: 0;
+    scroll-margin-top: 24px;
+}
+
+.ranking-page .ranking-prova-card {
+    min-width: 0;
+    padding: 18px;
+    margin: 0;
+    background: #111;
+    border-color: #333;
+    border-radius: 10px;
+}
+
+.ranking-prova-card > header {
+    gap: 12px;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-prova-card .ranking-build-autor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.ranking-prova-card .ranking-build-autor img {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.ranking-prova-card .ranking-build-autor a {
+    overflow-wrap: anywhere;
+}
+
+.ranking-prova-midias {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    border-radius: 6px;
+    background: #080808;
+    scrollbar-width: thin;
+    scrollbar-color: #555 #181818;
+}
+
+.ranking-prova-midias > .ranking-midia-item {
+    flex: 0 0 100%;
+    min-width: 0;
+    margin: 0;
+    scroll-snap-align: start;
+}
+
+.ranking-prova-midias .botao-imagem-ampliavel {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+}
+
+.ranking-prova-midias .ranking-midia {
+    aspect-ratio: 16 / 10;
+    max-height: none;
+    object-fit: contain;
+}
+
+.ranking-prova-card > footer {
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+}
+
+.ranking-prova-card > footer > strong {
+    margin-right: auto;
+    font-size: 0.8rem;
+    color: #ddd;
+}
+
+.ranking-prova-card > footer > button {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+}
+
+.ranking-prova-card .ranking-comentarios textarea,
+.ranking-prova-card .ranking-moderacao textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .ranking-provas-galeria {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+}
+
+.ranking-page .ranking-desafio-detalhe > span:first-child {
+    width: fit-content;
+    padding: 5px 9px;
+    color: #e9b48b;
+    background: #261b12;
+    border: 1px solid #483320;
+    border-radius: 4px;
+}
+
+.ranking-page .ranking-desafio-detalhe h2 {
+    margin-bottom: 14px;
+}
+
+.ranking-page .ranking-desafio-detalhe dl > div {
+    background: #151515;
+    border-left-color: #8b5d38;
+}
+
+.ranking-page .ranking-navegacao-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .ranking-page {
+        padding-top: 20px;
+    }
+
+    .ranking-page-titulo {
+        min-height: 0;
+        padding: 22px 18px;
+        margin-bottom: 14px;
+    }
+
+    .ranking-page-titulo > button {
+        width: 100%;
+    }
+
+    .ranking-page-indicadores {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ranking-page-indicadores > div {
+        padding: 13px 14px;
+    }
+
+    .ranking-page-indicadores > div:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+
+    .ranking-page-layout {
+        gap: 14px;
+    }
+
+    .ranking-page .ranking-navegacao-mobile {
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+        background: #101010;
+        border: 1px solid #302a25;
+        border-radius: 7px;
+    }
+
+    .ranking-page .ranking-feed {
+        padding: 17px;
+    }
+
+    .ranking-lista-legenda {
+        grid-template-columns: 34px 36px minmax(0, 1fr) auto;
+        gap: 9px;
+        padding-inline: 10px;
+    }
+
+    .ranking-page .ranking-real-lista li {
+        grid-template-columns: 32px 36px minmax(0, 1fr) auto;
+        gap: 9px;
+        padding-inline: 10px;
+    }
+
+    .ranking-page .ranking-real-lista li:first-child {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 20px 12px;
+    }
+
+    .ranking-page .ranking-real-lista li > .ranking-avatar-lista {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ranking-page {
+        width: calc(100% - 20px);
+        padding-top: 14px;
+    }
+
+    .ranking-page-titulo {
+        gap: 14px;
+        padding: 19px 15px;
+        border-radius: 7px;
+    }
+
+    .ranking-page-titulo h1 {
+        font-size: 1.65rem;
+    }
+
+    .ranking-page-indicadores {
+        gap: 8px;
+    }
+
+    .ranking-page-indicadores > div {
+        padding: 12px;
+    }
+
+    .ranking-page-indicadores strong {
+        font-size: 0.88rem;
+    }
+
+    .ranking-page .ranking-feed {
+        padding: 14px 12px;
+    }
+
+    .ranking-page .ranking-real-lista li {
+        grid-template-columns: 28px 34px minmax(0, 1fr) auto;
+        gap: 7px;
+        padding: 11px 7px;
+        font-size: 0.72rem;
+    }
+
+    .ranking-lista-legenda {
+        grid-template-columns: 28px 34px minmax(0, 1fr) auto;
+        gap: 7px;
+        padding-inline: 7px;
+        font-size: 0.56rem;
+    }
+
+    .ranking-page .ranking-real-lista li > span:first-child {
+        width: 27px;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+
+    .ranking-page .ranking-real-lista li > .ranking-avatar-lista {
+        width: 34px;
+        height: 34px;
+    }
+
+    .ranking-page .ranking-real-lista li > strong {
+        font-size: 0.72rem;
+    }
+
+    .ranking-page .ranking-desafio-detalhe {
+        padding: 15px;
+    }
+}
+
 @media (max-width: 480px) {
     .ranking-feed-filtros {
         align-items: stretch;
@@ -866,6 +1479,8 @@
 .ranking-participacao header > .ranking-status-chip.recusada { color: #f0a0a0; background: #261414; border-color: #5c2c2c; }
 .ranking-status-chip.vencedor,
 .ranking-participacao header > .ranking-status-chip.vencedor { color: #ffd08a; background: #2a1d0e; border-color: #8a5f2c; }
+.ranking-status-chip.eliminada,
+.ranking-participacao header > .ranking-status-chip.eliminada { color: #9a9a9a; background: #1c1c1c; border-color: #333; }
 
 /* Guia rapido da classificacao geral */
 .ranking-guia {
@@ -1206,5 +1821,783 @@
 
     .ranking-linha-tempo li > time {
         text-align: left;
+    }
+}
+
+.ranking-page {
+    --ranking-acento: #a87955;
+}
+
+.ranking-comunidade .ranking-competidores .ranking-build-card,
+.ranking-page .ranking-build-card {
+    padding: 18px;
+    background: linear-gradient(180deg, #121212, #090909);
+    border: 1px solid #303030;
+    border-radius: 12px;
+}
+
+.ranking-build-autor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ranking-build-autor img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border: 1px solid #444;
+    border-radius: 50%;
+}
+
+.ranking-build-card .ranking-build-jogo {
+    margin: -6px 0 14px;
+    color: #999;
+    font: 500 0.7rem/1.5 'Poppins', sans-serif;
+    text-transform: uppercase;
+}
+
+.ranking-build-card .ranking-build-abas {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.ranking-build-abas button {
+    flex: 1;
+}
+
+.ranking-build-abas button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.ranking-build-midia-item {
+    margin-bottom: 12px;
+    overflow: hidden;
+    background: #050505;
+    border: 1px solid #252525;
+    border-radius: 8px;
+}
+
+.ranking-build-midia {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: contain;
+}
+
+.ranking-build-card .build-card-atributos {
+    margin-top: 12px;
+}
+
+.ranking-build-card .build-card-atributos div {
+    display: block;
+}
+
+.ranking-build-card .build-card-atributos dd {
+    margin-top: 5px;
+}
+
+.ranking-builds-classificacao {
+    margin-top: 20px;
+}
+
+.ranking-page .ranking-desafios > .ranking-desafio-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 16px;
+    text-align: left;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.ranking-desafio-card-topo,
+.ranking-desafio-card-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.ranking-desafio-card-topo > span:first-child {
+    color: #aaa;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ranking-desafios .ranking-desafio-card > strong {
+    color: #eee;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.ranking-desafio-card-jogo {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+
+.ranking-desafio-card-descricao {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #999;
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.7;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.ranking-desafio-card-rodape {
+    padding-top: 12px;
+    margin-top: 4px;
+    border-top: 1px solid #303030;
+}
+
+.ranking-desafio-card-rodape > span {
+    display: grid;
+    gap: 4px;
+}
+
+.ranking-desafio-card-rodape > span:last-child {
+    text-align: right;
+}
+
+.ranking-desafio-card-rodape b {
+    color: #ddd;
+    font-size: 0.78rem;
+}
+
+.ranking-desafio-card-rodape :is(small, time) {
+    color: #999;
+    font-size: 0.6rem;
+    font-weight: 400;
+}
+
+.ranking-builds-galeria {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #303030;
+}
+
+.ranking-build-descricao {
+    margin-bottom: 18px;
+}
+
+.ranking-build-descricao p {
+    margin: 0;
+    color: #aaa;
+    font: 400 0.8rem/1.75 'Poppins', sans-serif;
+}
+
+.ranking-build-descricao-previa {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.ranking-participacao .ranking-build-descricao > button {
+    min-height: 44px;
+    padding: 8px 0;
+    color: #ccc;
+    font-size: 0.7rem;
+    background: transparent;
+    border: 0;
+    text-align: left;
+}
+
+.ranking-participacao .ranking-build-descricao > button:hover:not(:disabled) {
+    color: #fff;
+    background: transparent;
+    text-decoration: underline;
+}
+
+.ranking-builds-expandir {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.ranking-builds-envio {
+    margin: 18px 0;
+}
+
+.ranking-builds-envio > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+}
+
+.ranking-builds-envio p {
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.ranking-feed {
+    min-width: 0;
+}
+
+@media (max-width: 768px) {
+    .ranking-page .ranking-page-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.ranking-builds-galeria .ranking-competidores {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.ranking-builds-galeria .ranking-participacao {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+.ranking-builds-galeria .ranking-participacao footer {
+    margin-top: auto;
+}
+
+.ranking-page .ranking-builds-galeria .ranking-competidores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.ranking-page .ranking-build-card {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: #111;
+    border-color: #333;
+    border-radius: 8px;
+}
+
+.ranking-page .ranking-build-card > header {
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-page .ranking-build-autor {
+    flex: 1 1 140px;
+    font: 500 0.75rem/1.5 'Poppins', sans-serif;
+}
+
+.ranking-page .ranking-build-autor :is(a, b) {
+    color: #ccc;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.ranking-page .ranking-build-autor a:hover {
+    text-decoration: underline;
+}
+
+.ranking-page .ranking-build-card header > .ranking-status-chip {
+    font-size: 0.6rem;
+}
+
+.ranking-page .ranking-build-card header > .ranking-status-chip.aprovada {
+    color: #a9bbae;
+    background: #181e19;
+    border-color: #344037;
+}
+
+.ranking-page .ranking-build-titulo {
+    min-height: 98px;
+}
+
+.ranking-page .ranking-build-titulo .ranking-build-jogo {
+    margin: 0 0 7px;
+    color: #999;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+}
+
+.ranking-page .ranking-build-titulo h3 {
+    margin: 0 0 18px;
+    color: #f1f1f1;
+    font: 700 1.12rem/1.45 'Poppins', sans-serif;
+}
+
+.ranking-page .ranking-build-abas {
+    gap: 0;
+    padding: 4px;
+    background: #090909;
+    border: 1px solid #292929;
+    border-radius: 6px;
+}
+
+.ranking-page .ranking-build-abas button {
+    min-width: 0;
+    min-height: 40px;
+    color: #888;
+    font-size: 0.72rem;
+    background: transparent;
+    border-color: transparent;
+}
+
+.ranking-page .ranking-build-abas button[aria-pressed="true"],
+.ranking-page .ranking-build-abas button:hover:not(:disabled) {
+    color: #eee;
+    background: #242424;
+    border-color: #393939;
+}
+
+.ranking-page .ranking-build-card .build-card-atributos {
+    grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.35fr);
+    margin: 4px 0 20px;
+}
+
+.ranking-page .ranking-build-card .build-card-atributos div {
+    padding: 12px;
+    background: #171717;
+    border-color: #2b2b2b;
+    border-radius: 5px;
+}
+
+.ranking-page .ranking-build-card > footer {
+    gap: 12px;
+    padding-top: 16px;
+    border-color: #333;
+}
+
+.ranking-page .ranking-build-card footer > .ranking-build-votos {
+    flex: 1 1 110px;
+    color: #eee;
+    font: 700 1.3rem/1.3 'Poppins', sans-serif;
+}
+
+.ranking-build-votos > span {
+    display: block;
+    margin-top: 4px;
+    color: #999;
+    font: 400 0.65rem/1.5 'Poppins', sans-serif;
+}
+
+.ranking-page .ranking-build-card footer > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 14px;
+    color: #ddd;
+    font-size: 0.75rem;
+    text-decoration: none;
+    border: 1px solid #666;
+    border-radius: 2px;
+}
+
+.ranking-page .ranking-build-card footer > a:hover {
+    color: #fff;
+    border-color: #aaa;
+}
+
+@media (max-width: 600px) {
+    .ranking-page .ranking-builds-galeria .ranking-competidores {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .ranking-page .ranking-build-titulo {
+        min-height: 0;
+    }
+
+    .ranking-page .ranking-build-card {
+        padding: 16px;
+    }
+
+    .ranking-page .ranking-build-card footer > button {
+        flex: 0 1 auto;
+        max-width: 100%;
+    }
+}
+
+.ranking-builds-classificacao > label {
+    display: grid;
+    gap: 8px;
+    color: #ccc;
+    font: 500 0.78rem/1.5 'Poppins', sans-serif;
+}
+
+.ranking-builds-classificacao select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    color: #eee;
+    font: 0.85rem 'Poppins', sans-serif;
+    background: #151515;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color-scheme: dark;
+}
+
+.ranking-builds-classificacao select:focus-visible {
+    outline: 2px solid #999;
+    outline-offset: 2px;
+}
+
+.ranking-builds-explicacao {
+    color: #999;
+    font: 400 0.75rem/1.7 'Poppins', sans-serif;
+}
+
+.ranking-builds-tabela-container {
+    overflow-x: auto;
+}
+
+.ranking-builds-primeiro {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px 18px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 24px auto;
+    padding: 24px 20px;
+    color: #eee;
+    text-align: left;
+    background: #171513;
+    border: 1px solid #57412e;
+    border-radius: 8px;
+}
+
+.ranking-builds-primeiro-posicao {
+    grid-column: 1 / -1;
+    color: #dca16e;
+    font: 600 0.7rem/1.5 'Poppins', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.ranking-builds-primeiro img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border: 1px solid #65503f;
+    border-radius: 50%;
+}
+
+.ranking-builds-classificacao .ranking-builds-primeiro h3 {
+    margin: 0;
+    font: 700 1.05rem/1.5 'Poppins', sans-serif;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.ranking-builds-primeiro a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.ranking-builds-primeiro a:hover {
+    text-decoration: underline;
+}
+
+.ranking-builds-primeiro p {
+    margin: 0;
+    color: #aaa;
+    font: 400 0.75rem/1.6 'Poppins', sans-serif;
+}
+
+.ranking-builds-primeiro > strong {
+    color: #e4b38b;
+    font: 700 1.35rem/1.5 'Poppins', sans-serif;
+}
+
+.ranking-builds-primeiro small {
+    display: block;
+    color: #aaa;
+    font-size: 0.65rem;
+    font-weight: 400;
+}
+
+.ranking-builds-primeiro-identidade p {
+    margin-top: 5px;
+}
+
+.ranking-builds-primeiro > strong {
+    text-align: right;
+}
+
+.ranking-builds-primeiro-final {
+    grid-column: 1 / -1;
+    padding-top: 16px;
+    border-top: 1px solid #493b2e;
+}
+
+.ranking-builds-primeiro-final > span {
+    display: block;
+    margin-bottom: 5px;
+    color: #aaa;
+    font: 500 0.65rem/1.5 'Poppins', sans-serif;
+    text-transform: uppercase;
+}
+
+.ranking-builds-primeiro-final > strong {
+    color: #e4b38b;
+    font: 700 1.1rem/1.5 'Poppins', sans-serif;
+}
+
+.ranking-builds-primeiro-final p {
+    margin-top: 5px;
+}
+
+@media (max-width: 600px) {
+    .ranking-builds-primeiro {
+        grid-template-columns: 48px minmax(0, 1fr);
+        padding: 20px 16px;
+        gap: 12px;
+    }
+
+    .ranking-builds-primeiro img {
+        width: 44px;
+        height: 44px;
+    }
+
+    .ranking-builds-primeiro > strong {
+        grid-column: 2;
+        text-align: left;
+    }
+}
+
+.ranking-builds-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ddd;
+    font: 400 0.8rem/1.6 'Poppins', sans-serif;
+}
+
+.ranking-builds-tabela caption {
+    padding: 12px 0;
+    color: #aaa;
+    text-align: left;
+}
+
+.ranking-builds-tabela :is(th, td) {
+    padding: 14px 10px;
+    border-bottom: 1px solid #2b2b2b;
+    text-align: left;
+}
+
+.ranking-builds-tabela th {
+    color: #999;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.ranking-builds-tabela :is(th, td):last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-builds-tabela td:first-child {
+    width: 60px;
+    font-weight: 600;
+}
+
+.ranking-builds-identidade {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ranking-builds-identidade img {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 1px solid #444;
+    border-radius: 50%;
+}
+
+.ranking-builds-identidade > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ranking-builds-identidade :is(a, strong) {
+    color: #eee;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.ranking-builds-identidade a:hover {
+    text-decoration: underline;
+}
+
+.ranking-builds-identidade span {
+    display: block;
+    margin-top: 3px;
+    color: #999;
+    font-size: 0.7rem;
+}
+
+@media (max-width: 480px) {
+    .ranking-builds-classificacao select {
+        font-size: 16px;
+    }
+
+    .ranking-builds-tabela :is(th, td) {
+        padding: 12px 5px;
+    }
+
+    .ranking-builds-identidade {
+        gap: 8px;
+    }
+}
+
+.ranking-page-titulo {
+    background:
+        radial-gradient(ellipse at 85% 10%, rgb(168 121 85 / 5%), transparent 38%),
+        linear-gradient(120deg, #151515, #0d0d0d 72%);
+    border-color: #292929;
+}
+
+.ranking-page-titulo::after {
+    height: 1px;
+    opacity: 0.35;
+}
+
+.ranking-page-titulo .posts-sobretitulo {
+    color: #b9b9b9;
+    background: #171717;
+    border-color: #333;
+}
+
+.ranking-page button.ranking-botao-principal {
+    color: #eee;
+    background: #222;
+    border-color: #444;
+    box-shadow: none;
+}
+
+.ranking-page button.ranking-botao-principal:hover:not(:disabled) {
+    color: #fff;
+    background: #2b2b2b;
+    border-color: #666;
+}
+
+.ranking-desafios-ajuda {
+    margin: -2px 2px 4px;
+    color: #999;
+    font-size: 0.72rem;
+    line-height: 1.6;
+}
+
+.ranking-desafios-titulo > span,
+.ranking-page .ranking-link-geral.selecionado {
+    color: #ddd;
+    background: #202020;
+    border-color: #383838;
+}
+
+.ranking-desafios > button[aria-pressed="true"] {
+    background: #1a1a1a;
+    border-color: #555;
+    box-shadow: inset 3px 0 #888;
+}
+
+.ranking-desafios > button .ranking-desafio-status {
+    color: #c4c4c4;
+    background: #222;
+}
+
+.ranking-formulario-adm {
+    padding: 26px;
+    background: #101010;
+    border-color: #303030;
+}
+
+.ranking-form-header {
+    padding-bottom: 18px;
+    border-color: #303030;
+}
+
+.ranking-form-header .ranking-secao-label,
+.ranking-formulario-adm legend {
+    color: #aaa;
+}
+
+.ranking-form-header h2 {
+    margin-bottom: 6px;
+    font-size: 1.25rem;
+}
+
+.ranking-formulario-adm > fieldset {
+    padding: 18px;
+    background: #141414;
+    border: 1px solid #2c2c2c;
+    border-radius: 6px;
+}
+
+.ranking-formulario-adm legend {
+    padding: 0 8px;
+    margin-left: -8px;
+}
+
+.ranking-formulario-adm .ranking-form-nota {
+    line-height: 1.65;
+}
+
+.ranking-formulario-adm .ranking-acoes {
+    border-color: #303030;
+}
+
+.ranking-page .ranking-desafio-detalhe > span:first-child {
+    color: #bbb;
+    background: #1d1d1d;
+    border-color: #383838;
+}
+
+.ranking-page .ranking-desafio-detalhe dl > div {
+    border-left-color: #555;
+}
+
+.ranking-page .ranking-agora {
+    background: #171717;
+    border-color: #383838;
+}
+
+.ranking-page .ranking-agora strong {
+    color: #eee;
+    background: #444;
+}
+
+.ranking-linha-tempo li.atual > strong,
+.ranking-page .ranking-subtitulo {
+    color: #ddd;
+}
+
+.ranking-linha-tempo li.concluida::before,
+.ranking-linha-tempo li.concluida .ranking-linha-marcador,
+.ranking-linha-tempo li.atual .ranking-linha-marcador {
+    background: #777;
+    border-color: #777;
+}
+
+.ranking-linha-tempo li.atual .ranking-linha-marcador {
+    box-shadow: 0 0 0 4px rgb(255 255 255 / 8%);
+}
+
+@media (max-width: 768px) {
+    .ranking-formulario-adm {
+        padding: 18px;
+    }
+
+    .ranking-formulario-adm > fieldset {
+        padding: 14px;
     }
 }

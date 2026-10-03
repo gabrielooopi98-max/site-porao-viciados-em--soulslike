@@ -21,13 +21,20 @@ export default function FormularioParticipacao({ desafio, aoPublicar, aoFechar }
     let persistiu = false;
     try {
       if (midias.length > 8) throw new Error('Envie no máximo oito imagens ou vídeos.');
+      if (desafio.tipo === 'conquista' && !midias.length) throw new Error('Anexe pelo menos uma imagem ou um vídeo como prova do desafio.');
       if (midias.some((arquivo) => !/^(image|video)\//.test(arquivo.type))) throw new Error('Escolha somente imagens e vídeos.');
+      if (desafio.tipo === 'build' && (!midias.some((arquivo) => arquivo.type.startsWith('image/'))
+        || !midias.some((arquivo) => arquivo.type.startsWith('video/')))) {
+        throw new Error('Anexe pelo menos uma imagem da build e um vídeo mostrando como ela funciona.');
+      }
       const campos = new FormData(event.currentTarget);
       enviadas = await enviarMidias(midias, setStatus, pastaMidiasRanking(user.id));
       await executarRanking('ranking_publicar', {
         p_desafio: desafio.id,
         p_dados: {
-          titulo: campos.get('titulo'), descricao: campos.get('descricao'), midias: enviadas,
+          titulo: desafio.tipo === 'build' ? campos.get('titulo') : desafio.titulo,
+          descricao: desafio.tipo === 'build' ? campos.get('descricao') : 'Prova do desafio enviada em mídia.',
+          midias: enviadas,
           atributos: desafio.tipo === 'build' ? {
             nivel: campos.get('nivel'), foco: campos.get('foco'), equipamentos: campos.get('equipamentos'),
           } : {},
@@ -46,13 +53,13 @@ export default function FormularioParticipacao({ desafio, aoPublicar, aoFechar }
   }
   return (
     <form className="ranking-formulario" onSubmit={publicar}>
-      <h3>{desafio.tipo === 'build' ? 'Publicar build concorrente' : 'Publicar desafio concluído'}</h3>
+      <h3>{desafio.tipo === 'build' ? 'Publicar build concorrente' : 'Enviar prova do desafio'}</h3>
       <p>Uma participação por pessoa neste desafio. Confira as regras antes de enviar: a prova não poderá ser alterada depois.</p>
       {desafio.tipo === 'build' && <RegrasBuild />}
       <fieldset disabled={ocupado}>
-        <label>{desafio.tipo === 'build' ? 'Nome da build' : 'Título'}<input name="titulo" required minLength={3} maxLength={160} /></label>
-        <label>Descrição e prova do desafio<textarea name="descricao" required minLength={10} maxLength={6000} /></label>
         {desafio.tipo === 'build' && <>
+          <label>Nome da build<input name="titulo" required minLength={3} maxLength={160} /></label>
+          <label>Descrição da build<textarea name="descricao" required minLength={10} maxLength={6000} /></label>
           <div className="ranking-form-grid">
             <label>Nível<input name="nivel" type="number" min="1" max="9999" /></label>
             <label>Foco / atributos<input name="foco" maxLength={200} placeholder="Ex.: Inteligência 60, vigor 40…" /></label>
@@ -60,7 +67,8 @@ export default function FormularioParticipacao({ desafio, aoPublicar, aoFechar }
           <label>Equipamentos e estratégia<textarea name="equipamentos" maxLength={2000} placeholder="Armas e melhorias, itens, consumíveis, magias e milagres utilizados. Explique como usar a build." /></label>
         </>}
         <AnexosPublicacao id="ranking-anexos" midias={midias} setMidias={setMidias} publicando={ocupado}
-          titulo="Anexe sua prova" descricao="Até oito imagens ou vídeos. Siga o que o ADM pediu nas regras." />
+          titulo={desafio.tipo === 'build' ? 'Imagem e vídeo da build' : 'Anexe sua prova'}
+          descricao={desafio.tipo === 'build' ? 'Obrigatório: pelo menos uma imagem e um vídeo da build em ação. Até oito arquivos no total.' : 'Anexe pelo menos uma imagem ou um vídeo. Até oito arquivos. Siga o que o ADM pediu nas regras.'} />
       </fieldset>
       {status && <p role="status">{status}</p>}
       {erro && <p className="ranking-erro" role="alert">{erro}</p>}

@@ -18,5 +18,5 @@ export default function ClassificacaoRanking({ jogadores, demonstracao = false }
         </li>
       ))}
     </ol>
-  ) : <p className="ranking-vazio">Nenhum ponto concedido ainda. Os primeiros desafios vão abrir a classificação.</p>;
+  ) : <p className="ranking-vazio">O ranking está começando! Participe de um desafio para conquistar seus primeiros pontos.</p>;
 }

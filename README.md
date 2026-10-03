@@ -38,7 +38,27 @@ mantem a largura de ate 1180px; o layout mobile dessas secoes e preservado.
 ## Ranking e desafios
 
 A pagina `/ranking` fica no menu hamburguer da comunidade.
-O menu abre como painel lateral deslizante pela esquerda, com fundo
+Na lista de desafios, os cards seguem o visual dos posts: modalidade e etapa
+no topo, titulo, jogo e resumo, com recompensa e prazo no rodape.
+Jogadores participam pelos botoes "Criar build" ou "Enviar prova do desafio",
+durante as inscricoes e com login. O atalho da classificacao abre o formulario
+da competicao escolhida. Somente o ADM pode criar competicoes; a demonstracao
+exibe os dois atalhos abaixo do seletor de competicao, encaminha ao painel
+real e nao permite publicar em desafios ficticios.
+O envio de provas de conquista tem apenas anexos, sem titulo ou descricao
+preenchidos pelo jogador. Exige ao menos uma imagem ou um video (ate oito
+arquivos); o card mostra autor, status, midia e avaliacoes.
+As provas ficam em duas colunas no desktop e uma no celular, com avatar e
+status no topo, midia em proporcao uniforme e acoes no rodape. Multiplos
+anexos podem ser percorridos horizontalmente, mantendo controles de video
+e ampliacao de imagens.
+Builds mantem
+nome e descricao. Reaplique `supabase/ranking_desafios.sql` para atualizar
+tambem a validacao e os metadados automaticos no banco.
+O painel lateral apresenta a marca da comunidade, atalhos com icones,
+destaque discreto para a secao atual e acesso ao perfil/login no rodape.
+O visual usa fundo escuro uniforme e se compacta em telas baixas.
+O menu abre como painel deslizante pela esquerda, com fundo
 escurecido, foco contido e rolagem da pagina bloqueada. Fecha pelo botao,
 Escape ou clique fora, respeitando a preferencia de movimento reduzido.
 A entrada usa deslizamento com desaceleracao, fade do fundo e links em
@@ -209,10 +229,39 @@ O fundo proprio mistura preto e carvao, com luz cinza suave perto da lua
 e transicoes escuras nas extremidades, sem textura ou cores saturadas.
 A arte em cinza se funde ao fundo com composicao screen e mascaras graduais
 amplas nas quatro bordas, evitando um recorte retangular visivel.
-A classificacao real vem primeiro, em um painel compacto com os seis
-melhores jogadores, links para perfis e acesso a lista completa. O primeiro
-lugar fica centralizado acima dos demais, com avatar em destaque; as outras
-posicoes usam duas colunas no desktop e uma lista em ordem no celular.
+Os cards de builds do ranking seguem a ficha visual das builds normais,
+com autor e avatar, jogo e seletor de imagem/video com controles.
+Na pagina de ranking, a galeria usa duas colunas no desktop e uma no celular,
+com cabecalho de autor/status, titulo separado, controles de midia agrupados
+e rodape com contagem de votos e acao. Nivel e foco nao aparecem nos cards;
+os campos de envio continuam preservados.
+Os cards resumidos mostram a descricao escrita pelo autor em ate tres linhas,
+com opcao de expandir ou recolher o texto. Na participacao completa, o texto
+continua visivel integralmente.
+Novas participacoes de builds exigem pelo menos uma imagem e um video,
+com ate oito anexos. A exigencia vale no formulario e no RPC; reaplique
+`supabase/ranking_desafios.sql` no Supabase para ativar a validacao no banco.
+Participacoes antigas continuam visiveis, mesmo sem ambos os formatos.
+
+A classificacao das builds aparece na home e em `/ranking`, com seletor
+de competicao. Em `/ranking`, os cards da competicao escolhida aparecem
+abaixo da tabela, com imagem, video e acesso a participacao para votar.
+Inicialmente, a tabela exibe ate seis posicoes. Havendo mais participantes,
+o primeiro lugar aparece em um card centralizado acima das demais posicoes,
+com autor, avatar e votos. Ele conta no limite inicial de seis participantes.
+"Mostrar todas as posicoes" expande a lista e permite recolher novamente.
+Os cards abaixo mostram todas as builds aprovadas da etapa, independentemente
+da expansao da tabela. Trocar de competicao ou etapa restaura o limite de seis.
+Os titulos acompanham a etapa: "Builds em classificacao", "Builds em Semifinais"
+e "Builds em final". A demonstracao permite visualizar tambem a classificatoria.
+Na home, os cards permanecem na secao separada de disputas. A tabela tem seletor
+de competicao e tabela de posicao, build, autor com avatar e votos da etapa.
+Somente builds aprovadas que participam da etapa atual entram na tabela.
+Empates seguem a ordem de envio, como no banco; os votos reabrem em cada
+etapa. Os links abrem a participacao completa. Os pontos dos jogadores nao
+interferem nesta classificacao. A tabela geral por pontos deixa de aparecer,
+mas os pontos e os desafios de conquista continuam preservados no banco.
+`node --test tests/classificacaoBuilds.test.mjs` valida a ordenacao e os filtros.
 As competicoes ficam separadas em "Builds em disputa", com jogo, etapa,
 progresso classificatoria/semifinal/final, premio, valor por voto e prazo.
 Cada card mostra uma previa de midia, informa quando ha mais anexos e
@@ -224,15 +273,24 @@ acesso aos desafios, sem inventar jogadores ou competicoes.
 A paleta e neutra, com laranja pontual na etapa atual e pequenos destaques.
 No celular, paineis, datas e cards se organizam em uma coluna.
 
-Em desenvolvimento (`npm run dev`), abra `/?rankingDemo=1#ranking`
-para uma demonstracao visual local. O seletor alterna seis semifinalistas,
+Em desenvolvimento (`npm run dev`), a home mostra por padrao uma
+demonstracao visual local do ranking. A pagina `/ranking` abre os desafios
+reais; sua demonstracao fica em `/ranking?rankingDemo=1`.
+O seletor alterna seis semifinalistas,
 tres finalistas e o encerramento com vencedor e premio simulado.
 Os dados sao identificados como ficticios, com imagens ilustrativas,
 sem consultas do painel real, links para perfis falsos ou gravacao no banco.
-Votacao e avaliacoes nao sao simuladas; a demonstracao testa apenas o layout.
+Os votos simulados seguem a regra real: um voto por build em cada etapa,
+em quantas builds quiser; clicar de novo retira o voto.
+A tabela e os cards atualizam juntos. A etapa encerrada bloqueia os votos
+e conserva os votos simulados da final. Avaliacoes nao sao simuladas.
+Recarregar a pagina apaga os votos simulados; nada e gravado no banco.
 Recarregar preserva o modo de demonstracao e retorna a semifinal.
-O link "Sair da demonstracao" restaura os dados reais. O modo fica
+O link "Ver dados reais" abre `/?rankingDemo=0#ranking` e restaura os dados reais. O modo fica
 desativado em builds de producao.
+Em `/ranking`, esse link abre `/ranking?rankingDemo=0`; links para um desafio
+real continuam abrindo o painel real. Os cards ficticios e votos simulados
+tambem funcionam na pagina de ranking.
 
 ## Chat para amigos
 

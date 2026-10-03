@@ -41,6 +41,19 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     return rows[0].resultado;
   }
   const futuro = (horas) => new Date(Date.now() + horas * 3600000).toISOString();
+  let sequenciaMidias = 0;
+  async function midiasBuild(n) {
+    const midias = ['image/png', 'video/mp4'].map((tipo_midia, index) => {
+      const caminho = `ranking/${usuario(n)}/teste-${++sequenciaMidias}-${index}`;
+      return { caminho, tipo_midia, midia_url: `https://projeto.supabase.co/storage/v1/object/public/midias/${caminho}` };
+    });
+    await superusuario();
+    for (const midia of midias) {
+      await db.query("insert into storage.objects values ('midias', $1, $2)", [midia.caminho, usuario(n)]);
+    }
+    await como(n);
+    return midias;
+  }
   const dadosDesafio = {
     titulo: 'Build de mago', descricao: 'Mostre sua build e explique os equipamentos.',
     jogo: 'Dark Souls III', tipo: 'build', pontos: 100, pontos_voto: 2,
@@ -69,7 +82,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     for (let n = 2; n <= 8; n++) {
       await como(n);
       ids.push(await rpc('ranking_publicar', [desafio, {
-        titulo: `Build ${n}`, descricao: 'Descricao da prova e equipamentos.', midias: [],
+        titulo: `Build ${n}`, descricao: 'Descricao da prova e equipamentos.', midias: await midiasBuild(n),
         atributos: { nivel: 125, foco: 'Inteligencia' },
       }]));
     }
@@ -182,7 +195,11 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await superusuario();
     await db.query("update public.ranking_desafios set inicio = now() - interval '1 hour' where id = $1", [comum]);
     await como(2);
-    const prova = await rpc('ranking_publicar', [comum, { titulo: 'Malenia sem dano', descricao: 'Prova completa sem cortes.', midias: [] }]);
+    await assert.rejects(rpc('ranking_publicar', [comum, { midias: [] }]), /pelo menos uma imagem ou um video/);
+    const prova = await rpc('ranking_publicar', [comum, { midias: (await midiasBuild(2)).slice(0, 1) }]);
+    const enviada = (await rpc('ranking_painel', [comum])).participacoes.find((p) => p.id === prova);
+    assert.equal(enviada.titulo, dadosDesafio.titulo);
+    assert.equal(enviada.descricao, 'Prova do desafio enviada em midia.');
     await como(10);
     await rpc('ranking_votar', [prova]);
     await rpc('ranking_comentar', [prova, 'Conferi a prova.']);
@@ -235,16 +252,25 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     const entradas = [];
     for (const n of [2, 3]) {
       await como(n);
+      const midias = await midiasBuild(n);
       await assert.rejects(rpc('ranking_publicar', [pequeno, {
-        titulo: 'Build invalida', descricao: 'Descricao valida e longa.', midias: [], atributos: { foco: {} },
+        titulo: 'Sem anexos', descricao: 'Descricao valida e longa.', midias: [],
+      }]), /imagem e um video/);
+      for (const midia of midias) {
+        await assert.rejects(rpc('ranking_publicar', [pequeno, {
+          titulo: 'Anexo incompleto', descricao: 'Descricao valida e longa.', midias: [midia],
+        }]), /imagem e um video/);
+      }
+      await assert.rejects(rpc('ranking_publicar', [pequeno, {
+        titulo: 'Build invalida', descricao: 'Descricao valida e longa.', midias, atributos: { foco: {} },
       }]), /check constraint/);
       entradas.push(await rpc('ranking_publicar', [pequeno, {
-        titulo: 'Build de teste', descricao: 'Descricao valida e longa.', midias: [],
+        titulo: 'Build de teste', descricao: 'Descricao valida e longa.', midias,
       }]));
     }
     await como(1);
     for (const id of entradas) await rpc('ranking_avaliar', [id, true, '']);
-    const propria = await rpc('ranking_publicar', [pequeno, { titulo: 'Build do ADM', descricao: 'Descricao valida e longa.', midias: [] }]);
+    const propria = await rpc('ranking_publicar', [pequeno, { titulo: 'Build do ADM', descricao: 'Descricao valida e longa.', midias: await midiasBuild(1) }]);
     await assert.rejects(rpc('ranking_avaliar', [propria, true, '']), /Outro ADM/);
     await superusuario();
     await db.query("update public.ranking_participacoes set criado_em = now() - interval '1 hour' where desafio_id = $1", [pequeno]);
@@ -295,7 +321,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
       [meu, usuario(5), alheio, usuario(6)]);
     const midia = (caminho) => ({ caminho, tipo_midia: 'image/png',
       midia_url: `https://projeto.supabase.co/storage/v1/object/public/midias/${caminho}` });
-    const enviar = (midias) => rpc('ranking_publicar', [conquista, { titulo: 'Prova com midia', descricao: 'Prova completa de teste.', midias }]);
+    const enviar = (midias) => rpc('ranking_publicar', [conquista, { midias }]);
     await como(5);
     await assert.rejects(enviar([{ ...midia(meu), midia_url: 'https://site-externo.com/prova.png' }]), /midia invalido/);
     await assert.rejects(enviar([midia(alheio)]), /midia invalido/);

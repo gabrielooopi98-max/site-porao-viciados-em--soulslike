@@ -232,23 +232,12 @@
     margin-top: 28px;
 }
 
-.posts-secao-footer .ver-mais-posts {
+.posts-secao-footer .btn-filtro {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    min-height: 44px;
     margin: 0;
-    padding: 10px 18px;
-    color: #cccccc;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border-color: #383838;
-    border-radius: 6px;
-}
-
-.posts-secao-footer .ver-mais-posts:hover {
-    color: #eeeeee;
-    background: #1a1a1a;
-    border-color: #666666;
 }
 
 @media (max-width: 768px) {

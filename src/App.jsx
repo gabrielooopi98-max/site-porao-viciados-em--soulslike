@@ -530,7 +530,7 @@ function Home() {
           <footer className="posts-secao-footer">
             <button
               type="button"
-              className="ver-mais-posts"
+              className="btn-filtro"
               onClick={() => navigate('/posts')}
             >
               Ver todos os posts
@@ -661,7 +661,7 @@ function Home() {
           <footer className="posts-secao-footer">
           <button
             type="button"
-            className="ver-mais-builds ver-mais-posts"
+            className="btn-filtro"
             onClick={() => navigate('/builds')}
           >
             Ver todas as builds

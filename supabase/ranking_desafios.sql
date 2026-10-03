@@ -309,6 +309,9 @@ begin
     end if;
     if jsonb_typeof(p_dados->'midias') is distinct from 'array' then raise exception 'Midias invalidas.'; end if;
     if jsonb_array_length(p_dados->'midias') > 8 then raise exception 'Envie no maximo oito midias.'; end if;
+    if d.tipo = 'conquista' and jsonb_array_length(p_dados->'midias') = 0 then
+        raise exception 'Anexe pelo menos uma imagem ou um video como prova do desafio.';
+    end if;
     -- Somente arquivos do proprio jogador, enviados ao Storage do site na pasta do ranking.
     for m in select value from jsonb_array_elements(p_dados->'midias') loop
         if coalesce(m->>'tipo_midia', '') !~ '^(image|video)/'
@@ -323,11 +326,19 @@ begin
             raise exception 'Formato de midia invalido.';
         end if;
     end loop;
+    if d.tipo = 'build' and (
+        not exists(select 1 from jsonb_array_elements(p_dados->'midias') x where x->>'tipo_midia' like 'image/%')
+        or not exists(select 1 from jsonb_array_elements(p_dados->'midias') x where x->>'tipo_midia' like 'video/%')
+    ) then
+        raise exception 'Anexe pelo menos uma imagem e um video da build.';
+    end if;
     select raw_user_meta_data into u from auth.users where id = auth.uid();
     insert into public.ranking_participacoes
         (desafio_id, autor_id, autor_nome, autor_avatar, titulo, descricao, midias, atributos)
     values (d.id, auth.uid(), coalesce(nullif(u->>'display_name', ''), nullif(u->>'nome', ''), nullif(u->>'full_name', ''), 'Jogador'),
-        u->>'avatar_url', trim(p_dados->>'titulo'), trim(p_dados->>'descricao'),
+        u->>'avatar_url',
+        case when d.tipo = 'conquista' then d.titulo else trim(p_dados->>'titulo') end,
+        case when d.tipo = 'conquista' then 'Prova do desafio enviada em midia.' else trim(p_dados->>'descricao') end,
         p_dados->'midias', coalesce(p_dados->'atributos', '{}'::jsonb)) returning id into resultado;
     return resultado;
 end;

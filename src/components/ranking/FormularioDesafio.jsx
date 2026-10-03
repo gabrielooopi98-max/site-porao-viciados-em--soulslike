@@ -71,7 +71,7 @@ export default function FormularioDesafio({ desafio, aoSalvar, aoFechar }) {
         </select></label>
         </div>
         {formulario.tipo === 'build' && <RegrasBuild />}
-        <label>{formulario.tipo === 'build' ? 'Objetivo e regras específicas do desafio' : 'Regras e provas exigidas'}<textarea name="descricao" placeholder={formulario.tipo === 'build' ? 'Ex.: montar uma build de mago para PvE, sem itens de DLC. As quatro regras padrão já aparecem automaticamente.' : 'Explique o objetivo, as restrições e o que o jogador precisa mostrar para validar a participação.'} value={formulario.descricao} onChange={alterar} required minLength={10} maxLength={6000} /></label>
+        <label>{formulario.tipo === 'build' ? 'Objetivo e regras específicas do desafio' : 'Regras e provas exigidas'}<textarea name="descricao" placeholder={formulario.tipo === 'build' ? 'Ex.: montar uma build de mago para PvE, sem itens de DLC. As regras padrão já aparecem automaticamente.' : 'Explique o objetivo, as restrições e o que o jogador precisa mostrar para validar a participação.'} value={formulario.descricao} onChange={alterar} required minLength={10} maxLength={6000} /></label>
       </fieldset>
       <fieldset disabled={ocupado}>
         <legend className="ranking-secao-label">Pontuação</legend>

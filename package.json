@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "test:ranking": "node --test tests/ranking.test.mjs",
+    "test:ranking": "node --test tests/ranking.test.mjs tests/classificacaoBuilds.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
