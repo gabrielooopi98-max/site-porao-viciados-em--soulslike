@@ -2301,6 +2301,13 @@
     border-radius: 8px;
 }
 
+.ranking-builds-primeiro--chama {
+    background:
+        linear-gradient(90deg, rgb(12 12 12 / 94%) 0%, rgb(12 12 12 / 82%) 58%, rgb(12 12 12 / 55%) 100%),
+        url('/svg-animado/banner-cavaleiro-chama-1760x575-detalhado.svg') center / 100% auto no-repeat,
+        #171513;
+}
+
 .ranking-builds-primeiro-posicao {
     grid-column: 1 / -1;
     color: #dca16e;
@@ -2618,6 +2625,165 @@
 .ranking-formulario-adm legend {
     padding: 0 8px;
     margin-left: -8px;
+}
+
+.ranking-feed-visao-geral {
+    display: grid;
+    gap: 22px;
+    padding: 20px;
+}
+
+.ranking-indice {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 10px;
+    background: #101010;
+    border: 1px solid #292929;
+    border-radius: 7px;
+}
+
+.ranking-indice a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 10px;
+    color: #ddd;
+    font-size: 0.73rem;
+    background: #151515;
+    border: 1px solid #292929;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.ranking-indice a:hover {
+    background: #202020;
+    border-color: #555;
+}
+
+.ranking-indice a > strong {
+    flex: 0 0 auto;
+    color: #888;
+    font-size: 0.65rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-indice a span {
+    min-width: 0;
+    font-variant-numeric: normal;
+}
+
+.ranking-bloco {
+    min-width: 0;
+    padding: 22px;
+    background: #101010;
+    border: 1px solid #303030;
+    border-radius: 8px;
+    scroll-margin-top: 24px;
+}
+
+.ranking-bloco + .ranking-bloco {
+    margin-top: 0;
+}
+
+.ranking-bloco .ranking-classificacao-header {
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom-color: #333;
+}
+
+.ranking-bloco-etiqueta {
+    display: block;
+    margin-bottom: 5px;
+    color: #888;
+    font: 600 0.62rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0.09em;
+}
+
+.ranking-bloco .ranking-builds-tabela-container {
+    overflow-x: auto;
+    border: 1px solid #292929;
+    border-radius: 6px;
+}
+
+.ranking-bloco .ranking-geral-tabela {
+    min-width: 540px;
+}
+
+.ranking-bloco .ranking-geral-tabela th {
+    padding-block: 13px;
+    background: #171717;
+}
+
+.ranking-bloco .ranking-geral-tabela td {
+    height: 58px;
+}
+
+.ranking-bloco-builds {
+    background: #0c0c0c;
+    border-color: #383838;
+}
+
+.ranking-bloco-builds > .ranking-classificacao-header {
+    border-bottom-color: #383838;
+}
+
+.ranking-builds-galeria-cabecalho {
+    padding: 0 0 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-builds-galeria-cabecalho .rk-grade-titulo {
+    margin-bottom: 5px;
+}
+
+.ranking-builds-galeria-cabecalho p {
+    margin: 0;
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.ranking-desafios-titulo h2 {
+    font-size: 0.85rem;
+}
+
+.ranking-page .ranking-desafios-ajuda {
+    padding: 10px;
+    margin: 0;
+    color: #999;
+    background: #0b0b0b;
+    border-left: 2px solid #555;
+    font-size: 0.7rem;
+    line-height: 1.65;
+}
+
+@media (max-width: 768px) {
+    .ranking-feed-visao-geral {
+        gap: 16px;
+        padding: 14px;
+    }
+
+    .ranking-indice {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .ranking-indice a {
+        min-height: 38px;
+    }
+
+    .ranking-bloco {
+        padding: 17px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ranking-bloco {
+        padding: 14px;
+    }
 }
 
 .ranking-formulario-adm .ranking-form-nota {

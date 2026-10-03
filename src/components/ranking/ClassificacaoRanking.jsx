@@ -7,7 +7,20 @@ export default function ClassificacaoRanking({ jogadores, usuarioId, meusPontos,
   const visiveis = jogadores.slice(0, limite);
   const minhaPosicao = jogadores.findIndex((j) => j.usuario_id === usuarioId);
   if (!jogadores.length) {
-    return <p className="ranking-vazio">O ranking está começando! Conclua um desafio do ADM ou vença uma competição de builds para conquistar seus primeiros pontos.</p>;
+    return (
+      <div className="ranking-builds-tabela-container">
+        <table className="ranking-builds-tabela ranking-geral-tabela" aria-label="Ranking geral dos jogadores">
+          <thead><tr>
+            <th scope="col">Posição</th>
+            <th scope="col">Jogador</th>
+            <th scope="col" className="ranking-geral-detalhe">Desafios</th>
+            <th scope="col" className="ranking-geral-detalhe">Builds vencidas</th>
+            <th scope="col">Pontos</th>
+          </tr></thead>
+          <tbody />
+        </table>
+      </div>
+    );
   }
   return (
     <>

@@ -967,9 +967,9 @@ h3.rk-grade-titulo {
 .rk-envio-curto {
     margin: 4px 0 20px;
     padding: 14px 16px;
-    background: #15100b;
-    border: 1px solid #3a2a1a;
-    border-radius: 10px;
+    background: #141414;
+    border: 1px solid #303030;
+    border-radius: 8px;
 }
 
 .rk-participar-formulario {

@@ -92,7 +92,7 @@ export default function PaginaRanking() {
             <div><span>Competições de builds</span><strong>{dados.desafios.filter((d) => d.tipo === 'build').length}</strong></div>
           </section>
           <div className="ranking-navegacao-mobile">
-            <label htmlFor="ranking-escolher-desafio">Ver classificação ou desafio</label>
+            <label htmlFor="ranking-escolher-desafio">Acessar ranking ou desafio</label>
             <select id="ranking-escolher-desafio" value={desafioId || ''}
               onChange={(event) => {
                 setParams(event.target.value ? { desafio: event.target.value } : {});
@@ -100,16 +100,16 @@ export default function PaginaRanking() {
                 setFiltro('todos');
                 setPagina(1);
               }}>
-              <option value="">Ranking geral e builds</option>
+              <option value="">Visão geral do ranking</option>
               {desafioId && !desafio && <option value={desafioId}>Desafio não encontrado</option>}
               {dados.desafios.map((d) => <option key={d.id} value={d.id}>{d.titulo} — {etapaDesafio(d, agora)}</option>)}
             </select>
             <span>{dados.desafios.length} {dados.desafios.length === 1 ? 'desafio publicado' : 'desafios publicados'}</span>
           </div>
           <aside className="ranking-desafios">
-            <div className="ranking-desafios-titulo"><h2>Desafios</h2><span>{dados.desafios.length}</span></div>
-            <p className="ranking-desafios-ajuda">Escolha um desafio para ver detalhes e acompanhar as participações.</p>
-            <Link className={`ranking-link-geral ${!desafioId ? 'selecionado' : ''}`} aria-current={!desafioId ? 'page' : undefined} to="/ranking" onClick={() => { setParticipar(false); setPagina(1); }}>Ranking geral e builds <span aria-hidden="true">→</span></Link>
+            <div className="ranking-desafios-titulo"><h2>Desafios e provas</h2><span>{dados.desafios.length}</span></div>
+            <p className="ranking-desafios-ajuda">Os cards abaixo abrem regras, inscrições e provas. Eles são desafios, não tabelas de ranking.</p>
+            <Link className={`ranking-link-geral ${!desafioId ? 'selecionado' : ''}`} aria-current={!desafioId ? 'page' : undefined} to="/ranking" onClick={() => { setParticipar(false); setPagina(1); }}>Visão geral do ranking <span aria-hidden="true">→</span></Link>
             {!dados.desafios.length && <p>Nenhum desafio publicado ainda.</p>}
             {dados.desafios.map((d) => <button className="ranking-desafio-card" type="button" key={d.id} aria-pressed={d.id === desafioId}
               onClick={() => { setParams({ desafio: d.id }); setParticipar(false); setFiltro('todos'); setPagina(1); }}>
@@ -121,20 +121,29 @@ export default function PaginaRanking() {
               <span className="ranking-desafio-card-rodape"><span><b>{d.pontos} pts</b><small>Recompensa</small></span><span><small>{d.tipo === 'build' ? 'Final até' : 'Inscrições até'}</small><time dateTime={d.tipo === 'build' ? d.fim_final : d.fim}>{formatarDataRanking(d.tipo === 'build' ? d.fim_final : d.fim)}</time></span></span>
             </button>)}
           </aside>
-          <section className="ranking-feed" aria-label="Conteúdo do ranking">
+          <section className={`ranking-feed ${!desafioId ? 'ranking-feed-visao-geral' : ''}`} aria-label="Conteúdo do ranking">
             {!desafioId ? <>
-              <div className="ranking-classificacao-header">
-                <span className="ranking-secao-label">Jogadores</span>
-                <h2>Ranking geral</h2>
-                <p>Soma dos pontos de desafios do ADM aprovados e competições de builds vencidas. Atualiza em tempo real.</p>
-              </div>
-              <ClassificacaoRanking jogadores={dados.jogadores} usuarioId={user?.id} meusPontos={dados.meus_pontos} />
-              <div className="ranking-classificacao-header ranking-secao-seguinte">
-                <span className="ranking-secao-label">Competições</span>
-                <h2>Classificação das builds</h2>
-                <p>Escolha uma competição para acompanhar as posições das builds pelos votos.</p>
-              </div>
-              <ClassificacaoBuilds dados={dados} mostrarCards />
+              <nav className="ranking-indice" aria-label="Seções do ranking">
+                <a href="#ranking-geral"><strong>01</strong><span>Ranking geral</span></a>
+                <a href="#ranking-builds"><strong>02</strong><span>Classificação de builds</span></a>
+                <a href="#ranking-cards-builds"><strong>03</strong><span>Cards da competição</span></a>
+              </nav>
+              <section className="ranking-bloco ranking-bloco-geral" id="ranking-geral" aria-labelledby="ranking-geral-titulo">
+                <header className="ranking-classificacao-header">
+                  <span className="ranking-bloco-etiqueta">PONTUAÇÃO ACUMULADA · JOGADORES</span>
+                  <h2 id="ranking-geral-titulo">Ranking geral</h2>
+                  <p>Soma de pontos por desafios aprovados e vitórias em competições. Votos não entram nesta tabela.</p>
+                </header>
+                <ClassificacaoRanking jogadores={dados.jogadores} usuarioId={user?.id} meusPontos={dados.meus_pontos} />
+              </section>
+              <section className="ranking-bloco ranking-bloco-builds" id="ranking-builds" aria-labelledby="ranking-builds-titulo">
+                <header className="ranking-classificacao-header">
+                  <span className="ranking-bloco-etiqueta">VOTOS POR ETAPA · COMPETIÇÕES</span>
+                  <h2 id="ranking-builds-titulo">Classificação das builds</h2>
+                  <p>Esta tabela mostra as posições das builds na competição selecionada. Os votos valem para a etapa atual.</p>
+                </header>
+                <ClassificacaoBuilds dados={dados} mostrarCards />
+              </section>
             </> : desafio ? <>
               <div className="ranking-desafio-detalhe">
                 <span>{desafio.jogo} · {etapaDesafio(desafio, agora)}</span>
@@ -173,7 +182,9 @@ export default function PaginaRanking() {
                 {erroExclusao && <p className="ranking-erro" role="alert">{erroExclusao}</p>}
               </div>
               <div className="ranking-feed-filtros">
-                <h3>{desafio.tipo === 'build' ? `${tituloEtapaBuilds(desafio.etapa)} (${naEtapa.length})` : `Provas enviadas (${participacoes.length})`}</h3>
+                <h3>{desafio.tipo === 'build'
+                  ? `Cards das builds · ${tituloEtapaBuilds(desafio.etapa)} (${naEtapa.length})`
+                  : `Cards das provas enviadas (${participacoes.length})`}</h3>
                 <label>Mostrar<select value={filtro} onChange={(event) => { setFiltro(event.target.value); setPagina(1); }}>
                   <option value="todos">Todas</option>{desafio.tipo === 'conquista' && <option value="pendente">Aguardando ADM</option>}
                   <option value="aprovada">{desafio.tipo === 'build' ? 'Na disputa' : 'Aprovadas'}</option><option value="recusada">{desafio.tipo === 'build' ? 'Removidas' : 'Recusadas'}</option>

@@ -16,7 +16,7 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
     {desafio.etapa === 3 && !desafio.vencedor_id && <p className="ranking-vazio" role="status">
       A final terminou sem votos: a competição foi encerrada sem vencedor e sem prêmio.
     </p>}
-    <article className="ranking-builds-primeiro" aria-label="Primeiro lugar da competição">
+    <article className={`ranking-builds-primeiro${desafio.vencedor_id === lider.id && desafio.final_vencedor?.id === 'er_chama' ? ' ranking-builds-primeiro--chama' : ''}`} aria-label="Primeiro lugar da competição">
       <span className="ranking-builds-primeiro-posicao">1º lugar</span>
       <img src={lider.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
       <div className="ranking-builds-primeiro-identidade">
@@ -56,8 +56,12 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
         {mostrarTodos ? 'Mostrar só os 6 primeiros' : 'Mostrar todas as posições'}
       </button>
     </div>}
-    {mostrarCards && <section className="ranking-builds-galeria" aria-label="Builds enviadas">
-      <h3 className="rk-grade-titulo">{tituloEtapaBuilds(desafio.etapa)} ({builds.length})</h3>
+    {mostrarCards && <section className="ranking-builds-galeria" id="ranking-cards-builds" aria-labelledby="ranking-cards-builds-titulo">
+      <header className="ranking-builds-galeria-cabecalho">
+        <span className="ranking-bloco-etiqueta">PARTICIPAÇÕES DA COMPETIÇÃO SELECIONADA</span>
+        <h3 className="rk-grade-titulo" id="ranking-cards-builds-titulo">Cards das builds · {tituloEtapaBuilds(desafio.etapa)} ({builds.length})</h3>
+        <p>Veja as builds enviadas para esta competição. Os votos e as posições ficam na tabela acima.</p>
+      </header>
       <div className="rk-grade">
         {builds.map((build, index) => <CardParticipacao key={build.id} participacao={build}
           desafio={desafio} resumo posicao={index + 1} />)}

@@ -96,16 +96,6 @@ export default function AreaRanking() {
               <Link className="ranking-home-link" to="/ranking">Ver desafios e participar <span aria-hidden="true">→</span></Link>
             </div>}
           </section>
-          <section className="ranking-home-classificacao" aria-labelledby="ranking-home-geral-titulo">
-            <header className="ranking-home-secao-topo">
-              <div>
-                <h3 id="ranking-home-geral-titulo">Ranking geral</h3>
-                <p>Pontos de desafios do ADM aprovados e competições de builds vencidas.</p>
-              </div>
-              <Link className="ranking-home-link" to="/ranking">Ver ranking completo <span aria-hidden="true">→</span></Link>
-            </header>
-            <ClassificacaoRanking jogadores={dados.jogadores} usuarioId={user?.id} meusPontos={dados.meus_pontos} limite={10} />
-          </section>
           <section className="ranking-home-classificacao ranking-home-secao-seguinte" aria-labelledby="ranking-home-classificacao-titulo">
             <header className="ranking-home-secao-topo">
               <div>
@@ -115,6 +105,17 @@ export default function AreaRanking() {
               <Link className="ranking-home-link" to="/ranking">Ver competições <span aria-hidden="true">→</span></Link>
             </header>
             <ClassificacaoBuilds dados={dados} />
+          </section>
+          <section className="ranking-home-classificacao ranking-home-geral ranking-home-secao-seguinte" aria-labelledby="ranking-home-geral-titulo">
+            <header className="ranking-home-secao-topo">
+              <div>
+                <span className="ranking-home-geral-etiqueta">PONTUAÇÃO ACUMULADA</span>
+                <h3 id="ranking-home-geral-titulo">Ranking geral de jogadores</h3>
+                <p>Pontos de desafios aprovados e competições de builds vencidas.</p>
+              </div>
+              <Link className="ranking-home-link" to="/ranking">Ver ranking completo <span aria-hidden="true">→</span></Link>
+            </header>
+            <ClassificacaoRanking jogadores={dados.jogadores} usuarioId={user?.id} meusPontos={dados.meus_pontos} limite={10} />
           </section>
         </>}
       </div>

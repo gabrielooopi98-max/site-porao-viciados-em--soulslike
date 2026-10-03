@@ -91,6 +91,76 @@
     margin-top: 24px;
 }
 
+.ranking-home-geral {
+    background: #0c0c0c;
+    border-color: #343434;
+}
+
+.ranking-home-geral .ranking-home-secao-topo {
+    padding-bottom: 16px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-home-geral-etiqueta {
+    display: block;
+    margin-bottom: 5px;
+    color: #888;
+    font: 600 0.62rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0.1em;
+}
+
+.ranking-home-geral .ranking-builds-tabela-container {
+    border: 1px solid #292929;
+    border-radius: 6px;
+    background: #0a0a0a;
+}
+
+.ranking-home-geral .ranking-geral-tabela {
+    min-width: 620px;
+}
+
+.ranking-home-geral .ranking-geral-tabela th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    background: #151515;
+    white-space: nowrap;
+}
+
+.ranking-home-geral .ranking-geral-tabela td {
+    height: 56px;
+}
+
+.ranking-home-geral .ranking-geral-tabela tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ranking-home-geral .ranking-geral-tabela td:first-child {
+    color: #aaa;
+    font-variant-numeric: tabular-nums;
+}
+
+.ranking-home-geral .ranking-geral-tabela .ranking-geral-podio-1 td:first-child,
+.ranking-home-geral .ranking-geral-tabela .ranking-geral-podio-1 td:last-child strong {
+    color: #e2c17f;
+}
+
+.ranking-home-geral .ranking-geral-tabela .ranking-geral-podio-2 td:first-child {
+    color: #c8c8c8;
+}
+
+.ranking-home-geral .ranking-geral-tabela .ranking-geral-podio-3 td:first-child {
+    color: #bd9578;
+}
+
+.ranking-home-geral .ranking-geral-vazio td {
+    height: auto;
+    padding: 28px 18px;
+    color: #999;
+    text-align: center;
+    line-height: 1.7;
+}
+
 /* Competicoes em andamento ficam logo abaixo do cabecalho, antes do ranking geral. */
 .ranking-home-disputas {
     margin-bottom: 36px;
@@ -108,28 +178,29 @@
 }
 
 .ranking-home-disputas .ranking-home-secao-topo {
-    justify-content: center;
+    justify-content: flex-start;
+    padding: 10px 0 10px 18px;
+    border-left: 2px solid #444;
 }
 
 .ranking-home-disputas .ranking-home-secao-topo > div {
-    text-align: center;
+    text-align: left;
 }
 
 .ranking-home-disputas .ranking-home-secao-topo h3 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    color: #e58a3a;
-    text-align: center;
+    display: block;
+    color: #ededed;
+    text-align: left;
 }
 
 .ranking-home-disputas .ranking-home-secao-topo h3::before,
 .ranking-home-disputas .ranking-home-secao-topo h3::after {
-    width: clamp(24px, 6vw, 64px);
-    height: 1px;
-    background: #e58a3a;
-    content: '';
+    content: none;
+}
+
+.ranking-home-disputas .ranking-home-secao-topo p {
+    margin-top: 4px;
+    text-align: left;
 }
 
 .ranking-home-competicao {

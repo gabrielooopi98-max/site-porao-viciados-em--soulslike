@@ -44,6 +44,12 @@ Jogadores participam pelos botoes "Criar build" ou "Enviar prova do desafio",
 durante as inscricoes e com login. O atalho da classificacao abre o formulario
 da competicao escolhida. Somente o ADM pode criar competicoes.
 Os cards de desafios do ADM na lista mostram quantos jogadores ja concluiram.
+Na visão geral, o conteudo separa o Ranking geral (pontos acumulados), a
+Classificacao de builds (votos por etapa) e os cards da competicao selecionada.
+A lista lateral fica identificada como desafios e provas; esses cards abrem
+as regras e participacoes, nao sao tabelas de ranking.
+Na pagina completa, um indice leva a cada secao; ao abrir um desafio, a lista
+de participacoes tambem fica identificada como cards de builds ou de provas.
 O envio de provas de conquista tem apenas anexos, sem titulo ou descricao
 preenchidos pelo jogador. Exige ao menos uma imagem ou um video (ate oito
 arquivos); o card mostra autor, status, midia, os pontos (valendo, concedidos
