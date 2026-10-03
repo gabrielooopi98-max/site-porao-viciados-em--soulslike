@@ -274,6 +274,10 @@ etapa e cada nova escolha acrescenta um voto ao total acumulado. Os links
 abrem a participacao completa. Os pontos dos jogadores nao
 interferem nesta classificacao; eles aparecem no ranking geral.
 `node --test tests/classificacaoBuilds.test.mjs` valida a ordenacao e os filtros.
+Na classificacao da home, o botao de previa da Chama Frenetica tambem aparece
+no site publicado. Ele alterna apenas o banner do primeiro lugar, sem salvar
+um final, conceder titulos ou alterar votos. A escolha real continua exclusiva
+do vencedor.
 As competicoes ficam separadas em "Builds em disputa", com jogo, etapa,
 progresso classificatoria/semifinal/final, premio, valor por voto e prazo.
 Cada card mostra uma previa de midia, informa quando ha mais anexos e

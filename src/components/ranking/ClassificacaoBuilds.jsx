@@ -43,12 +43,12 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false, permitirPr
         </> : <p>O vencedor ainda está escolhendo seu final.</p>}
       </div>}
     </article>
-    {import.meta.env.DEV && permitirPreviaFinal && <div className="ranking-builds-previa-final">
+    {permitirPreviaFinal && <div className="ranking-builds-previa-final">
       <button className="btn-filtro" type="button" aria-pressed={previaChama}
         onClick={() => setPreviaChama((ativa) => !ativa)}>
         {previaChama ? 'Fechar prévia da Chama Frenética' : 'Testar banner da Chama Frenética'}
       </button>
-      <span>Prévia local: não salva uma escolha de final.</span>
+      <span>Prévia visual: não salva uma escolha de final.</span>
     </div>}
     <div className="ranking-builds-tabela-container">
       <table className="ranking-builds-tabela" id={tabelaId} aria-label={`Classificação de ${desafio.titulo}`}>
