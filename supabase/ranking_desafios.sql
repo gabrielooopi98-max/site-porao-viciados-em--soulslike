@@ -392,15 +392,12 @@ begin
     select * into p from public.ranking_participacoes where id = p_participacao;
     if not found then raise exception 'Participacao nao encontrada.'; end if;
     if p_etapa is distinct from d.etapa then raise exception 'A etapa mudou. Atualize a pagina antes de votar.'; end if;
+    -- Desafios do ADM sao decididos pela aprovacao; a comunidade participa comentando.
+    if d.tipo = 'conquista' then raise exception 'Desafios do ADM nao recebem votos. Comente a prova.'; end if;
     if p.autor_id = auth.uid() then raise exception 'Voce nao pode votar na propria participacao.'; end if;
     if now() < d.inicio then raise exception 'Este desafio ainda nao comecou.'; end if;
-    if d.tipo = 'conquista' then
-        if now() >= d.fim then raise exception 'A avaliacao da comunidade foi encerrada.'; end if;
-    else
-        if d.etapa = 3 or now() >= d.fim_final then raise exception 'A votacao foi encerrada.'; end if;
-        if p.status <> 'aprovada' or p.etapa_max < d.etapa then raise exception 'Esta build nao participa da etapa atual.'; end if;
-    end if;
-    if p.status = 'recusada' then raise exception 'Esta participacao foi recusada.'; end if;
+    if d.etapa = 3 or now() >= d.fim_final then raise exception 'A votacao foi encerrada.'; end if;
+    if p.status <> 'aprovada' or p.etapa_max < d.etapa then raise exception 'Esta build nao participa da etapa atual.'; end if;
     delete from public.ranking_votos where participacao_id = p.id and usuario_id = auth.uid() and etapa = d.etapa;
     if not found then
         insert into public.ranking_votos (participacao_id, usuario_id, etapa) values (p.id, auth.uid(), d.etapa);
@@ -442,7 +439,9 @@ begin
         'desafios', coalesce((select jsonb_agg(to_jsonb(d) || jsonb_build_object('final_vencedor', (
                 select jsonb_build_object('id', f.id, 'titulo', f.titulo, 'final', f.final, 'jogo', f.jogo)
                 from public.ranking_pontos rp join public.ranking_finais f on f.id = rp.final_id
-                where rp.participacao_id = d.vencedor_id)) order by d.criado_em desc)
+                where rp.participacao_id = d.vencedor_id),
+                'concluidas', (select count(*) from public.ranking_participacoes p
+                    where p.desafio_id = d.id and p.status = 'aprovada')) order by d.criado_em desc)
             from public.ranking_desafios d), '[]'::jsonb),
         'finais', coalesce((select jsonb_agg(to_jsonb(f) order by f.ordem) from public.ranking_finais f), '[]'::jsonb),
         'minhas_vitorias', coalesce((select jsonb_agg(jsonb_build_object(
@@ -477,6 +476,8 @@ begin
             else '[]'::jsonb end,
         'jogadores', coalesce((select jsonb_agg(to_jsonb(t) order by t.pontos desc, t.usuario_id) from (
             select rp.usuario_id, sum(rp.pontos) as pontos, count(distinct rp.final_id) as finais,
+                count(*) filter (where rp.origem = 'conquista') as conquistas,
+                count(*) filter (where rp.origem = 'build') as vitorias,
                 (select f.titulo from public.ranking_pontos x join public.ranking_finais f on f.id = x.final_id
                     where x.usuario_id = rp.usuario_id order by x.final_em desc limit 1) as titulo,
                 coalesce(nullif(u.raw_user_meta_data->>'display_name', ''), nullif(u.raw_user_meta_data->>'nome', ''), nullif(u.raw_user_meta_data->>'full_name', ''), 'Jogador') as nome,
@@ -595,6 +596,50 @@ grant execute on function public.ranking_eh_admin(), public.ranking_salvar_desaf
     public.ranking_votar(uuid, integer), public.ranking_comentar(uuid, text), public.ranking_avisos(boolean),
     public.ranking_excluir_desafio(uuid), public.ranking_pode_remover_midia(text),
     public.ranking_confirmar_midias_removidas(text[]), public.ranking_escolher_final(uuid, text) to authenticated;
+
+-- Tempo real: as tabelas do ranking sao fechadas, entao o site escuta apenas este
+-- sinal publico (sem dados) e recarrega o painel pelas RPCs quando ele muda.
+create table if not exists public.ranking_atualizacoes (
+    id smallint primary key default 1 check (id = 1),
+    atualizado_em timestamptz not null default now()
+);
+insert into public.ranking_atualizacoes (id) values (1) on conflict do nothing;
+alter table public.ranking_atualizacoes enable row level security;
+revoke all on public.ranking_atualizacoes from anon, authenticated;
+grant select on public.ranking_atualizacoes to anon, authenticated;
+drop policy if exists ranking_atualizacoes_leitura on public.ranking_atualizacoes;
+create policy ranking_atualizacoes_leitura on public.ranking_atualizacoes for select using (true);
+
+create or replace function public.ranking_sinalizar()
+returns trigger language plpgsql security definer set search_path = public
+as $$
+begin
+    update public.ranking_atualizacoes set atualizado_em = clock_timestamp() where id = 1;
+    return null;
+end;
+$$;
+revoke all on function public.ranking_sinalizar() from public, anon, authenticated;
+
+-- Por comando (nao por linha): um voto ou uma troca de etapa gera um unico aviso.
+do $$
+declare
+    tabela text;
+begin
+    foreach tabela in array array['ranking_desafios', 'ranking_participacoes', 'ranking_votos',
+        'ranking_comentarios', 'ranking_pontos'] loop
+        execute format('drop trigger if exists ranking_sinalizar on public.%I', tabela);
+        execute format('create trigger ranking_sinalizar after insert or update or delete on public.%I
+            for each statement execute function public.ranking_sinalizar()', tabela);
+    end loop;
+end $$;
+
+-- Publica o sinal no Realtime sem falhar se ja estiver publicado (ou fora do Supabase).
+do $$
+begin
+    alter publication supabase_realtime add table public.ranking_atualizacoes;
+exception
+    when duplicate_object or undefined_object then null;
+end $$;
 
 notify pgrst, 'reload schema';
 commit;

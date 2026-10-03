@@ -11,7 +11,7 @@ function etapasDoDesafio(desafio) {
     ];
   }
   return [
-    { nome: 'Inscrições e votos', ate: desafio.fim, texto: 'Envie sua prova. A comunidade vota e comenta.' },
+    { nome: 'Envio das provas', ate: desafio.fim, texto: 'Envie sua prova. A comunidade comenta e o ADM confere.' },
     { nome: 'Análise final do ADM', ate: remocao, texto: `Provas aprovadas recebem ${desafio.pontos} pts. Depois o desafio é removido.` },
   ];
 }

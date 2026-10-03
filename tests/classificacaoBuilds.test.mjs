@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { classificarBuilds, etapaEliminacao, ordenarParticipacoesBuild } from '../src/services/classificacaoBuilds.js';
-import { alternarVotoDemonstracao } from '../src/components/ranking/dadosDemonstracao.js';
 
 const desafio = { id: 'builds', tipo: 'build', etapa: 1, vencedor_id: null };
 const build = (id, votos, campos = {}) => ({
@@ -50,12 +49,4 @@ test('pagina do desafio lista a etapa atual primeiro e marca as eliminadas', () 
   assert.equal(etapaEliminacao(desafio, participacoes[2]), null);
   assert.equal(etapaEliminacao({ ...desafio, etapa: 3 }, build('semi', 0)), 1);
   assert.equal(etapaEliminacao({ ...desafio, tipo: 'conquista' }, participacoes[0]), null);
-});
-
-test('demonstracao permite votar em varias builds por etapa, como ranking_votar', () => {
-  let votos = alternarVotoDemonstracao({}, 1, 'a');
-  votos = alternarVotoDemonstracao(votos, 1, 'b');
-  votos = alternarVotoDemonstracao(votos, 2, 'a');
-  assert.deepEqual(votos, { 1: { a: true, b: true }, 2: { a: true } });
-  assert.deepEqual(alternarVotoDemonstracao(votos, 1, 'a')[1], { b: true });
 });

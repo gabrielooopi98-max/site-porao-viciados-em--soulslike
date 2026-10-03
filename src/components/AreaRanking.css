@@ -27,45 +27,6 @@
     font: 600 0.8rem 'Poppins', sans-serif;
 }
 
-.ranking-home-demo {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px 24px;
-    padding: 20px;
-    margin-bottom: 24px;
-    background: #19140f;
-    border: 1px solid #59402a;
-    border-radius: 6px;
-    font: 400 0.78rem/1.7 'Poppins', sans-serif;
-}
-
-.ranking-home-demo > div {
-    flex: 1 1 280px;
-}
-
-.ranking-home-demo p {
-    margin: 6px 0 0;
-    color: #bbb;
-}
-
-.ranking-home-demo label {
-    display: grid;
-    gap: 6px;
-    max-width: 100%;
-}
-
-.ranking-home-demo select {
-    width: 100%;
-    min-height: 44px;
-    padding: 8px;
-    color: #eee;
-    background: #151515;
-    border: 1px solid #555;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
 .ranking-comunidade .ranking-home-secao-topo,
 .ranking-comunidade .ranking-home-competicao-topo {
     display: flex;
@@ -126,82 +87,8 @@
     border-radius: 8px;
 }
 
-.ranking-comunidade .ranking-real-lista {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 24px;
-    margin: 20px 0 0;
-    border-top: 1px solid #292929;
-}
-
-.ranking-comunidade .ranking-real-lista li {
-    grid-template-columns: 32px 40px minmax(0, 1fr) auto;
-    min-width: 0;
-    min-height: 66px;
-    padding: 12px 0;
-    margin: 0;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid #242424;
-    border-radius: 0;
-}
-
-.ranking-comunidade .ranking-real-lista li > .ranking-avatar-lista {
-    display: block;
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    background: #1c1c1c;
-    border: 1px solid #3a3a3a;
-    border-radius: 50%;
-}
-
-.ranking-comunidade .ranking-real-lista li > .ranking-nome-lista,
-.ranking-comunidade .ranking-real-lista li > .ranking-demo-nome {
-    min-width: 0;
-    color: #ddd;
-    overflow-wrap: anywhere;
-}
-
-.ranking-comunidade .ranking-real-lista li > .ranking-demo-nome {
-    display: block;
-    width: auto;
-    height: auto;
-    background: transparent;
-}
-
-.ranking-comunidade .ranking-real-lista li:first-child > span:first-child {
-    color: #f5a264;
-    background: #2a2018;
-}
-
-.ranking-comunidade .ranking-real-lista li:first-child {
-    grid-column: 1 / -1;
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    gap: 8px;
-    padding: 18px 12px 22px;
-    border-bottom-color: #38332e;
-    text-align: center;
-}
-
-.ranking-comunidade .ranking-real-lista li:first-child > .ranking-avatar-lista {
-    width: 64px;
-    height: 64px;
-}
-
-.ranking-comunidade .ranking-real-lista li:first-child > .ranking-demo-nome,
-.ranking-comunidade .ranking-real-lista li:first-child > .ranking-nome-lista {
-    text-align: center;
-    font-weight: 600;
-}
-
-.ranking-comunidade .ranking-real-lista li:first-child > strong {
-    color: #f2b27e;
-}
-
-.ranking-comunidade .ranking-real-lista strong {
-    font-variant-numeric: tabular-nums;
+.ranking-home-secao-seguinte {
+    margin-top: 24px;
 }
 
 .ranking-home-disputas {

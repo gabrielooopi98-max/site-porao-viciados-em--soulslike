@@ -80,14 +80,14 @@ export default function FormularioDesafio({ desafio, aoSalvar, aoFechar }) {
           <input name="pontos" type="number" min="1" max="100000" required value={formulario.pontos} onChange={alterar} />
         </label>
         </div>
-        <p className="ranking-form-nota">{formulario.tipo === 'build' ? 'Votos só definem quem avança de etapa. Apenas o vencedor recebe pontos no ranking geral.' : 'Os pontos são concedidos após a aprovação da prova pelo ADM.'}</p>
+        <p className="ranking-form-nota">{formulario.tipo === 'build' ? 'Votos só definem quem avança de etapa. Apenas o vencedor recebe pontos no ranking geral.' : 'Todo jogador com a prova aprovada recebe estes pontos. Desafios do ADM não têm votação.'}</p>
       </fieldset>
       <fieldset disabled={ocupado}>
         <legend className="ranking-secao-label">Calendário</legend>
         <p className="ranking-form-nota">Horário local. Regras e prêmios não podem ser alterados depois do início. Três dias após o fim, o desafio e as participações são removidos; os pontos concedidos continuam no ranking.</p>
         <div className="ranking-form-grid">
           <label>Início<input name="inicio" type="datetime-local" required value={formulario.inicio} onChange={alterar} /></label>
-          <label>{formulario.tipo === 'build' ? 'Fim da classificatória e das inscrições' : 'Fim das inscrições e votos'}<input name="fim" type="datetime-local" required value={formulario.fim} onChange={alterar} /></label>
+          <label>{formulario.tipo === 'build' ? 'Fim da classificatória e das inscrições' : 'Fim do envio de provas'}<input name="fim" type="datetime-local" required value={formulario.fim} onChange={alterar} /></label>
           {formulario.tipo === 'build' && <>
             <label>Fim da semifinal (até 4 builds)<input name="fim_semifinal" type="datetime-local" required value={formulario.fim_semifinal} onChange={alterar} /></label>
             <label>Fim da final (duelo entre 2 builds)<input name="fim_final" type="datetime-local" required value={formulario.fim_final} onChange={alterar} /></label>

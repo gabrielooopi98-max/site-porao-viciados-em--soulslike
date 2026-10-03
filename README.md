@@ -42,12 +42,12 @@ Na lista de desafios, os cards seguem o visual dos posts: modalidade e etapa
 no topo, titulo, jogo e resumo, com recompensa e prazo no rodape.
 Jogadores participam pelos botoes "Criar build" ou "Enviar prova do desafio",
 durante as inscricoes e com login. O atalho da classificacao abre o formulario
-da competicao escolhida. Somente o ADM pode criar competicoes; a demonstracao
-exibe os dois atalhos abaixo do seletor de competicao, encaminha ao painel
-real e nao permite publicar em desafios ficticios.
+da competicao escolhida. Somente o ADM pode criar competicoes.
+Os cards de desafios do ADM na lista mostram quantos jogadores ja concluiram.
 O envio de provas de conquista tem apenas anexos, sem titulo ou descricao
 preenchidos pelo jogador. Exige ao menos uma imagem ou um video (ate oito
-arquivos); o card mostra autor, status, midia e avaliacoes.
+arquivos); o card mostra autor, status, midia, os pontos (valendo, concedidos
+ou nao concedidos) e comentarios. Provas nao tem botao de voto.
 As provas ficam em duas colunas no desktop e uma no celular, com avatar e
 status no topo, midia em proporcao uniforme e acoes no rodape. Multiplos
 anexos podem ser percorridos horizontalmente, mantendo controles de video
@@ -106,9 +106,10 @@ $$;
    A lista de ADMs nao e editavel por usuarios pelo site. Nunca coloque
    `service_role` ou credenciais administrativas no frontend.
 
-Sem a migration, o site exibe um aviso de ativacao pendente, nao pontuacoes
-ficticias. A classificacao da home usa os seis primeiros jogadores reais,
-e a pagina dedicada mostra ate 50. O perfil usa pontos do banco, nao
+Sem a migration, o site exibe um aviso de ativacao pendente. O ranking geral
+de jogadores (posicao, desafios concluidos, builds vencidas e pontos) mostra
+os 10 primeiros na home e ate 50 em `/ranking`, com podio, destaque da linha
+do usuario conectado e a posicao dele quando estiver fora da lista. O perfil usa pontos do banco, nao
 metadata editavel pelo usuario.
 
 ### Regras da disputa
@@ -124,7 +125,8 @@ e as restricoes especificas, sem alterar desafios de conquista.
 - Uma participacao por pessoa por desafio, com titulo, descricao, imagens
   e videos (ate oito anexos). Builds incluem nivel, foco e equipamentos.
   A prova fica imutavel depois de publicada, para nao mudar apos receber votos.
-- Conquistas: a comunidade vota/comenta; so o ADM aprova e concede o premio.
+- Conquistas: sem votacao. A comunidade comenta as provas; so o ADM aprova
+  e todos os aprovados recebem o premio.
   O ADM pode analisar depois do prazo. Recusar uma aprovacao anterior
   revoga os pontos daquela prova. Aprovar novamente nao duplica pontos.
 - Builds: precisam ser aprovadas antes do fim da classificatoria. Os
@@ -144,7 +146,11 @@ e as restricoes especificas, sem alterar desafios de conquista.
   transicoes e os premios usam locks e registros unicos para evitar
   concorrencia e pontuacao duplicada.
 
-As telas consultam o banco a cada 30 segundos. As etapas vencidas sao
+As telas atualizam em tempo real: gatilhos marcam a tabela publica
+`ranking_atualizacoes` (sem dados, so um horario) a cada voto, envio,
+aprovacao, comentario ou troca de etapa, e o site recarrega o painel pelas
+RPCs ao receber o aviso do Supabase Realtime. O site tambem consulta de novo
+no horario de cada prazo e, como reserva, a cada 60 segundos. As etapas vencidas sao
 processadas no servidor na proxima consulta/votacao, com os cortes por
 data preservados, mesmo se ninguem estava online. Para processar tambem
 sem visitantes, opcionalmente habilite `pg_cron` no Supabase e agende,
@@ -253,14 +259,13 @@ com autor, avatar e votos. Ele conta no limite inicial de seis participantes.
 Os cards abaixo mostram todas as builds aprovadas da etapa, independentemente
 da expansao da tabela. Trocar de competicao ou etapa restaura o limite de seis.
 Os titulos acompanham a etapa: "Builds em classificacao", "Builds em Semifinais"
-e "Builds em final". A demonstracao permite visualizar tambem a classificatoria.
+e "Builds em final".
 Na home, os cards permanecem na secao separada de disputas. A tabela tem seletor
 de competicao e tabela de posicao, build, autor com avatar e votos da etapa.
 Somente builds aprovadas que participam da etapa atual entram na tabela.
 Empates seguem a ordem de envio, como no banco; os votos reabrem em cada
 etapa. Os links abrem a participacao completa. Os pontos dos jogadores nao
-interferem nesta classificacao. A tabela geral por pontos deixa de aparecer,
-mas os pontos e os desafios de conquista continuam preservados no banco.
+interferem nesta classificacao; eles aparecem no ranking geral.
 `node --test tests/classificacaoBuilds.test.mjs` valida a ordenacao e os filtros.
 As competicoes ficam separadas em "Builds em disputa", com jogo, etapa,
 progresso classificatoria/semifinal/final, premio, valor por voto e prazo.
@@ -272,25 +277,6 @@ Sem semifinalistas, a secao explica quando as disputas aparecerao e oferece
 acesso aos desafios, sem inventar jogadores ou competicoes.
 A paleta e neutra, com laranja pontual na etapa atual e pequenos destaques.
 No celular, paineis, datas e cards se organizam em uma coluna.
-
-Em desenvolvimento (`npm run dev`), a home mostra por padrao uma
-demonstracao visual local do ranking. A pagina `/ranking` abre os desafios
-reais; sua demonstracao fica em `/ranking?rankingDemo=1`.
-O seletor alterna quatro semifinalistas,
-dois finalistas e o encerramento com vencedor e premio simulado.
-Os dados sao identificados como ficticios, com imagens ilustrativas,
-sem consultas do painel real, links para perfis falsos ou gravacao no banco.
-Os votos simulados seguem a regra real: um voto por build em cada etapa,
-em quantas builds quiser; clicar de novo retira o voto.
-A tabela e os cards atualizam juntos. A etapa encerrada bloqueia os votos
-e conserva os votos simulados da final. Avaliacoes nao sao simuladas.
-Recarregar a pagina apaga os votos simulados; nada e gravado no banco.
-Recarregar preserva o modo de demonstracao e retorna a semifinal.
-O link "Ver dados reais" abre `/?rankingDemo=0#ranking` e restaura os dados reais. O modo fica
-desativado em builds de producao.
-Em `/ranking`, esse link abre `/ranking?rankingDemo=0`; links para um desafio
-real continuam abrindo o painel real. Os cards ficticios e votos simulados
-tambem funcionam na pagina de ranking.
 
 ## Chat para amigos
 

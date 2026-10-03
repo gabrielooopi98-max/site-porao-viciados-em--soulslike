@@ -155,6 +155,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     etapaVoto = 3;
     assert.equal(painel.jogadores[0].usuario_id, usuario(3));
     assert.equal(painel.jogadores[0].pontos, 100);
+    assert.equal(painel.jogadores[0].vitorias, 1);
     await rpc('ranking_painel', [desafio]);
     await rpc('ranking_painel', [desafio]);
     assert.equal((await rpc('ranking_painel', [desafio])).jogadores[0].pontos, 100);
@@ -186,7 +187,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.deepEqual((await rpc('ranking_painel')).minhas_vitorias, []);
     await assert.rejects(rpc('ranking_escolher_final', [ids[1], 'ds3_ligar']), /permission denied/);
   });
-  await t.test('conquistas: votos nao concedem pontos, aprovacao idempotente e revogacao', async () => {
+  await t.test('conquistas: sem votos, aprovacao idempotente e revogacao', async () => {
     etapaVoto = 0;
     await como(1);
     const comum = await rpc('ranking_salvar_desafio', [{
@@ -201,7 +202,7 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(enviada.titulo, dadosDesafio.titulo);
     assert.equal(enviada.descricao, 'Prova do desafio enviada em midia.');
     await como(10);
-    await rpc('ranking_votar', [prova]);
+    await assert.rejects(rpc('ranking_votar', [prova]), /nao recebem votos/);
     await rpc('ranking_comentar', [prova, 'Conferi a prova.']);
     let painel = await rpc('ranking_painel', [comum]);
     assert.equal(painel.jogadores.some((p) => p.usuario_id === usuario(2)), false);
@@ -210,7 +211,11 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     await rpc('ranking_avaliar', [prova, true, '']);
     await rpc('ranking_avaliar', [prova, true, '']);
     painel = await rpc('ranking_painel', [comum]);
-    assert.equal(painel.jogadores.find((p) => p.usuario_id === usuario(2)).pontos, 40);
+    const jogador = painel.jogadores.find((p) => p.usuario_id === usuario(2));
+    assert.equal(jogador.pontos, 40);
+    assert.equal(jogador.conquistas, 1);
+    assert.equal(jogador.vitorias, 0);
+    assert.equal(painel.desafios.find((d) => d.id === comum).concluidas, 1);
     await rpc('ranking_avaliar', [prova, false, 'Prova invalidada.']);
     painel = await rpc('ranking_painel', [comum]);
     assert.equal(painel.jogadores.some((p) => p.usuario_id === usuario(2)), false);
@@ -376,5 +381,20 @@ test('ranking: migration, permissoes, aprovacao, votos e etapas em PostgreSQL', 
     assert.equal(geral.desafios.filter((d) => d.etapa === 3).length, 2);
     await como(10);
     await assert.rejects(rpc('ranking_comentar', ['00000000-0000-0000-0000-000000000999', 'Oi']), /nao encontrada/);
+  });
+  await t.test('tempo real: sinal publico muda a cada alteracao e nao a cada leitura', async () => {
+    const sinal = async () => (await db.query('select atualizado_em from public.ranking_atualizacoes')).rows;
+    await como(null);
+    const [antes] = await sinal();
+    assert.ok(antes.atualizado_em);
+    await rpc('ranking_painel');
+    assert.deepEqual(await sinal(), [antes]);
+    await assert.rejects(db.query('update public.ranking_atualizacoes set atualizado_em = now()'), /permission denied/);
+    await como(1);
+    const novo = await rpc('ranking_salvar_desafio', [dadosDesafio]);
+    await como(null);
+    const [depois] = await sinal();
+    assert.ok(depois.atualizado_em > antes.atualizado_em);
+    assert.equal((await rpc('ranking_painel')).desafios.some((d) => d.id === novo), true);
   });
 });

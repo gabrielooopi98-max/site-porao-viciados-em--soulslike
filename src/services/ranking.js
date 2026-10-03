@@ -62,10 +62,39 @@ export function posicoesRanking(jogadores) {
   });
 }
 
+// Um unico canal Realtime para todos os paineis abertos: a tabela de sinal
+// muda a cada voto, envio, aprovacao ou troca de etapa.
+const ouvintesRanking = new Set();
+let canalRanking = null;
+
+export function assinarAtualizacoesRanking(aoMudar) {
+  ouvintesRanking.add(aoMudar);
+  if (!canalRanking) {
+    canalRanking = supabase
+      .channel('ranking-atualizacoes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ranking_atualizacoes' },
+        () => ouvintesRanking.forEach((ouvinte) => ouvinte()))
+      .subscribe();
+  }
+  return () => {
+    ouvintesRanking.delete(aoMudar);
+    if (!ouvintesRanking.size && canalRanking) {
+      supabase.removeChannel(canalRanking);
+      canalRanking = null;
+    }
+  };
+}
+
+// Prazos so viram etapa quando o painel e consultado; o site consulta de novo no proximo prazo.
+export function proximoPrazoRanking(desafios, agora) {
+  const prazos = desafios.flatMap((d) => [d.inicio, d.fim, d.fim_semifinal, d.fim_final])
+    .filter(Boolean).map(Date.parse).filter((prazo) => prazo > agora);
+  return prazos.length ? Math.min(...prazos) : null;
+}
+
 export function podeVotarRanking(desafio, participacao, usuarioId, agora = Date.now()) {
-  if (!usuarioId || participacao.autor_id === usuarioId || participacao.status === 'recusada') return false;
+  if (desafio.tipo !== 'build' || !usuarioId || participacao.autor_id === usuarioId) return false;
   if (agora < Date.parse(desafio.inicio)) return false;
-  if (desafio.tipo === 'conquista') return agora < Date.parse(desafio.fim);
   const prazo = [desafio.fim, desafio.fim_semifinal, desafio.fim_final][desafio.etapa];
   return desafio.etapa < 3 && agora < Date.parse(prazo)
     && participacao.status === 'aprovada' && participacao.etapa_max >= desafio.etapa;

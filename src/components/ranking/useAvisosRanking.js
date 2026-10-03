@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { executarRanking } from '../../services/ranking';
+import { assinarAtualizacoesRanking, executarRanking } from '../../services/ranking';
 
 export function useAvisosRanking(usuarioId) {
   const [resultado, setResultado] = useState(null);
@@ -17,9 +17,15 @@ export function useAvisosRanking(usuarioId) {
   useEffect(() => {
     if (!usuarioId) return undefined;
     const controle = requisicao.current;
+    let espera = null;
     atualizar();
-    const timer = setInterval(() => { if (!document.hidden) atualizar(); }, 30000);
-    return () => { ++controle.id; clearInterval(timer); };
+    // Novos desafios aparecem nos avisos assim que o ADM publica.
+    const cancelarAssinatura = assinarAtualizacoesRanking(() => {
+      clearTimeout(espera);
+      espera = setTimeout(() => atualizar(), 400);
+    });
+    const timer = setInterval(() => { if (!document.hidden) atualizar(); }, 60000);
+    return () => { ++controle.id; clearTimeout(espera); cancelarAssinatura(); clearInterval(timer); };
   }, [usuarioId, atualizar]);
   const atual = resultado?.usuarioId === usuarioId ? resultado : null;
   async function marcarLido(desafioId) {

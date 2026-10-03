@@ -5,7 +5,7 @@ import { etapaDesafio } from '../../services/ranking';
 import { classificarBuilds, tituloEtapaBuilds } from '../../services/classificacaoBuilds';
 import CardParticipacao from './CardParticipacao';
 
-function TabelaBuilds({ desafio, participacoes, demonstracao, mostrarCards = false, aoVotarDemonstracao }) {
+function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const tabelaId = useId();
   const builds = classificarBuilds(desafio, participacoes);
@@ -20,7 +20,7 @@ function TabelaBuilds({ desafio, participacoes, demonstracao, mostrarCards = fal
       <span className="ranking-builds-primeiro-posicao">1º lugar</span>
       <img src={lider.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
       <div className="ranking-builds-primeiro-identidade">
-        {demonstracao ? <h3>{lider.titulo}</h3> : <h3><Link to={`/ranking?desafio=${desafio.id}#participacao-${lider.id}`}>{lider.titulo}</Link></h3>}
+        <h3><Link to={`/ranking?desafio=${desafio.id}#participacao-${lider.id}`}>{lider.titulo}</Link></h3>
         <p>{lider.autor_nome}{desafio.vencedor_id === lider.id && ' · Vencedor'}</p>
       </div>
       <strong>{lider.votos} <small>{Number(lider.votos) === 1 ? 'voto' : 'votos'} nesta etapa</small></strong>
@@ -41,7 +41,7 @@ function TabelaBuilds({ desafio, participacoes, demonstracao, mostrarCards = fal
             <td><div className="ranking-builds-identidade">
               <img src={build.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
               <div>
-                {demonstracao ? <strong>{build.titulo}</strong> : <Link to={`/ranking?desafio=${desafio.id}#participacao-${build.id}`}>{build.titulo}</Link>}
+                <Link to={`/ranking?desafio=${desafio.id}#participacao-${build.id}`}>{build.titulo}</Link>
                 <span>{build.autor_nome}{desafio.vencedor_id === build.id && ' · Vencedor'}</span>
               </div>
             </div></td>
@@ -60,7 +60,7 @@ function TabelaBuilds({ desafio, participacoes, demonstracao, mostrarCards = fal
       <h3>{tituloEtapaBuilds(desafio.etapa)} ({builds.length})</h3>
       <div className="ranking-competidores">
         {builds.map((build) => <CardParticipacao key={build.id} participacao={build}
-          desafio={desafio} resumo demonstracao={demonstracao} aoVotarDemonstracao={aoVotarDemonstracao} />)}
+          desafio={desafio} resumo />)}
       </div>
     </section>}
     </>
@@ -76,7 +76,7 @@ function ClassificacaoReal({ desafioId, mostrarCards }) {
   return <TabelaBuilds key={`${desafio.id}:${desafio.etapa}`} desafio={desafio} participacoes={dados.participacoes} mostrarCards={mostrarCards} />;
 }
 
-export default function ClassificacaoBuilds({ dados, demonstracao = false, mostrarCards = false, aoVotarDemonstracao }) {
+export default function ClassificacaoBuilds({ dados, mostrarCards = false }) {
   const seletorId = useId();
   const [selecionada, setSelecionada] = useState('');
   const competicoes = dados.desafios.filter((d) => d.tipo === 'build');
@@ -92,19 +92,11 @@ export default function ClassificacaoBuilds({ dados, demonstracao = false, mostr
         </select>
       </label>
       {mostrarCards && <div className="ranking-builds-envio">
-        {demonstracao ? <>
-          <div className="ranking-acoes">
-            <Link className="btn-filtro" to="/ranking?rankingDemo=0">+ Criar build</Link>
-            <Link className="btn-filtro" to="/ranking?rankingDemo=0">+ Enviar prova do desafio</Link>
-          </div>
-          <p>Escolha um desafio real com inscrições abertas para criar sua build ou enviar sua prova. Os desafios desta demonstração são fictícios.</p>
-        </> : Date.parse(dados.agora) >= Date.parse(desafio.inicio) && Date.parse(dados.agora) < Date.parse(desafio.fim)
+        {Date.parse(dados.agora) >= Date.parse(desafio.inicio) && Date.parse(dados.agora) < Date.parse(desafio.fim)
           ? <Link className="btn-filtro" to={`/ranking?desafio=${desafio.id}&participar=1#enviar-participacao`}>+ Criar build</Link>
           : <p>O envio de builds fica disponível durante as inscrições.</p>}
       </div>}
-      {demonstracao
-        ? <TabelaBuilds key={`${desafio.id}:${desafio.etapa}`} desafio={desafio} participacoes={dados.participacoes} demonstracao mostrarCards={mostrarCards} aoVotarDemonstracao={aoVotarDemonstracao} />
-        : <ClassificacaoReal key={desafio.id} desafioId={desafio.id} mostrarCards={mostrarCards} />}
+      <ClassificacaoReal key={desafio.id} desafioId={desafio.id} mostrarCards={mostrarCards} />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import MidiasBuildRanking from './MidiasBuildRanking';
 import { etapaEliminacao } from '../../services/classificacaoBuilds';
 import '../cards-builds/CardBuild.css';
 
-export default function CardParticipacao({ participacao, desafio, user, admin = false, comentarios = [], finais = [], aoAtualizar, resumo = false, agora = 0, demonstracao = false, aoVotarDemonstracao }) {
+export default function CardParticipacao({ participacao, desafio, user, admin = false, comentarios = [], finais = [], aoAtualizar, resumo = false, agora = 0 }) {
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState('');
   const [motivo, setMotivo] = useState('');
@@ -17,6 +17,7 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
   const p = participacao;
   const vencedor = desafio.vencedor_id === p.id;
   const eliminadaEm = etapaEliminacao(desafio, p);
+  const conquista = desafio.tipo === 'conquista';
   const podeAvaliar = admin && p.autor_id !== user?.id && (desafio.tipo === 'conquista' || agora < Date.parse(desafio.fim));
   const votacaoPermitida = podeVotarRanking(desafio, p, user?.id, agora);
   async function acao(funcao, parametros) {
@@ -39,17 +40,17 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
       <header>
         <div className="ranking-build-autor">
           <img src={p.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
-          {demonstracao ? <b>{p.autor_nome}</b> : <Link to={`/perfil/${p.autor_id}`}>{p.autor_nome}</Link>}
+          <Link to={`/perfil/${p.autor_id}`}>{p.autor_nome}</Link>
         </div>
         <span className={`ranking-status-chip ${vencedor ? 'vencedor' : eliminadaEm !== null ? 'eliminada' : p.status}`}>
           {vencedor ? 'Vencedor' : eliminadaEm !== null ? `Eliminada na ${['classificatória', 'semifinal'][eliminadaEm]}`
-            : { pendente: 'Aguardando ADM', aprovada: 'Validada pelo ADM', recusada: 'Recusada' }[p.status]}
+            : { pendente: 'Aguardando ADM', aprovada: conquista ? 'Aprovada pelo ADM' : 'Validada pelo ADM', recusada: 'Recusada' }[p.status]}
         </span>
       </header>
-      {desafio.tipo === 'build' && <div className="ranking-build-titulo">
+      <div className="ranking-build-titulo">
         <p className="ranking-build-jogo">{desafio.jogo}</p>
-        <h3>{p.titulo}</h3>
-      </div>}
+        <h3>{conquista ? desafio.titulo : p.titulo}</h3>
+      </div>
       {resumo && desafio.tipo === 'build' && p.descricao?.trim() && <div className="ranking-build-descricao">
         <p className={`ranking-texto ${descricaoExpandida ? '' : 'ranking-build-descricao-previa'}`}>{p.descricao}</p>
         <button type="button" aria-expanded={descricaoExpandida} onClick={() => setDescricaoExpandida((anterior) => !anterior)}>
@@ -72,17 +73,17 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
         {p.atributos.equipamentos && <p className="ranking-texto">{p.atributos.equipamentos}</p>}
       </div>}
       <footer>
-        {desafio.tipo === 'build'
-          ? <strong className="ranking-build-votos">{p.votos}<span>{Number(p.votos) === 1 ? 'voto nesta etapa' : 'votos nesta etapa'}</span></strong>
-          : <strong>{p.votos} {Number(p.votos) === 1 ? 'voto' : 'votos'}</strong>}
-        {demonstracao ? <button className="btn-filtro" type="button" disabled={desafio.etapa === 3 || !aoVotarDemonstracao}
-          aria-pressed={p.votou} onClick={() => aoVotarDemonstracao(p.id)}>
-          {desafio.etapa === 3 ? 'Votação encerrada' : p.votou ? 'Retirar voto' : 'Votar'}
-        </button> : resumo ? <Link to={`/ranking?desafio=${desafio.id}#participacao-${p.id}`}>{desafio.etapa === 3 ? 'Ver build' : 'Ver e votar'}</Link> : <>
-          <button type="button" disabled={ocupado || !votacaoPermitida} aria-pressed={p.votou}
-            onClick={() => acao('ranking_votar', { p_participacao: p.id, p_etapa: desafio.etapa })}>{p.votou ? 'Retirar voto' : 'Votar'}</button>
+        {conquista
+          ? <strong className={`ranking-prova-pontos ${p.status}`}>
+            {p.status === 'aprovada' ? `+${desafio.pontos} pts` : `${desafio.pontos} pts`}
+            <span>{{ aprovada: 'concedidos', pendente: 'se aprovada pelo ADM', recusada: 'não concedidos' }[p.status]}</span>
+          </strong>
+          : <strong className="ranking-build-votos">{p.votos}<span>{Number(p.votos) === 1 ? 'voto nesta etapa' : 'votos nesta etapa'}</span></strong>}
+        {resumo ? <Link to={`/ranking?desafio=${desafio.id}#participacao-${p.id}`}>{conquista ? 'Ver prova' : desafio.etapa === 3 ? 'Ver build' : 'Ver e votar'}</Link> : <>
+          {!conquista && <button type="button" disabled={ocupado || !votacaoPermitida} aria-pressed={p.votou}
+            onClick={() => acao('ranking_votar', { p_participacao: p.id, p_etapa: desafio.etapa })}>{p.votou ? 'Retirar voto' : 'Votar'}</button>}
           <button type="button" onClick={() => setMostrarComentarios(!mostrarComentarios)} aria-expanded={mostrarComentarios}>
-            Avaliações ({comentarios.length})
+            {conquista ? 'Comentários' : 'Avaliações'} ({comentarios.length})
           </button>
         </>}
       </footer>
@@ -92,7 +93,7 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
         {mostrarComentarios && <div className="ranking-comentarios">
           {comentarios.map((c) => <p key={c.id}><Link to={`/perfil/${c.autor_id}`}>{c.autor_nome}</Link><br />{c.texto}</p>)}
           {user ? <form onSubmit={(event) => { event.preventDefault(); acao('ranking_comentar', { p_participacao: p.id, p_texto: texto }); }}>
-            <label>Avaliar a prova<textarea value={texto} onChange={(event) => setTexto(event.target.value)} required maxLength={2000} disabled={ocupado} /></label>
+            <label>{conquista ? 'Comente a prova (o ADM lê antes de aprovar)' : 'Avaliar a build'}<textarea value={texto} onChange={(event) => setTexto(event.target.value)} required maxLength={2000} disabled={ocupado} /></label>
             <button disabled={ocupado || !texto.trim()} type="submit">Comentar</button>
           </form> : <Link to="/login">Entre para avaliar</Link>}
         </div>}

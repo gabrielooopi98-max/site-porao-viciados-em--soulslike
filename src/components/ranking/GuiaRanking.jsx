@@ -2,7 +2,7 @@ const modalidades = [
   {
     titulo: 'Desafio de conquista',
     resumo: 'Cumpra o objetivo e prove.',
-    passos: ['Leia as regras do desafio', 'Envie a prova com imagens ou vídeos', 'O ADM confere e aprova', 'Prova aprovada soma os pontos do desafio'],
+    passos: ['Leia as regras do desafio', 'Envie a prova com imagens ou vídeos', 'A comunidade comenta e o ADM confere', 'Prova aprovada soma os pontos do desafio, sem votação'],
   },
   {
     titulo: 'Competição de builds',
@@ -18,7 +18,7 @@ const modalidades = [
 
 const ciclo = [
   { nome: 'Agendado', texto: 'Publicado pelo ADM. Ainda não aceita participações.' },
-  { nome: 'Aberto', texto: 'Envie sua participação e vote nas da comunidade.' },
+  { nome: 'Aberto', texto: 'Envie sua participação. Vote nas builds e comente as provas.' },
   { nome: 'Encerrado', texto: 'Resultado definido. O vencedor fica em destaque.' },
   { nome: 'Removido', texto: '3 dias após o fim, o desafio sai do site. Os pontos ficam.' },
 ];

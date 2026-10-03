@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/useAuth';
-import { executarRanking, limparMidiasRemovidas } from '../../services/ranking';
+import { assinarAtualizacoesRanking, executarRanking, limparMidiasRemovidas, proximoPrazoRanking } from '../../services/ranking';
+
+// Reserva caso o Realtime caia; as mudancas normais chegam pelo canal.
+const INTERVALO_RESERVA = 60000;
+// Agrupa rajadas de votos em uma unica consulta.
+const ESPERA_REALTIME = 400;
+// setTimeout nao aceita atrasos acima de ~24 dias.
+const MAIOR_ESPERA = 2 ** 31 - 1;
 
 export function useRanking(desafioId = null) {
   const { user } = useAuth();
@@ -26,15 +33,31 @@ export function useRanking(desafioId = null) {
   }, [consulta, desafioId]);
   useEffect(() => {
     const controle = requisicao.current;
+    let espera = null;
     atualizar();
-    const timer = setInterval(() => { if (!document.hidden) atualizar(); }, 30000);
+    const cancelarAssinatura = assinarAtualizacoesRanking(() => {
+      clearTimeout(espera);
+      espera = setTimeout(atualizar, ESPERA_REALTIME);
+    });
+    const timer = setInterval(() => { if (!document.hidden) atualizar(); }, INTERVALO_RESERVA);
     window.addEventListener('focus', atualizar);
     return () => {
       ++controle.id;
+      clearTimeout(espera);
+      cancelarAssinatura();
       clearInterval(timer);
       window.removeEventListener('focus', atualizar);
     };
   }, [atualizar]);
   const atual = resultado?.consulta === consulta ? resultado : null;
-  return { dados: atual?.dados || null, erro: atual?.erro || '', carregando: !atual, atualizar };
+  const dados = atual?.dados || null;
+  // Na virada de um prazo (inicio, fim de etapa), consulta de novo para o banco avancar a etapa.
+  const proximoPrazo = dados ? proximoPrazoRanking(dados.desafios, Date.parse(dados.agora)) : null;
+  const agoraServidor = dados ? Date.parse(dados.agora) : 0;
+  useEffect(() => {
+    if (!proximoPrazo) return undefined;
+    const timer = setTimeout(atualizar, Math.min(proximoPrazo - agoraServidor + 1000, MAIOR_ESPERA));
+    return () => clearTimeout(timer);
+  }, [proximoPrazo, agoraServidor, atualizar]);
+  return { dados, erro: atual?.erro || '', carregando: !atual, atualizar };
 }
