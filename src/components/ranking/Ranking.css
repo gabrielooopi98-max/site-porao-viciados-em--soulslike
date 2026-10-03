@@ -2320,7 +2320,7 @@
     gap: 10px 12px;
     width: 100%;
     max-width: 461px;
-    min-height: 167px;
+    min-height: 151px;
     box-sizing: border-box;
     margin: 24px auto;
     padding: 14px;
@@ -2333,7 +2333,7 @@
 .ranking-builds-primeiro--chama {
     background:
         linear-gradient(90deg, rgb(12 12 12 / 78%) 0%, rgb(12 12 12 / 58%) 58%, rgb(12 12 12 / 30%) 100%),
-        url('/svg-animado/banner-cavaleiro-chama-1760x575-detalhado.svg') center / 100% auto no-repeat,
+        url('/svg-animado/banner-cavaleiro-chama-1760x575-detalhado.svg') center / cover no-repeat,
         #111;
 }
 
