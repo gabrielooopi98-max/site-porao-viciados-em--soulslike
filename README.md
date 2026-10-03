@@ -19,6 +19,135 @@ Posts, builds, ranking e sobre usam a mesma divisoria decorativa:
 Dark Sign em cinza entre linhas suaves, com largura responsiva.
 Os sobretitulos Comunidade e Builds da comunidade e seus tracos laterais usam
 laranja (#f07818) como detalhe pontual de identidade.
+O banner apresenta o nome da comunidade em duas linhas, com sobretitulo
+laranja e texto direto sobre jogos, builds e jogar junto.
+Chat e builds sao as acoes principais. A faixa inferior reune atalhos
+funcionais para posts, builds, co-op (chat) e regras, sem slogan adicional.
+No desktop, texto e arte ocupam lados distintos; no celular, a arte fica
+acima do conteudo, com transicao gradual para o fundo. Os botoes se
+empilham quando nao ha espaco para os rotulos e preservam a area de toque.
+O espacamento entre o header e o banner e de 12px em todas as telas,
+incluindo desktop e celular.
+O header permanece preso ao topo durante a rolagem. Para usuarios logados,
+os controles seguem a ordem avisos, chat privado e avatar, com botoes de
+44px sem bordas. Avisos usa somente o icone, mantendo nome acessivel e contador.
+Os cabecalhos com cenarios SVG de posts, builds e ranking ocupam ate
+1760px no desktop, com margens responsivas. Filtros, cards e classificacao
+mantem a largura de ate 1180px; o layout mobile dessas secoes e preservado.
+
+## Ranking e desafios
+
+A pagina `/ranking` fica no menu hamburguer da comunidade.
+O menu abre como painel lateral deslizante pela esquerda, com fundo
+escurecido, foco contido e rolagem da pagina bloqueada. Fecha pelo botao,
+Escape ou clique fora, respeitando a preferencia de movimento reduzido.
+A entrada usa deslizamento com desaceleracao, fade do fundo e links em
+sequencia; todas essas animacoes sao desativadas com movimento reduzido.
+O ADM pode publicar varios desafios, definir regras, jogo, pontos e datas, e editar
+desafios que ainda nao comecaram. Os avisos do header mostram os desafios
+somente na aba Desafios; novos desafios entram no contador laranja do sino
+e no contador da aba Desafios. A aba Avisos fica reservada as interacoes.
+Cada desafio nao lido mostra "Novo - Voce ainda nao viu"; abrir o sino
+nao marca desafios como lidos. O estado e individual por conta e atualizado
+ao abrir o desafio pela notificacao.
+Para esta atualizacao, reaplique a migration de ranking no SQL Editor.
+O layout separa a navegacao de desafios da classificacao e do feed.
+No celular, um seletor compacto alterna entre desafios e classificacao,
+sem carrossel ou lista lateral acima do conteudo. Datas usam linhas
+compactas e campos de 16px evitam zoom automatico ao editar no celular.
+O formulario do ADM agrupa objetivo, pontuacao e
+calendario, com campos em duas colunas no desktop e uma no celular.
+As regras detalhadas de cada desafio ficam em um painel expansivel;
+datas, premio e a acao de participar permanecem visiveis.
+
+### Ativacao no Supabase
+
+1. Execute [ranking_desafios.sql](./supabase/ranking_desafios.sql) no SQL
+   Editor do projeto. A migration e transacional e pode ser reaplicada.
+   O upload reutiliza o bucket `midias` e suas policies existentes
+   ([storage_midias_autenticados.sql](./supabase/storage_midias_autenticados.sql)).
+2. Cadastre a conta ADM pelo SQL Editor, substituindo o email abaixo:
+
+```sql
+do $$
+declare conta uuid;
+begin
+    select id into conta from auth.users where email = 'SEU_EMAIL_DE_LOGIN';
+    if conta is null then
+        raise exception 'Conta nao encontrada. Confira o email de login.';
+    end if;
+    insert into public.ranking_administradores(usuario_id)
+        values (conta) on conflict do nothing;
+end;
+$$;
+```
+
+3. Entre nessa conta e abra `/ranking`: o botao **Lancar desafio** aparecera.
+   A lista de ADMs nao e editavel por usuarios pelo site. Nunca coloque
+   `service_role` ou credenciais administrativas no frontend.
+
+Sem a migration, o site exibe um aviso de ativacao pendente, nao pontuacoes
+ficticias. A classificacao da home usa os seis primeiros jogadores reais,
+e a pagina dedicada mostra ate 50. O perfil usa pontos do banco, nao
+metadata editavel pelo usuario.
+
+### Regras da disputa
+
+Competicoes de builds exibem automaticamente um quadro com quatro regras:
+nome, nivel, atributos completos e equipamentos/recursos utilizados.
+O mesmo quadro aparece na configuracao do ADM, no desafio e no envio da
+participacao, sem precisar copiar essas regras para a descricao.
+O ADM verifica o cumprimento na prova; os atributos podem ser mostrados
+por texto ou imagem. A descricao do desafio continua destinada ao objetivo
+e as restricoes especificas, sem alterar desafios de conquista.
+
+- Uma participacao por pessoa por desafio, com titulo, descricao, imagens
+  e videos (ate oito anexos). Builds incluem nivel, foco e equipamentos.
+  A prova fica imutavel depois de publicada, para nao mudar apos receber votos.
+- Conquistas: a comunidade vota/comenta; so o ADM aprova e concede o premio.
+  O ADM pode analisar depois do prazo. Recusar uma aprovacao anterior
+  revoga os pontos daquela prova. Aprovar novamente nao duplica pontos.
+- Builds: precisam ser aprovadas antes do fim da classificatoria. Os
+  votos selecionam ate seis semifinalistas, depois ate tres finalistas
+  e um vencedor. Cada etapa tem prazo proprio definido pelo ADM.
+- Cada pessoa pode votar em varias builds, uma vez em cada por etapa;
+  pode retirar o voto e nao pode votar em si. Votos reabrem a cada etapa,
+  mas o historico anterior fica preservado. Votos da etapa anterior nao
+  somam na seguinte. Uma tentativa feita com etapa desatualizada e recusada.
+- O valor por voto serve para a pontuacao da competicao. So o vencedor
+  recebe o premio no ranking geral. Sem votos na final, nao ha vencedor
+  nem premio. Empates sao resolvidos pela participacao enviada primeiro
+  (e pelo ID caso o horario seja exatamente igual).
+- Se houver menos inscritos validados, avancam os disponiveis. Um ADM
+  nao pode validar a propria participacao; outro ADM precisa analisar.
+- Permissoes, prazos, votos e premios sao validados no PostgreSQL. As
+  transicoes e os premios usam locks e registros unicos para evitar
+  concorrencia e pontuacao duplicada.
+
+As telas consultam o banco a cada 30 segundos. As etapas vencidas sao
+processadas no servidor na proxima consulta/votacao, com os cortes por
+data preservados, mesmo se ninguem estava online. Para processar tambem
+sem visitantes, opcionalmente habilite `pg_cron` no Supabase e agende,
+pelo SQL Editor:
+
+```sql
+select cron.schedule(
+    'ranking-avancar-etapas',
+    '* * * * *',
+    $$select public.ranking_avancar();$$
+);
+```
+
+Nao crie agendamentos duplicados. O job deve executar como o dono da
+funcao (normalmente `postgres`), nao como usuario anonimo.
+
+### Validacao
+
+`npm run test:ranking` executa a migration e os fluxos em PostgreSQL
+embutido (PGlite), sem acessar o Supabase real. Cobre permissoes, datas,
+aprovacao, retirada de votos, etapas 6/3/1, historico, empate, poucos
+inscritos, avisos por conta e premios sem duplicacao.
+Depois, execute `npm run lint` e `npm run build`.
 
 ## Cards de posts
 
@@ -80,16 +209,30 @@ O fundo proprio mistura preto e carvao, com luz cinza suave perto da lua
 e transicoes escuras nas extremidades, sem textura ou cores saturadas.
 A arte em cinza se funde ao fundo com composicao screen e mascaras graduais
 amplas nas quatro bordas, evitando um recorte retangular visivel.
-O podio destaca os tres primeiros, com o lider ao centro no desktop.
-O titulo da classificacao fica centralizado acima do podio, com um pequeno
-simbolo de posicoes entre linhas discretas e um traco laranja abaixo do titulo.
-No celular, os destaques ficam em ordem de classificacao em linhas compactas;
-as demais posicoes usam uma lista com nome, avatar e pontos.
-A paleta e neutra, com laranja apenas no sobretitulo e tracos laterais.
-O ranking ainda e uma previa visual com dados de exemplo, sem aviso visual
-na interface.
-Os antigos filtros sem funcionamento foram removidos; nao ha classificacao
-real nem navegacao para perfis ficticios nesta etapa.
+A classificacao real vem primeiro, em um painel compacto com os seis
+melhores jogadores, links para perfis e acesso a lista completa. O primeiro
+lugar fica centralizado acima dos demais, com avatar em destaque; as outras
+posicoes usam duas colunas no desktop e uma lista em ordem no celular.
+As competicoes ficam separadas em "Builds em disputa", com jogo, etapa,
+progresso classificatoria/semifinal/final, premio, valor por voto e prazo.
+Cada card mostra uma previa de midia, informa quando ha mais anexos e
+mantem os rodapes alinhados. A participacao completa preserva todos os
+anexos, votos e avaliacoes. Competicoes encerradas oferecem "Ver build",
+sem convidar a votar depois do prazo.
+Sem semifinalistas, a secao explica quando as disputas aparecerao e oferece
+acesso aos desafios, sem inventar jogadores ou competicoes.
+A paleta e neutra, com laranja pontual na etapa atual e pequenos destaques.
+No celular, paineis, datas e cards se organizam em uma coluna.
+
+Em desenvolvimento (`npm run dev`), abra `/?rankingDemo=1#ranking`
+para uma demonstracao visual local. O seletor alterna seis semifinalistas,
+tres finalistas e o encerramento com vencedor e premio simulado.
+Os dados sao identificados como ficticios, com imagens ilustrativas,
+sem consultas do painel real, links para perfis falsos ou gravacao no banco.
+Votacao e avaliacoes nao sao simuladas; a demonstracao testa apenas o layout.
+Recarregar preserva o modo de demonstracao e retorna a semifinal.
+O link "Sair da demonstracao" restaura os dados reais. O modo fica
+desativado em builds de producao.
 
 ## Chat para amigos
 

@@ -1,5 +1,5 @@
 import { supabase } from './services/supabase';
-import { gerarIdUnico } from './gerarIdUnico';
+import { enviarMidias, removerUploads } from './services/midiasPublicacoes';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import './App.css';
 import './components/cards-posts/AreaPosts.css';
@@ -8,8 +8,7 @@ import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router
 import { AuthProvider } from './contexts/AuthContext';
 import { FavoritosProvider } from './contexts/FavoritosContext';
 import { useAuth } from './contexts/useAuth';
-import AvisosHeader from './components/AvisosHeader';
-import MensagensHeader from './components/MensagensHeader';
+import CabecalhoComunidade from './components/CabecalhoComunidade';
 import PresencaMensagensPrivadas from './components/PresencaMensagensPrivadas';
 import AreaRanking from './components/AreaRanking';
 import DivisoriaSecao from './components/DivisoriaSecao';
@@ -19,6 +18,7 @@ const CardBuild = lazy(() => import('./components/cards-builds/CardBuild'));
 const ChatGlobal = lazy(() => import('./components/ChatGlobal'));
 const MensagensPrivadas = lazy(() => import('./components/MensagensPrivadas'));
 const PaginaFavoritos = lazy(() => import('./components/PaginaFavoritos'));
+const PaginaRanking = lazy(() => import('./components/ranking/PaginaRanking'));
 const PaginaLogin = lazy(() => import('./components/autenticacao/PaginaLogin'));
 const PaginaConfigurarPerfil = lazy(() => import('./components/autenticacao/PaginaConfigurarPerfil'));
 const PaginaPerfil = lazy(() => import('./components/autenticacao/PaginaPerfil'));
@@ -62,19 +62,6 @@ async function carregarMidiasRelacionadas(publicacoes, tabela, colunaId) {
   }));
 }
 
-async function removerUploads(midias) {
-  const caminhos = midias.map((midia) => midia.caminho).filter(Boolean);
-
-  if (!caminhos.length) {
-    return;
-  }
-
-  const { error } = await supabase.storage.from('midias').remove(caminhos);
-  if (error) {
-    console.error('Erro ao remover uploads incompletos:', error);
-  }
-}
-
 async function verificarTabelaMidias(tabela) {
   const { error } = await supabase.from(tabela).select('id').limit(0);
 
@@ -83,48 +70,6 @@ async function verificarTabelaMidias(tabela) {
   }
 
   return true;
-}
-
-async function enviarMidias(arquivos, aoAtualizarStatus) {
-  const midiasEnviadas = [];
-
-  try {
-    for (const [ordem, arquivoOriginal] of arquivos.entries()) {
-      let arquivo = arquivoOriginal;
-
-      if (arquivo.type.startsWith('video/')) {
-        const { normalizarVideo } = await import('./services/normalizarVideo');
-
-        arquivo = await normalizarVideo(arquivo, ({ etapa, progresso }) => {
-          aoAtualizarStatus(etapa === 'carregando'
-            ? `Preparando o vídeo ${ordem + 1} de ${arquivos.length}...`
-            : `Convertendo vídeo ${ordem + 1} de ${arquivos.length}... ${progresso}%`);
-        });
-      }
-
-      aoAtualizarStatus(`Enviando mídia ${ordem + 1} de ${arquivos.length}...`);
-      const extensao = arquivo.name.split('.').pop()?.toLowerCase() || 'bin';
-      const caminho = `${gerarIdUnico()}.${extensao}`;
-      const { error } = await supabase.storage.from('midias').upload(caminho, arquivo);
-
-      if (error) {
-        throw new Error(`Falha ao enviar ${arquivo.name}: ${error.message || error.name || 'erro desconhecido'}`);
-      }
-
-      const { data } = supabase.storage.from('midias').getPublicUrl(caminho);
-      midiasEnviadas.push({
-        caminho,
-        midia_url: data.publicUrl,
-        tipo_midia: arquivo.type,
-        ordem,
-      });
-    }
-
-    return midiasEnviadas;
-  } catch (error) {
-    await removerUploads(midiasEnviadas);
-    throw error;
-  }
 }
 
 function SkeletonCard({ variant }) {
@@ -448,47 +393,15 @@ function Home() {
 
   return (
     <>
-      <header className="area-header">
-        <div className="barra-menu">
-          <div className="lado-esquerdo">
-            <div className="area-logo-site">
-              <p>Viciados Em Souls</p>
-            </div>
-          </div>
-
-          <div className="lado-direito">
-            {user ? (
-              <>
-                <MensagensHeader />
-                <AvisosHeader />
-                <button
-                  className="botao-avatar-header"
-                  type="button"
-                  title={user.email}
-                  onClick={() => navigate('/perfil')}
-                >
-                  {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Abrir perfil" />
-                  ) : (
-                    <span aria-hidden="true">?</span>
-                  )}
-                </button>
-              </>
-            ) : (
-              <button className="btn-filtro" type="button" onClick={() => navigate('/login')}>
-                Entrar
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+      <CabecalhoComunidade />
 
       <main className="container-site" id="inicio">
-        <section className="area-banner">
+        <section className="area-banner" aria-labelledby="titulo-banner">
+          <div className="banner-cenario" aria-hidden="true" />
           <div className="banner-content">
-            <span className="banner-kicker">Comunidade SoulsLike</span>
-            <h1>Bem-vindo ao Porão dos Viciados em SoulsLike</h1>
-            <p>Compartilhe suas jornadas, descubra novas builds e encontre outros jogadores para atravessar cada boss.</p>
+            <span className="banner-kicker">VICIADOS EM SOUSLIKE</span>
+            <h1 id="titulo-banner">Porão dos Viciados <span>em Soulslike</span></h1>
+            <p>Um lugar pra conversar sobre os jogos, compartilhar builds e encontrar gente pra jogar junto.</p>
 
             <div className="area-interativa-banner">
               <button
@@ -496,27 +409,30 @@ function Home() {
                 type="button"
                 onClick={() => navigate('/chat')}
               >
-                Chat Comunidade
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3.5V5Z" /><path d="M8 9h8M8 12h5" /></svg>
+                Chat da comunidade
               </button>
 
-              <a href="#sobre" className="btn-banner">
-                <span>Regras</span>
+              <a href="#builds" className="btn-banner">
+                Ver builds
               </a>
             </div>
 
-            <div className="banner-community-line" aria-label="Conteudos da comunidade">
-              <span>Posts</span>
-              <span>Builds</span>
-              <span>Guias</span>
-              <span>Co-op</span>
-            </div>
+          </div>
+          <div className="banner-rodape">
+            <nav className="banner-community-line" aria-label="Conteúdos da comunidade">
+              <a href="#comunidade">POSTS</a>
+              <a href="#builds">BUILDS</a>
+              <button type="button" onClick={() => navigate('/chat')}>CO-OP</button>
+            </nav>
+            <a href="#sobre">Conheça as regras <span aria-hidden="true">→</span></a>
           </div>
         </section>
 
         <section className="area-posts-comunidade" id="comunidade" aria-labelledby="titulo-posts-comunidade">
           <DivisoriaSecao />
           <div className="posts-secao-conteudo">
-          <header className="posts-header">
+          <header className="posts-header cabecalho-cenario-amplo">
             <div className="posts-header-texto">
               <span className="posts-sobretitulo">Comunidade</span>
               <h2 id="titulo-posts-comunidade">Posts da comunidade</h2>
@@ -641,7 +557,7 @@ function Home() {
         <section className="area-builds-comunidade" id="builds" aria-labelledby="titulo-builds-comunidade">
           <DivisoriaSecao />
           <div className="posts-secao-conteudo">
-          <header className="posts-header builds-header">
+          <header className="posts-header builds-header cabecalho-cenario-amplo">
             <div className="posts-header-texto">
               <span className="posts-sobretitulo">Builds da comunidade</span>
               <h2 id="titulo-builds-comunidade">Builds da comunidade</h2>
@@ -1433,6 +1349,11 @@ function App() {
         )} />
         <Route path="/posts" element={<BibliotecaPosts />} />
         <Route path="/builds" element={<BibliotecaBuilds />} />
+        <Route path="/ranking" element={(
+          <Suspense fallback={<main className="componente-carregando" role="status">Preparando ranking...</main>}>
+            <PaginaRanking />
+          </Suspense>
+        )} />
         <Route path="/favoritos" element={(
           <Suspense fallback={<main className="componente-carregando" role="status">Carregando favoritos...</main>}>
             <PaginaFavoritos />

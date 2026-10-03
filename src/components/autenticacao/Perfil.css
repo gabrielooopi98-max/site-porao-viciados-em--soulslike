@@ -302,6 +302,11 @@
         text-align: left;
     }
 
+    .perfil-organizado .perfil-cabecalho > .perfil-avatar-grande {
+        width: 96px;
+        margin-inline: auto;
+    }
+
     .perfil-organizado .perfil-estatisticas {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }

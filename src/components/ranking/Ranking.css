@@ -1,0 +1,1210 @@
+.ranking-page {
+    width: min(100% - 32px, 1180px);
+    margin: 0 auto;
+    padding: 36px 0 64px;
+    color: #ddd;
+    font-family: 'Poppins', sans-serif;
+}
+
+.ranking-page h1,
+.ranking-page h2,
+.ranking-page h3 {
+    margin: 0 0 12px;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.ranking-page p {
+    font-size: 0.85rem;
+    line-height: 1.75;
+}
+
+.ranking-page-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 8px 0 28px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid #2b2b2b;
+}
+
+.ranking-page-titulo h1 {
+    font: 600 clamp(1.8rem, 4vw, 2.5rem)/1.2 'Poppins', sans-serif;
+    letter-spacing: -0.035em;
+}
+
+.ranking-page-titulo p {
+    margin: 0;
+    max-width: 570px;
+    color: #aaa;
+}
+
+.ranking-page-titulo .posts-sobretitulo {
+    color: #e88945;
+    font-size: 0.65rem;
+}
+
+.ranking-page-titulo .posts-sobretitulo::before,
+.ranking-page-titulo .posts-sobretitulo::after {
+    content: none;
+}
+
+.ranking-page-layout {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.ranking-navegacao-mobile {
+    display: none;
+}
+
+.ranking-regras-build {
+    min-width: 0;
+    padding: 18px;
+    margin-block: 18px;
+    background: #181512;
+    border: 1px solid #43372b;
+    border-left: 3px solid #e88945;
+    border-radius: 5px;
+}
+
+.ranking-page .ranking-regras-build h3 {
+    color: #e9b48b;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.ranking-page .ranking-regras-build p {
+    margin: 0 0 14px;
+    color: #aaa;
+    font-size: 0.75rem;
+}
+
+.ranking-regras-build ol {
+    display: grid;
+    gap: 12px;
+    padding-left: 22px;
+    margin: 0;
+}
+
+.ranking-regras-build li {
+    padding-left: 4px;
+    font-size: 0.78rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.ranking-regras-build li::marker {
+    color: #e88945;
+    font-weight: 600;
+}
+
+.ranking-regras-build li span {
+    display: block;
+    color: #bbb;
+    font-size: 0.74rem;
+}
+
+.ranking-desafios {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    padding: 18px;
+    background: #101010;
+    border: 1px solid #292929;
+    border-radius: 8px;
+}
+
+.ranking-desafios-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #292929;
+}
+
+.ranking-desafios-titulo h2 {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.ranking-desafios-titulo > span {
+    padding: 3px 8px;
+    background: #242424;
+    border-radius: 4px;
+}
+
+.ranking-page .ranking-link-geral {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 10px;
+    font-size: 0.75rem;
+    border-radius: 5px;
+}
+
+.ranking-page .ranking-link-geral.selecionado {
+    background: #242424;
+}
+
+.ranking-desafios > button .ranking-desafio-status {
+    width: fit-content;
+    padding: 3px 7px;
+    margin-bottom: 4px;
+    color: #bbb;
+    font-size: 0.62rem;
+    background: #242424;
+    border-radius: 3px;
+}
+
+.ranking-page button,
+.ranking-competicoes button {
+    padding: 10px 14px;
+    color: #ddd;
+    font: 600 0.78rem 'Poppins', sans-serif;
+    background: #191919;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.ranking-page button.ranking-botao-principal {
+    color: #141414;
+    background: #dedede;
+    border-color: #dedede;
+}
+
+.ranking-page button.ranking-botao-principal:hover:not(:disabled) {
+    color: #080808;
+    background: #fff;
+    border-color: #fff;
+}
+
+.ranking-page-titulo > button {
+    flex: 0 0 auto;
+}
+
+.ranking-botao-principal > span {
+    margin-right: 6px;
+    font-size: 1.1rem;
+}
+
+.ranking-page button:hover:not(:disabled),
+.ranking-page button[aria-pressed="true"] {
+    color: #fff;
+    background: #303030;
+    border-color: #777;
+}
+
+.ranking-page button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ranking-desafios > button {
+    display: grid;
+    gap: 6px;
+    text-align: left;
+    overflow-wrap: anywhere;
+    padding: 14px 12px;
+    background: #151515;
+    border-color: #2b2b2b;
+    border-radius: 5px;
+}
+
+.ranking-desafios > button[aria-pressed="true"] {
+    background: #202020;
+    border-color: #686868;
+    box-shadow: inset 3px 0 #dedede;
+}
+
+.ranking-desafios span,
+.ranking-desafios small {
+    font-size: 0.72rem;
+    color: #aaa;
+}
+
+.ranking-page a,
+.ranking-participacao a,
+.ranking-real-lista a,
+.ranking-competicoes a {
+    color: #e0e0e0;
+    text-decoration: none;
+}
+
+.ranking-page a:hover,
+.ranking-participacao a:hover,
+.ranking-real-lista a:hover {
+    text-decoration: underline;
+}
+
+.ranking-feed,
+.ranking-feed > div {
+    min-width: 0;
+}
+
+.ranking-texto {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.ranking-desafio-detalhe,
+.ranking-formulario,
+.ranking-participacao {
+    margin-bottom: 20px;
+    padding: 26px;
+    background: #111;
+    border: 1px solid #2e2e2e;
+    border-radius: 8px;
+}
+
+.ranking-classificacao-header {
+    padding: 22px 24px;
+    background: #111;
+    border: 1px solid #2e2e2e;
+    border-radius: 8px;
+}
+
+.ranking-classificacao-header h2 {
+    font-size: 1.2rem;
+}
+
+.ranking-classificacao-header p {
+    margin: 0;
+    color: #aaa;
+}
+
+.ranking-secao-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #e88945;
+    font: 600 0.64rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ranking-desafio-detalhe h2 {
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    line-height: 1.4;
+}
+
+.ranking-regras {
+    padding: 16px 0;
+    border-top: 1px solid #303030;
+    border-bottom: 1px solid #303030;
+}
+
+.ranking-regras summary {
+    color: #ccc;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ranking-regras p {
+    color: #aaa;
+}
+
+.ranking-formulario-adm {
+    max-width: 880px;
+    margin-inline: auto;
+    margin-bottom: 32px;
+}
+
+.ranking-form-header {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #303030;
+}
+
+.ranking-form-header p {
+    margin: 0;
+    color: #aaa;
+}
+
+.ranking-formulario-adm > fieldset {
+    margin-top: 24px;
+}
+
+.ranking-formulario-adm legend {
+    padding: 0;
+}
+
+.ranking-formulario-adm .ranking-form-grid {
+    margin: 0;
+}
+
+.ranking-formulario-adm .ranking-acoes {
+    margin: 24px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid #303030;
+}
+
+.ranking-page .ranking-form-nota {
+    margin: 0;
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.ranking-desafio-detalhe > span {
+    display: block;
+    margin-bottom: 10px;
+    color: #f07818;
+    font-size: 0.75rem;
+}
+
+.ranking-desafio-detalhe dl,
+.ranking-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-block: 20px;
+}
+
+.ranking-desafio-detalhe dt {
+    color: #aaa;
+    font-size: 0.72rem;
+}
+
+.ranking-desafio-detalhe dl > div {
+    min-width: 0;
+    padding: 12px 14px;
+    background: #181818;
+    border-left: 2px solid #454545;
+    border-radius: 0 4px 4px 0;
+}
+
+.ranking-desafio-detalhe dd {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+}
+
+.ranking-formulario fieldset {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+}
+
+.ranking-page label,
+.ranking-moderacao label,
+.ranking-comentarios label {
+    display: grid;
+    gap: 8px;
+    font-size: 0.78rem;
+}
+
+.ranking-page :is(input, textarea, select),
+.ranking-moderacao textarea,
+.ranking-comentarios textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 11px;
+    color: #eee;
+    font: 0.85rem 'Poppins', sans-serif;
+    background: #0a0a0a;
+    border: 1px solid #393939;
+    border-radius: 4px;
+    color-scheme: dark;
+}
+
+.ranking-page :is(input, textarea, select):focus-visible {
+    outline: 2px solid #999;
+    outline-offset: 2px;
+}
+
+.ranking-page input::placeholder,
+.ranking-page textarea::placeholder {
+    color: #777;
+}
+
+.ranking-page textarea,
+.ranking-moderacao textarea,
+.ranking-comentarios textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.ranking-acoes,
+.ranking-feed-filtros {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-block: 18px;
+}
+
+.ranking-feed-filtros h3 {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.ranking-feed-filtros label {
+    grid-template-columns: auto minmax(0, 180px);
+    align-items: center;
+    color: #aaa;
+}
+
+.ranking-acoes {
+    justify-content: flex-start;
+}
+
+.ranking-participacao header,
+.ranking-participacao footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.75rem;
+}
+
+.ranking-participacao,
+.ranking-real-lista {
+    color: #ddd;
+    font-family: 'Poppins', sans-serif;
+}
+
+.ranking-participacao header {
+    margin-bottom: 16px;
+    color: #aaa;
+}
+
+.ranking-participacao header > span {
+    padding: 4px 8px;
+    color: #bbb;
+    font-size: 0.64rem;
+    background: #242424;
+    border-radius: 4px;
+}
+
+.ranking-participacao header > a {
+    font-weight: 600;
+}
+
+.ranking-participacao h3 {
+    margin-bottom: 14px;
+    font: 600 1.05rem 'Poppins', sans-serif;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.ranking-participacao footer {
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid #303030;
+}
+
+.ranking-participacao > small {
+    display: block;
+    margin-top: 12px;
+    color: #aaa;
+    font-size: 0.65rem;
+}
+
+.ranking-midia-item {
+    width: 100%;
+    margin-block: 12px;
+}
+
+.ranking-midia {
+    display: block;
+    width: 100%;
+    max-height: 480px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #080808;
+}
+
+.ranking-vencedor {
+    border-color: #826343;
+}
+
+.ranking-atributos,
+.ranking-moderacao,
+.ranking-comentarios {
+    margin-top: 18px;
+    font-size: 0.8rem;
+}
+
+.ranking-atributos span {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 0 8px 8px 0;
+    background: #242424;
+    border-radius: 3px;
+}
+
+.ranking-comentarios p {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #292929;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.ranking-moderacao {
+    padding: 16px;
+    background: #181818;
+    border: 1px solid #363636;
+    border-radius: 5px;
+}
+
+.ranking-moderacao .ranking-acoes {
+    margin-bottom: 0;
+}
+
+.ranking-comentarios {
+    padding-top: 16px;
+    border-top: 1px solid #303030;
+}
+
+.ranking-erro {
+    padding: 14px;
+    color: #ffaaa0;
+    font: 0.82rem/1.7 'Poppins', sans-serif;
+    border: 1px solid #63433d;
+    border-radius: 4px;
+}
+
+.ranking-vazio,
+.ranking-parecer {
+    color: #bbb;
+    font: 0.85rem/1.7 'Poppins', sans-serif;
+}
+
+.ranking-feed > .ranking-vazio,
+.ranking-feed > div > .ranking-vazio {
+    padding: 28px 20px;
+    text-align: center;
+    background: #101010;
+    border: 1px dashed #393939;
+    border-radius: 6px;
+}
+
+.ranking-real-lista {
+    padding: 0;
+    margin: 24px 0;
+    list-style: none;
+}
+
+.ranking-real-lista li {
+    display: grid;
+    grid-template-columns: 40px 40px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    font: 0.85rem 'Poppins', sans-serif;
+    margin-bottom: 8px;
+    background: #141414;
+    border: 1px solid #303030;
+    border-radius: 5px;
+}
+
+.ranking-real-lista li > span {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: #aaa;
+    font-weight: 600;
+    background: #242424;
+    border-radius: 4px;
+}
+
+.ranking-avatar-lista {
+    display: block;
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    background: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 50%;
+}
+
+.ranking-nome-lista,
+.ranking-demo-nome {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ranking-real-lista li:first-child {
+    border-color: #595047;
+}
+
+.ranking-real-lista a {
+    overflow-wrap: anywhere;
+}
+
+.ranking-real-lista small {
+    color: #aaa;
+}
+
+.ranking-competicoes {
+    margin-block: 28px;
+}
+
+.ranking-competicoes > header {
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    color: #ddd;
+    font-family: 'Poppins', sans-serif;
+}
+
+.ranking-competicoes h3 {
+    font-size: 1rem;
+}
+
+.ranking-competidores {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ranking-competidores .ranking-participacao {
+    min-width: 0;
+    padding: 16px;
+}
+
+[id^="participacao-"] {
+    scroll-margin-top: 100px;
+}
+
+@media (max-width: 768px) {
+    .ranking-page {
+        width: calc(100% - 24px);
+        padding-top: 20px;
+    }
+
+    .ranking-page-titulo {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        padding-bottom: 20px;
+        margin-bottom: 18px;
+    }
+
+    .ranking-page-titulo > button {
+        width: 100%;
+    }
+
+    .ranking-page-titulo p {
+        font-size: 0.8rem;
+    }
+
+    .ranking-page-titulo h1 {
+        margin-bottom: 10px;
+        font-size: 1.8rem;
+    }
+
+    .ranking-page-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .ranking-desafios {
+        display: none;
+    }
+
+    .ranking-navegacao-mobile {
+        display: grid;
+        gap: 10px;
+        min-width: 0;
+        padding: 14px;
+        background: #111;
+        border: 1px solid #303030;
+        border-radius: 6px;
+    }
+
+    .ranking-navegacao-mobile label {
+        font-weight: 600;
+        color: #ccc;
+    }
+
+    .ranking-navegacao-mobile > span {
+        font-size: 0.68rem;
+        color: #999;
+    }
+
+    .ranking-page :is(input, textarea, select) {
+        font-size: 16px;
+        min-height: 46px;
+    }
+
+    .ranking-classificacao-header {
+        padding: 18px 16px;
+    }
+
+    .ranking-desafio-detalhe dl {
+        gap: 8px;
+        margin-block: 16px;
+    }
+
+    .ranking-desafio-detalhe dl > div {
+        display: grid;
+        grid-template-columns: 100px minmax(0, 1fr);
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+    }
+
+    .ranking-desafio-detalhe dd {
+        margin: 0;
+        font-size: 0.78rem;
+        overflow-wrap: anywhere;
+    }
+
+    .ranking-desafio-detalhe > .ranking-acoes {
+        margin-bottom: 0;
+    }
+
+    .ranking-desafio-detalhe > .ranking-acoes :is(button, a) {
+        width: 100%;
+        text-align: center;
+    }
+
+    .ranking-participacao footer > strong {
+        flex-basis: 100%;
+        line-height: 1.6;
+    }
+
+    .ranking-participacao footer > button {
+        flex: 1 1 100px;
+    }
+
+    .ranking-formulario fieldset,
+    .ranking-form-grid > label {
+        min-width: 0;
+    }
+
+    .ranking-form-grid,
+    .ranking-desafio-detalhe dl {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ranking-competidores {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ranking-participacao,
+    .ranking-formulario,
+    .ranking-desafio-detalhe {
+        padding: 16px;
+    }
+
+    .ranking-page input[type="datetime-local"] {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .ranking-feed-filtros {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ranking-feed-filtros label {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .ranking-formulario > .ranking-acoes button {
+        flex: 1 1 120px;
+    }
+
+    .ranking-real-lista li {
+        grid-template-columns: 32px 36px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 12px;
+        font-size: 0.75rem;
+    }
+
+    .ranking-avatar-lista {
+        width: 36px;
+        height: 36px;
+    }
+
+    .ranking-competidores {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ranking-page button {
+            transition: none;
+        }
+    }
+}
+
+/* Status das participacoes: mesmas cores no card e na legenda do guia. */
+.ranking-status-chip,
+.ranking-participacao header > .ranking-status-chip {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 0.64rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #bbb;
+    background: #242424;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+}
+
+.ranking-status-chip.pendente,
+.ranking-participacao header > .ranking-status-chip.pendente { color: #e6c27a; background: #241e12; border-color: #5a4a26; }
+.ranking-status-chip.aprovada,
+.ranking-participacao header > .ranking-status-chip.aprovada { color: #8fd19e; background: #13211a; border-color: #2e5a3c; }
+.ranking-status-chip.recusada,
+.ranking-participacao header > .ranking-status-chip.recusada { color: #f0a0a0; background: #261414; border-color: #5c2c2c; }
+.ranking-status-chip.vencedor,
+.ranking-participacao header > .ranking-status-chip.vencedor { color: #ffd08a; background: #2a1d0e; border-color: #8a5f2c; }
+
+/* Guia rapido da classificacao geral */
+.ranking-guia {
+    margin-top: 24px;
+    padding: 22px 24px;
+    background: #111;
+    border: 1px solid #2e2e2e;
+    border-radius: 8px;
+}
+
+.ranking-guia > summary {
+    display: grid;
+    gap: 2px;
+    list-style: none;
+    cursor: pointer;
+}
+
+.ranking-guia > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ranking-guia > summary .ranking-secao-label {
+    margin-bottom: 4px;
+}
+
+.ranking-guia > summary strong {
+    color: #eee;
+    font-size: 1.05rem;
+}
+
+.ranking-guia > summary strong::after {
+    content: ' \25BE';
+    color: #e88945;
+}
+
+.ranking-guia:not([open]) > summary strong::after {
+    content: ' \25B8';
+}
+
+.ranking-guia > summary small {
+    color: #999;
+    font-size: 0.75rem;
+}
+
+.ranking-guia-modalidades {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.ranking-guia-modalidades > section {
+    min-width: 0;
+    padding: 18px 16px 16px;
+    background: #181818;
+    border: 1px solid #2b2b2b;
+    border-top: 3px solid #e88945;
+    border-radius: 6px;
+}
+
+.ranking-guia-numero {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    margin-bottom: 10px;
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #e88945;
+    border-radius: 50%;
+}
+
+.ranking-page .ranking-guia h3 {
+    margin-bottom: 4px;
+    color: #eee;
+    font-size: 0.9rem;
+}
+
+.ranking-page .ranking-guia-modalidades p {
+    margin: 0 0 10px;
+    color: #aaa;
+    font-size: 0.75rem;
+}
+
+.ranking-guia-modalidades ol {
+    display: grid;
+    gap: 6px;
+    padding-left: 18px;
+    margin: 0;
+    color: #ccc;
+    font-size: 0.74rem;
+    line-height: 1.55;
+}
+
+.ranking-guia-modalidades li::marker {
+    color: #e88945;
+    font-weight: 600;
+}
+
+.ranking-guia-bloco {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #2b2b2b;
+}
+
+.ranking-guia-ciclo {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    padding: 0;
+    margin: 12px 0 0;
+    list-style: none;
+    counter-reset: ciclo;
+}
+
+.ranking-guia-ciclo li {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px;
+    color: #aaa;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    background: #181818;
+    border-radius: 6px;
+    counter-increment: ciclo;
+}
+
+.ranking-guia-ciclo li strong {
+    color: #e9b48b;
+    font-size: 0.78rem;
+}
+
+.ranking-guia-ciclo li strong::before {
+    content: counter(ciclo) '. ';
+}
+
+.ranking-guia-ciclo li:not(:last-child)::after {
+    content: '\2192';
+    position: absolute;
+    top: 50%;
+    right: -12px;
+    z-index: 1;
+    color: #e88945;
+    transform: translateY(-50%);
+}
+
+.ranking-guia-status {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0 0;
+}
+
+.ranking-guia-status > div {
+    display: grid;
+    justify-items: start;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px;
+    background: #181818;
+    border-radius: 6px;
+}
+
+.ranking-guia-status dd {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+/* Detalhe do desafio: resumo, linha do tempo e acoes */
+.ranking-page .ranking-desafio-detalhe .ranking-resumo-desafio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ranking-page .ranking-subtitulo,
+.ranking-page .ranking-linha-tempo h3 {
+    margin: 22px 0 8px;
+    color: #eee;
+    font-size: 0.9rem;
+}
+
+.ranking-linha-tempo {
+    margin-block: 8px 18px;
+}
+
+.ranking-page .ranking-agora {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    color: #ddd;
+    background: #1d1610;
+    border: 1px solid #4a3826;
+    border-radius: 6px;
+}
+
+.ranking-agora strong {
+    padding: 1px 8px;
+    color: #111;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: #e88945;
+    border-radius: 3px;
+}
+
+.ranking-linha-tempo ol {
+    display: grid;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.ranking-linha-tempo li {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 12px;
+    padding: 0 0 18px 30px;
+    color: #888;
+    font-size: 0.75rem;
+}
+
+.ranking-linha-tempo li::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 0;
+    left: 7px;
+    width: 2px;
+    background: #2e2e2e;
+}
+
+.ranking-linha-tempo li:last-child {
+    padding-bottom: 0;
+}
+
+.ranking-linha-tempo li:last-child::before {
+    content: none;
+}
+
+.ranking-linha-marcador {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background: #111;
+    border: 2px solid #444;
+    border-radius: 50%;
+}
+
+.ranking-linha-tempo li > strong {
+    color: #aaa;
+    font-size: 0.8rem;
+}
+
+.ranking-linha-tempo li > time {
+    color: #888;
+    font-size: 0.7rem;
+    text-align: right;
+}
+
+.ranking-linha-tempo li > span:last-child {
+    grid-column: 1 / -1;
+    line-height: 1.5;
+}
+
+.ranking-linha-tempo li.concluida::before,
+.ranking-linha-tempo li.concluida .ranking-linha-marcador {
+    background: #6b4a2c;
+    border-color: #6b4a2c;
+}
+
+.ranking-linha-tempo li.atual {
+    color: #ccc;
+}
+
+.ranking-linha-tempo li.atual > strong {
+    color: #e88945;
+}
+
+.ranking-linha-tempo li.atual > time {
+    color: #ddd;
+}
+
+.ranking-linha-tempo li.atual .ranking-linha-marcador {
+    background: #e88945;
+    border-color: #e88945;
+    box-shadow: 0 0 0 4px rgba(232, 137, 69, 0.2);
+}
+
+.ranking-inscricoes-fechadas {
+    color: #999;
+    font-size: 0.78rem;
+}
+
+.ranking-acoes-adm {
+    align-items: center;
+    padding-top: 14px;
+    margin-top: 14px;
+    border-top: 1px dashed #3a3a3a;
+}
+
+.ranking-acoes-adm .ranking-secao-label {
+    margin: 0 6px 0 0;
+}
+
+@media (max-width: 768px) {
+    .ranking-guia {
+        padding: 18px 16px;
+    }
+
+    .ranking-guia-modalidades,
+    .ranking-guia-status,
+    .ranking-page .ranking-desafio-detalhe .ranking-resumo-desafio {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ranking-guia-ciclo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ranking-guia-ciclo li:not(:last-child)::after {
+        content: none;
+    }
+
+    .ranking-linha-tempo li {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ranking-linha-tempo li > time {
+        text-align: left;
+    }
+}

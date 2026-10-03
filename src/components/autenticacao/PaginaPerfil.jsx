@@ -6,6 +6,7 @@ import VisualizadorAvatar from '../VisualizadorAvatar';
 import CardPost from '../cards-posts/CardPost';
 import CardBuild from '../cards-builds/CardBuild';
 import './Perfil.css';
+import { useRanking } from '../ranking/useRanking';
 
 function PaginaPerfil() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ function PaginaPerfil() {
   const [erroConteudos, setErroConteudos] = useState('');
   const [erroConta, setErroConta] = useState('');
   const [saindo, setSaindo] = useState(false);
+  const ranking = useRanking();
 
   useEffect(() => {
     if (!user) return undefined;
@@ -105,7 +107,7 @@ function PaginaPerfil() {
   }
 
   const nome = user.user_metadata?.display_name || 'Viciado em Souls';
-  const totalPontos = Number(user.user_metadata?.pontos ?? 0);
+  const totalPontos = ranking.dados?.meus_pontos;
   const avatar = user.user_metadata?.avatar_url;
   const avatarStyle = avatar ? {
     objectPosition: `${user.user_metadata?.avatar_pos_x ?? 50}% ${user.user_metadata?.avatar_pos_y ?? 50}%`,
@@ -136,9 +138,7 @@ function PaginaPerfil() {
               <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>
             )}
             <div>
-              <span className="banner-kicker">Seu espaço na comunidade</span>
               <h1 id="titulo-perfil">{nome}</h1>
-              <p>Suas publicações, conversas e ideias para a próxima jornada.</p>
             </div>
           </div>
 
@@ -183,8 +183,9 @@ function PaginaPerfil() {
             <h2 id="titulo-ranking-perfil">Sua pontuação</h2>
             <p>Acompanhe sua participação na comunidade.</p>
           </div>
-          <strong>{totalPontos}<small> pts</small></strong>
-          <button className="btn-filtro" type="button" onClick={() => navigate('/#ranking')}>
+          {ranking.erro ? <p className="ranking-erro" role="alert">{ranking.erro}</p> :
+            <strong>{totalPontos ?? '…'}<small> pts</small></strong>}
+          <button className="btn-filtro" type="button" onClick={() => navigate('/ranking')}>
             Ver ranking
           </button>
         </section>

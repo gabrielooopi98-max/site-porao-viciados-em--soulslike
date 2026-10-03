@@ -1060,7 +1060,6 @@ function MensagensPrivadas() {
         <aside className="mensagens-privadas-lista">
           <header>
             <div className="mp-lista-titulo">
-              <span className="mp-sobretitulo">Entre amigos</span>
               <h1>Conversas</h1>
               <p>Um espaço para trocar ideias.</p>
             </div>

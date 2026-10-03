@@ -51,7 +51,7 @@ h2 {
 }
 
 .area-header {
-    position: static;
+    position: sticky;
     top: 0;
     z-index: 10;
     background-color: rgba(10, 10, 10, 0.9);
@@ -115,8 +115,8 @@ h2 {
 }
 
 .btn-avisos-header svg {
-    width: 17px;
-    height: 17px;
+    width: 21px;
+    height: 21px;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
@@ -135,7 +135,7 @@ h2 {
     padding: 0 4px;
     color: #080808;
     font: 700 0.62rem/1 'Poppins', sans-serif;
-    background: var(--souls-destaque);
+    background: #f07818;
     border: 2px solid var(--souls-carvao);
     border-radius: 999px;
 }
@@ -151,6 +151,16 @@ h2 {
     border: 1px solid rgba(var(--souls-destaque-rgb), 0.34);
     border-radius: 6px;
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+}
+
+.avisos-desafios-reais {
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.avisos-desafios-reais a {
+    color: #ddd;
+    text-decoration: none;
 }
 
 .avisos-menu-abas {
@@ -191,12 +201,24 @@ h2 {
     padding: 0 4px;
     color: #080808;
     font: 700 0.58rem/1 'Poppins', sans-serif;
-    background: var(--souls-destaque);
+    background: #f07818;
     border-radius: 999px;
+}
+
+.desafio-aviso-novo {
+    width: fit-content;
+    padding: 3px 7px;
+    color: #ffc794;
+    background: #f0781826;
+    border-radius: 3px;
+    font: 600 0.65rem/1.5 'Poppins', sans-serif;
 }
 
 .avisos-menu-conteudo {
     min-width: 0;
+    min-height: 0;
+    max-height: min(640px, calc(100dvh - 140px));
+    overflow-y: auto;
 }
 
 .avisos-menu-cabecalho {
@@ -448,7 +470,7 @@ h2 {
 main.container-site {
     max-width: 1800px;
     margin: 0 auto;
-    padding: 60px 0;
+    padding: 12px 0 60px;
 }
 
 .area-svg {
@@ -776,6 +798,231 @@ main.container-site {
         min-height: 46px;
         padding: 11px 12px;
         font-size: 0.74rem;
+    }
+}
+
+/* Banner: conteudo, cenario e navegacao. */
+
+.container-site .area-banner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    min-height: 500px;
+    padding: 0;
+    background: #101010;
+    border: 1px solid #303030;
+    border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.banner-cenario {
+    position: absolute;
+    inset: 0 0 0 38%;
+    z-index: 0;
+    background: url('/banners/img-banner-optimized.jpg') 64% center / cover no-repeat;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%);
+    mask-image: linear-gradient(90deg, transparent, #000 35%);
+}
+
+.container-site .area-banner::before {
+    background: none;
+    pointer-events: none;
+}
+
+.area-banner::after {
+    background: linear-gradient(180deg, transparent 50%, rgba(16, 16, 16, 0.9));
+    pointer-events: none;
+}
+
+.area-banner .banner-content {
+    align-self: center;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 48px 0 42px clamp(24px, 4vw, 64px);
+    border: 0;
+    background: none;
+    backdrop-filter: none;
+}
+
+.area-banner .banner-kicker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 22px;
+    padding: 0;
+    color: #f07818;
+    font: 600 0.7rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0.14em;
+}
+
+.area-banner .banner-kicker::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: #f07818;
+}
+
+.area-banner .banner-content h1 {
+    margin: 0 0 20px;
+    padding: 0;
+    font: 700 clamp(2rem, 3.2vw, 3.5rem)/1.2 'Cinzel', serif;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+}
+
+.area-banner .banner-content h1 span {
+    display: block;
+    color: #bcbcbc;
+}
+
+.area-banner .banner-content p {
+    max-width: 48ch;
+    margin: 0 0 28px;
+    padding: 0;
+    color: #bcbcbc;
+    font: 400 0.86rem/1.75 'Poppins', sans-serif;
+}
+
+.area-banner .area-interativa-banner {
+    width: min(100%, 420px);
+}
+
+.area-banner .btn-banner {
+    gap: 9px;
+    border-radius: 4px;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 600;
+}
+
+.area-banner .btn-banner svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.area-banner .banner-community-line {
+    gap: 4px 20px;
+    margin: 0;
+    padding: 0;
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+}
+
+.area-banner .banner-community-line :is(a, button) {
+    min-height: 44px;
+    padding: 0;
+    color: #c4c4c4;
+    background: none;
+    border: 0;
+    font: 600 0.68rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.area-banner .banner-community-line :is(a, button):hover {
+    color: #fff;
+}
+
+.area-banner .banner-community-line button:focus-visible {
+    outline: 2px solid var(--souls-destaque);
+    outline-offset: 4px;
+}
+
+.banner-rodape {
+    grid-column: 1 / -1;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin: 0 clamp(24px, 4vw, 64px);
+    padding: 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: #aaa;
+    font: 400 0.72rem/1.6 'Poppins', sans-serif;
+}
+
+.banner-rodape a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    color: #aaa;
+    text-decoration: none;
+}
+
+.banner-rodape a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.banner-rodape a:focus-visible {
+    outline: 2px solid var(--souls-destaque);
+    outline-offset: 4px;
+}
+
+@media (max-width: 768px) {
+    .container-site .area-banner {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        padding: 0;
+    }
+
+    .banner-cenario {
+        position: relative;
+        inset: auto;
+        height: clamp(150px, 40vw, 250px);
+        background-position: 62% 42%;
+        -webkit-mask-image: linear-gradient(180deg, #000 65%, transparent);
+        mask-image: linear-gradient(180deg, #000 65%, transparent);
+    }
+
+    .area-banner .banner-content {
+        padding: 12px 24px 26px;
+    }
+
+    .container-site .area-banner::after {
+        display: none;
+    }
+
+    .area-banner .banner-kicker {
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 18px;
+    }
+
+    .area-banner .banner-content h1 {
+        font-size: clamp(1.85rem, 7vw, 2.7rem);
+        margin-bottom: 16px;
+    }
+
+    .area-banner .banner-content p {
+        font-size: 0.82rem;
+        margin-bottom: 24px;
+    }
+
+    .banner-rodape {
+        gap: 0 16px;
+        margin-inline: 24px;
+        padding-block: 8px;
+    }
+
+    .area-banner .area-interativa-banner {
+        width: 100%;
+    }
+
+    .area-banner .btn-banner {
+        flex: 1 1 180px;
     }
 }
 
@@ -8752,10 +8999,25 @@ main.container-site {
 }
 
 .area-header {
-    position: relative;
+    position: sticky;
     z-index: 40;
     overflow: visible;
     border-bottom-color: rgba(var(--souls-destaque-rgb), 0.28);
+}
+
+.area-header .lado-direito :is(.btn-mensagens-header, .btn-avisos-header) {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+}
+
+.container-site > section[id] {
+    scroll-margin-top: 90px;
 }
 
 .area-builds-comunidade {

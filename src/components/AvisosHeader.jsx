@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { buscarNotificacoes, marcarNotificacoesLidas } from '../services/notificacoes';
 import { supabase } from '../services/supabase';
+import AvisosDesafios from './ranking/AvisosDesafios';
+import { useAvisosRanking } from './ranking/useAvisosRanking';
 
 function formatarData(data) {
   if (!data) return '';
@@ -32,6 +34,7 @@ function AvisosHeader() {
   const [avisoExcluindo, setAvisoExcluindo] = useState(null);
   const [limpandoAvisos, setLimpandoAvisos] = useState(false);
   const [erroAmizade, setErroAmizade] = useState('');
+  const desafiosRanking = useAvisosRanking(user?.id);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -87,11 +90,14 @@ function AvisosHeader() {
   if (!user) return null;
 
   const naoLidas = notificacoes.filter((notificacao) => !notificacao.lida).length;
+  const desafiosNaoLidos = Number(desafiosRanking.dados?.nao_lidos || 0);
+  const totalNaoLidas = naoLidas + desafiosNaoLidos;
 
   async function alternarAvisos() {
     const novoEstado = !aberto;
     setAberto(novoEstado);
     if (novoEstado) setSecaoSelecionada('avisos');
+    if (novoEstado) await desafiosRanking.atualizar();
 
     if (novoEstado && naoLidas) {
       const { error } = await marcarNotificacoesLidas(user.id);
@@ -214,8 +220,7 @@ function AvisosHeader() {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" />
         </svg>
-        <span>Avisos</span>
-        {naoLidas > 0 && <strong>{naoLidas > 9 ? '9+' : naoLidas}</strong>}
+        {totalNaoLidas > 0 && <strong>{totalNaoLidas > 9 ? '9+' : totalNaoLidas}</strong>}
       </button>
 
       {aberto && (
@@ -243,6 +248,7 @@ function AvisosHeader() {
               onClick={() => setSecaoSelecionada('desafios')}
             >
               Desafios
+              {desafiosNaoLidos > 0 && <span>{desafiosNaoLidos > 9 ? '9+' : desafiosNaoLidos}</span>}
             </button>
           </div>
 
@@ -257,7 +263,7 @@ function AvisosHeader() {
                       {limpandoAvisos ? 'Limpando...' : 'Limpar avisos'}
                     </button>
                   </div>
-                ) : <span>Nenhum aviso</span>}
+                ) : <span>Nenhuma interação</span>}
               </div>
 
               {notificacoes.length ? (
@@ -292,7 +298,7 @@ function AvisosHeader() {
                   ))}
                 </div>
               ) : (
-                <p className="avisos-vazio">Você ainda não recebeu avisos.</p>
+                <p className="avisos-vazio">Você ainda não recebeu avisos de interações.</p>
               )}
               {erroAmizade && <p className="avisos-erro" role="alert">{erroAmizade}</p>}
             </section>
@@ -300,9 +306,10 @@ function AvisosHeader() {
             <section id="conteudo-desafios" className="avisos-menu-conteudo" role="tabpanel" aria-labelledby="aba-desafios">
               <div className="avisos-menu-cabecalho">
                 <strong>Desafios</strong>
-                <span>Em breve</span>
+                <span>Comunidade</span>
               </div>
-              <p className="avisos-vazio">Os desafios da comunidade estarão disponíveis em breve.</p>
+              <AvisosDesafios dados={desafiosRanking.dados} erro={desafiosRanking.erro}
+                marcarLido={desafiosRanking.marcarLido} aoAbrir={(id) => { setAberto(false); navigate(`/ranking?desafio=${id}`); }} />
             </section>
           )}
         </div>

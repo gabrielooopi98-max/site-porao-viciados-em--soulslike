@@ -1,0 +1,159 @@
+.header-comunidade-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.header-menu {
+    position: relative;
+}
+
+.header-menu-botao {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #dedede;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.header-menu-botao svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+}
+
+.header-menu-painel {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(340px, calc(100vw - 40px));
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    color: #ddd;
+    background: #141414;
+    border: 0;
+    border-right: 1px solid #333;
+    box-shadow: 12px 0 40px #0008;
+}
+
+.header-menu-painel[open] {
+    animation: header-menu-entrar 480ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-menu-painel::backdrop {
+    background: #0009;
+}
+
+.header-menu-painel[open]::backdrop {
+    animation: header-menu-fundo 360ms ease-out;
+}
+
+.header-menu-painel[open] .header-menu-painel-topo {
+    animation: header-menu-conteudo 400ms 100ms both;
+}
+
+.header-menu-painel[open] .header-menu-links a {
+    animation: header-menu-conteudo 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.header-menu-links a:nth-child(1) { animation-delay: 140ms; }
+.header-menu-links a:nth-child(2) { animation-delay: 180ms; }
+.header-menu-links a:nth-child(3) { animation-delay: 220ms; }
+.header-menu-links a:nth-child(4) { animation-delay: 260ms; }
+.header-menu-links a:nth-child(5) { animation-delay: 300ms; }
+
+.header-menu-painel-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 24px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #333;
+}
+
+.header-menu-painel-topo span {
+    color: #e88945;
+    font: 600 0.65rem 'Poppins', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.header-menu-painel-topo h2 {
+    margin: 8px 0 0;
+    font: 600 1rem 'Poppins', sans-serif;
+    text-align: left;
+}
+
+.header-menu-painel-topo button {
+    flex: 0 0 44px;
+}
+
+.header-menu-links {
+    display: grid;
+    gap: 6px;
+}
+
+.header-menu-links a {
+    padding: 16px 12px;
+    color: #ddd;
+    font: 500 0.82rem 'Poppins', sans-serif;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+@keyframes header-menu-entrar {
+    from { transform: translateX(-100%); opacity: 0.6; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes header-menu-fundo {
+    from { background: #0000; }
+    to { background: #0009; }
+}
+
+@keyframes header-menu-conteudo {
+    from { transform: translateX(-12px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-menu-painel[open],
+    .header-menu-painel[open]::backdrop,
+    .header-menu-painel[open] .header-menu-painel-topo,
+    .header-menu-painel[open] .header-menu-links a {
+        animation: none;
+    }
+}
+
+.header-menu-links a:hover,
+.header-menu-botao:hover {
+    background: #242424;
+}
+
+@media (max-width: 480px) {
+    .header-comunidade-esquerda {
+        gap: 4px;
+    }
+
+    .header-comunidade-esquerda .area-logo-site p {
+        max-width: 110px;
+        font-size: 0.72rem;
+        line-height: 1.4;
+    }
+
+    .header-comunidade-esquerda + .lado-direito {
+        gap: 4px;
+    }
+}
