@@ -161,7 +161,7 @@
     border-radius: 3px;
 }
 
-.ranking-page button:not(.btn-filtro),
+.ranking-page button:not(.btn-filtro, [class*="rk-"], .botao-imagem-ampliavel),
 .ranking-competicoes button {
     padding: 10px 14px;
     color: #ddd;
@@ -196,8 +196,8 @@
     font-size: 1.1rem;
 }
 
-.ranking-page button:not(.btn-filtro):hover:not(:disabled),
-.ranking-page button:not(.btn-filtro)[aria-pressed="true"] {
+.ranking-page button:not(.btn-filtro, [class*="rk-"], .botao-imagem-ampliavel):hover:not(:disabled),
+.ranking-page button:not(.btn-filtro, [class*="rk-"], .botao-imagem-ampliavel)[aria-pressed="true"] {
     color: #fff;
     background: #303030;
     border-color: #777;

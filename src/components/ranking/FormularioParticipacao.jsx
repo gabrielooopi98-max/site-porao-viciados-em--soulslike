@@ -5,6 +5,7 @@ import { enviarMidias, removerUploads } from '../../services/midiasPublicacoes';
 import { executarRanking, pastaMidiasRanking } from '../../services/ranking';
 import RegrasBuild from './RegrasBuild';
 import '../painel-criar-post/PainelCriarPost.css';
+import './CardsRanking.css';
 
 export default function FormularioParticipacao({ desafio, aoPublicar, aoFechar }) {
   const { user } = useAuth();
@@ -52,29 +53,37 @@ export default function FormularioParticipacao({ desafio, aoPublicar, aoFechar }
     }
   }
   return (
-    <form className="ranking-formulario" onSubmit={publicar}>
-      <h3>{desafio.tipo === 'build' ? 'Publicar build concorrente' : 'Enviar prova do desafio'}</h3>
-      <p>Uma participação por pessoa neste desafio. Confira as regras antes de enviar: a prova não poderá ser alterada depois.</p>
-      {desafio.tipo === 'build' && <RegrasBuild />}
+    <form className="ranking-formulario rk-formulario" onSubmit={publicar}>
+      <span className="rk-rotulo">{desafio.tipo === 'build' ? 'Sua build' : 'Sua prova'}</span>
+      <h3>{desafio.tipo === 'build' ? 'Publicar build na competição' : 'Enviar prova do desafio'}</h3>
+      <p>Uma participação por pessoa. Depois de enviada, ela não pode ser alterada. Campos com <b className="rk-obrigatorio">*</b> são obrigatórios.</p>
+      {desafio.tipo === 'build' && <details className="rk-dobra">
+        <summary>Confira o que sua build precisa mostrar</summary>
+        <div><RegrasBuild semTitulo /></div>
+      </details>}
       <fieldset disabled={ocupado}>
         {desafio.tipo === 'build' && <>
-          <label>Nome da build<input name="titulo" required minLength={3} maxLength={160} /></label>
-          <label>Descrição da build<textarea name="descricao" required minLength={10} maxLength={6000} /></label>
+          <legend className="rk-etapa-form"><span>1</span>Sobre a build</legend>
+          <label><span>Nome da build <b className="rk-obrigatorio">*</b></span><input name="titulo" required minLength={3} maxLength={160} placeholder="Ex.: Cavaleiro de Havel" /></label>
+          <label><span>Descrição <b className="rk-obrigatorio">*</b></span><textarea name="descricao" required minLength={10} maxLength={6000} placeholder="Para que serve a build, como jogar com ela e por que ela funciona." /></label>
           <div className="ranking-form-grid">
-            <label>Nível<input name="nivel" type="number" min="1" max="9999" /></label>
+            <label>Nível<input name="nivel" type="number" min="1" max="9999" placeholder="Ex.: 120" /></label>
             <label>Foco / atributos<input name="foco" maxLength={200} placeholder="Ex.: Inteligência 60, vigor 40…" /></label>
           </div>
           <label>Equipamentos e estratégia<textarea name="equipamentos" maxLength={2000} placeholder="Armas e melhorias, itens, consumíveis, magias e milagres utilizados. Explique como usar a build." /></label>
         </>}
-        <AnexosPublicacao id="ranking-anexos" midias={midias} setMidias={setMidias} publicando={ocupado}
+      </fieldset>
+      <fieldset disabled={ocupado}>
+        <legend className="rk-etapa-form"><span>{desafio.tipo === 'build' ? 2 : 1}</span>{desafio.tipo === 'build' ? 'Imagem e vídeo' : 'Anexe sua prova'}</legend>
+        <AnexosPublicacao id="ranking-anexos" midias={midias} setMidias={setMidias} publicando={ocupado} obrigatorio
           titulo={desafio.tipo === 'build' ? 'Imagem e vídeo da build' : 'Anexe sua prova'}
           descricao={desafio.tipo === 'build' ? 'Obrigatório: pelo menos uma imagem e um vídeo da build em ação. Até oito arquivos no total.' : 'Anexe pelo menos uma imagem ou um vídeo. Até oito arquivos. Siga o que o ADM pediu nas regras.'} />
       </fieldset>
       {status && <p role="status">{status}</p>}
       {erro && <p className="ranking-erro" role="alert">{erro}</p>}
-      <div className="ranking-acoes">
-        <button type="submit" disabled={ocupado}>{ocupado ? 'Publicando…' : 'Enviar para avaliação'}</button>
-        <button type="button" disabled={ocupado} onClick={aoFechar}>Cancelar</button>
+      <div className="rk-acoes">
+        <button className="rk-btn rk-btn--principal" type="submit" disabled={ocupado}>{ocupado ? 'Publicando…' : 'Enviar para o ADM avaliar'}</button>
+        <button className="rk-btn" type="button" disabled={ocupado} onClick={aoFechar}>Cancelar</button>
       </div>
     </form>
   );

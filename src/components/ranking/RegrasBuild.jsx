@@ -1,7 +1,7 @@
-export default function RegrasBuild() {
+export default function RegrasBuild({ semTitulo = false }) {
   return (
     <section className="ranking-regras-build" aria-label="Regras padrão para builds">
-      <h3>O que mostrar na sua build</h3>
+      {!semTitulo && <h3>O que mostrar na sua build</h3>}
       <p>Estas regras valem para toda competição de builds, além das condições específicas do desafio.</p>
       <ol>
         <li><strong>Nome da build</strong><span>Identifique a combinação que você montou.</span></li>

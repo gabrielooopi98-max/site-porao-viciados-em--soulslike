@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useRanking } from './useRanking';
-import { etapaDesafio } from '../../services/ranking';
+import { etapaDesafio, formatarDataRanking } from '../../services/ranking';
 import { classificarBuilds, tituloEtapaBuilds } from '../../services/classificacaoBuilds';
 import CardParticipacao from './CardParticipacao';
 
@@ -57,10 +57,10 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
       </button>
     </div>}
     {mostrarCards && <section className="ranking-builds-galeria" aria-label="Builds enviadas">
-      <h3>{tituloEtapaBuilds(desafio.etapa)} ({builds.length})</h3>
-      <div className="ranking-competidores">
-        {builds.map((build) => <CardParticipacao key={build.id} participacao={build}
-          desafio={desafio} resumo />)}
+      <h3 className="rk-grade-titulo">{tituloEtapaBuilds(desafio.etapa)} ({builds.length})</h3>
+      <div className="rk-grade">
+        {builds.map((build, index) => <CardParticipacao key={build.id} participacao={build}
+          desafio={desafio} resumo posicao={index + 1} />)}
       </div>
     </section>}
     </>
@@ -91,10 +91,13 @@ export default function ClassificacaoBuilds({ dados, mostrarCards = false }) {
           {competicoes.map((d) => <option key={d.id} value={d.id}>{d.titulo} — {etapaDesafio(d, Date.parse(dados.agora))}</option>)}
         </select>
       </label>
-      {mostrarCards && <div className="ranking-builds-envio">
-        {Date.parse(dados.agora) >= Date.parse(desafio.inicio) && Date.parse(dados.agora) < Date.parse(desafio.fim)
-          ? <Link className="btn-filtro" to={`/ranking?desafio=${desafio.id}&participar=1#enviar-participacao`}>+ Criar build</Link>
-          : <p>O envio de builds fica disponível durante as inscrições.</p>}
+      {mostrarCards && <div className="rk-participar-acao rk-envio-curto">
+        {Date.parse(dados.agora) < Date.parse(desafio.inicio)
+          ? <span className="rk-participar-prazo">As inscrições abrem em <b>{formatarDataRanking(desafio.inicio)}</b>.</span>
+          : Date.parse(dados.agora) < Date.parse(desafio.fim) ? <>
+            <Link className="rk-btn rk-btn--principal" to={`/ranking?desafio=${desafio.id}&participar=1`}>+ Criar minha build</Link>
+            <span className="rk-participar-prazo">Inscrições até <b>{formatarDataRanking(desafio.fim)}</b></span>
+          </> : <span className="rk-participar-prazo">Inscrições encerradas.{desafio.etapa < 3 ? ' Vote nas builds da etapa atual.' : ''}</span>}
       </div>}
       <ClassificacaoReal key={desafio.id} desafioId={desafio.id} mostrarCards={mostrarCards} />
     </div>

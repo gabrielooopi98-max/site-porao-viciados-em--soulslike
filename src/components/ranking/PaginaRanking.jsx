@@ -10,6 +10,7 @@ import FormularioDesafio from './FormularioDesafio';
 import FormularioParticipacao from './FormularioParticipacao';
 import RegrasBuild from './RegrasBuild';
 import LinhaDoTempoDesafio from './LinhaDoTempoDesafio';
+import PainelParticipacao from './PainelParticipacao';
 import { etapaDesafio, executarRanking, formatarDataRanking } from '../../services/ranking';
 import './Ranking.css';
 import { classificarBuilds, ordenarParticipacoesBuild, tituloEtapaBuilds } from '../../services/classificacaoBuilds';
@@ -38,11 +39,13 @@ export default function PaginaRanking() {
   const desafio = dados?.desafios.find((d) => d.id === desafioId);
   const agora = dados ? Date.parse(dados.agora) : 0;
   const inscricoesAbertas = desafio && agora >= Date.parse(desafio.inicio) && agora < Date.parse(desafio.fim);
-  const jaParticipou = dados?.participacoes.some((p) => p.desafio_id === desafioId && p.autor_id === user?.id);
   const doDesafio = (dados?.participacoes || []).filter((p) => p.desafio_id === desafioId);
+  const minhaParticipacao = user ? doDesafio.find((p) => p.autor_id === user.id) : null;
+  const mostrarFormulario = Boolean(formularioParticipacaoAberto && user && inscricoesAbertas && !minhaParticipacao);
   const ordenadas = desafio?.tipo === 'build' ? ordenarParticipacoesBuild(desafio, doDesafio) : doDesafio;
   const participacoes = ordenadas.filter((p) => filtro === 'todos' || p.status === filtro);
-  const buildsNaEtapa = desafio?.tipo === 'build' ? classificarBuilds(desafio, doDesafio).length : 0;
+  const naEtapa = desafio?.tipo === 'build' ? classificarBuilds(desafio, doDesafio) : [];
+  const posicoes = new Map(naEtapa.map((p, index) => [p.id, index + 1]));
   const alvo = participacoes.findIndex((p) => hash === `#participacao-${p.id}`);
   const limite = Math.max(pagina * 12, alvo + 1);
   const carregou = Boolean(dados);
@@ -64,10 +67,8 @@ export default function PaginaRanking() {
     if (carregou && hash.startsWith('#participacao-')) document.getElementById(hash.slice(1))?.scrollIntoView();
   }, [carregou, hash]);
   useEffect(() => {
-    if (formularioParticipacaoAberto && user && inscricoesAbertas && !jaParticipou) {
-      document.getElementById('enviar-participacao')?.scrollIntoView({ block: 'start' });
-    }
-  }, [formularioParticipacaoAberto, user, inscricoesAbertas, jaParticipou]);
+    if (mostrarFormulario) document.getElementById('enviar-participacao')?.scrollIntoView({ block: 'start' });
+  }, [mostrarFormulario]);
   return (
     <>
       <CabecalhoComunidade />
@@ -143,10 +144,18 @@ export default function PaginaRanking() {
                   <div><dt>Prêmio</dt><dd>{desafio.pontos} pts {desafio.tipo === 'build' ? 'para o vencedor' : 'por desafio aprovado'}</dd></div>
                   <div><dt>Quem decide</dt><dd>{desafio.tipo === 'build' ? 'A comunidade, por votos' : 'O ADM, conferindo a prova'}</dd></div>
                 </dl>
+                <PainelParticipacao desafio={desafio} agora={agora} user={user} minhaParticipacao={minhaParticipacao}
+                  formularioAberto={mostrarFormulario} aoAbrir={() => setParticipar(true)} aoFechar={fecharParticipacao} />
+                {mostrarFormulario && <div id="enviar-participacao" className="rk-participar-formulario">
+                  <FormularioParticipacao key={desafio.id} desafio={desafio} aoPublicar={atualizar} aoFechar={fecharParticipacao} />
+                </div>}
                 <h3 className="ranking-subtitulo">Objetivo e regras</h3>
                 <p className="ranking-texto">{desafio.descricao}</p>
                 <LinhaDoTempoDesafio desafio={desafio} agora={agora} />
-                {desafio.tipo === 'build' && <RegrasBuild />}
+                {desafio.tipo === 'build' && <details className="rk-dobra">
+                  <summary>O que sua build precisa mostrar (5 itens obrigatórios)</summary>
+                  <div><RegrasBuild semTitulo /></div>
+                </details>}
                 <details className="ranking-regras">
                   <summary>Regras detalhadas e desempates</summary>
                 <p>{desafio.tipo === 'build'
@@ -156,14 +165,6 @@ export default function PaginaRanking() {
                 <p>Três dias após o fim, o desafio, as participações e os comentários são removidos. Os pontos conquistados continuam no ranking geral.</p>
                 <p>Participações recusadas ficam visíveis apenas para o autor e o ADM.</p>
                 </details>
-                <div className="ranking-acoes">
-                  {inscricoesAbertas && (user ? (jaParticipou ? <span>Sua participação já foi enviada.</span> :
-                    <button className="btn-filtro" type="button" onClick={() => formularioParticipacaoAberto ? fecharParticipacao() : setParticipar(true)}>{formularioParticipacaoAberto ? 'Fechar formulário' : desafio.tipo === 'build' ? '+ Criar build' : '+ Enviar prova do desafio'}</button>) :
-                    <Link className="btn-filtro" to="/login">{desafio.tipo === 'build' ? 'Entre para enviar sua build' : 'Entre para enviar sua prova'}</Link>)}
-                  {!inscricoesAbertas && <span className="ranking-inscricoes-fechadas">
-                    {agora < Date.parse(desafio.inicio) ? 'As inscrições ainda não abriram.' : 'As inscrições deste desafio estão encerradas.'}
-                  </span>}
-                </div>
                 {dados.admin && <div className="ranking-acoes ranking-acoes-adm">
                   <span className="ranking-secao-label">Administração</span>
                   {agora < Date.parse(desafio.inicio) && <button type="button" onClick={() => setFormularioAdm(desafio)}>Editar desafio</button>}
@@ -171,22 +172,23 @@ export default function PaginaRanking() {
                 </div>}
                 {erroExclusao && <p className="ranking-erro" role="alert">{erroExclusao}</p>}
               </div>
-              {formularioParticipacaoAberto && user && inscricoesAbertas && !jaParticipou && <div id="enviar-participacao"><FormularioParticipacao key={desafio.id} desafio={desafio} aoPublicar={atualizar} aoFechar={fecharParticipacao} /></div>}
               <div className="ranking-feed-filtros">
-                <h3>{desafio.tipo === 'build' ? `${tituloEtapaBuilds(desafio.etapa)} (${buildsNaEtapa})` : `Provas enviadas (${participacoes.length})`}</h3>
+                <h3>{desafio.tipo === 'build' ? `${tituloEtapaBuilds(desafio.etapa)} (${naEtapa.length})` : `Provas enviadas (${participacoes.length})`}</h3>
                 <label>Mostrar<select value={filtro} onChange={(event) => { setFiltro(event.target.value); setPagina(1); }}>
                   <option value="todos">Todas</option><option value="pendente">Aguardando ADM</option>
                   <option value="aprovada">Aprovadas</option><option value="recusada">Recusadas</option>
                 </select></label>
               </div>
-              {!participacoes.length && <p className="ranking-vazio">Nenhuma participação neste filtro.</p>}
-              <div className={desafio.tipo === 'conquista' ? 'ranking-provas-galeria' : undefined}>
+              {!participacoes.length && <p className="ranking-vazio">{filtro === 'todos'
+                ? `Nenhuma ${desafio.tipo === 'build' ? 'build' : 'prova'} enviada ainda.${inscricoesAbertas ? ' Seja o primeiro a participar!' : ''}`
+                : 'Nenhuma participação neste filtro.'}</p>}
+              <div className="rk-grade">
                 {participacoes.slice(0, limite).map((p) => <div id={`participacao-${p.id}`} key={p.id}>
-                  <CardParticipacao participacao={p} desafio={desafio} user={user} admin={dados.admin} finais={dados.finais}
+                  <CardParticipacao participacao={p} desafio={desafio} user={user} admin={dados.admin} finais={dados.finais} posicao={posicoes.get(p.id)}
                     comentarios={dados.comentarios.filter((c) => c.participacao_id === p.id)} aoAtualizar={atualizar} agora={agora} />
                 </div>)}
               </div>
-              {participacoes.length > limite && <button type="button" onClick={() => setPagina(Math.ceil(limite / 12) + 1)}>Ver mais participações</button>}
+              {participacoes.length > limite && <button className="rk-btn" type="button" onClick={() => setPagina(Math.ceil(limite / 12) + 1)}>Ver mais participações</button>}
             </> : <p role="alert">Desafio não encontrado. Escolha um desafio na lista.</p>}
           </section>
         </div>}

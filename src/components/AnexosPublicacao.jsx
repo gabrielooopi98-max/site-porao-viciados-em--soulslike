@@ -27,10 +27,10 @@ function PreviaAnexo({ arquivo, aoRemover, publicando }) {
     );
 }
 
-function AnexosPublicacao({ id, midias, setMidias, publicando, titulo, descricao }) {
+function AnexosPublicacao({ id, midias, setMidias, publicando, titulo, descricao, obrigatorio = false }) {
     return (
         <div className="criar-post-campo">
-            <div className="criar-post-label">Imagens e vídeos <span>{midias.length ? `${midias.length} ${midias.length === 1 ? 'anexo' : 'anexos'}` : 'Opcional'}</span></div>
+            <div className="criar-post-label">Imagens e vídeos <span>{midias.length ? `${midias.length} ${midias.length === 1 ? 'anexo' : 'anexos'}` : obrigatorio ? 'Obrigatório' : 'Opcional'}</span></div>
             <label className="criar-post-upload" htmlFor={id}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="3" />

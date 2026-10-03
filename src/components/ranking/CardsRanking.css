@@ -1,0 +1,715 @@
+/*
+ * Cards de participacao (builds e provas) e painel "Como participar".
+ * Classes proprias (rk-) para nao herdar as regras antigas do Ranking.css.
+ */
+
+.rk-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    align-items: start;
+    gap: 20px;
+}
+
+h3.rk-grade-titulo {
+    margin: 0 0 16px;
+    color: #eee;
+    font: 600 1rem/1.5 'Poppins', sans-serif;
+    letter-spacing: 0;
+    text-align: left;
+}
+
+/* ---------- Botoes ---------- */
+
+.rk-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 16px;
+    color: #ddd;
+    font: 600 0.78rem/1.2 'Poppins', sans-serif;
+    text-decoration: none;
+    background: #191919;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.rk-btn:hover:not(:disabled) {
+    color: #fff;
+    background: #262626;
+    border-color: #666;
+}
+
+.rk-btn:focus-visible {
+    outline: 2px solid #f07818;
+    outline-offset: 2px;
+}
+
+.rk-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.rk-btn--principal {
+    color: #140b03;
+    background: #f07818;
+    border-color: #f07818;
+}
+
+.rk-btn--principal:hover:not(:disabled) {
+    color: #140b03;
+    background: #ff8f36;
+    border-color: #ff8f36;
+}
+
+.rk-btn--votado {
+    color: #ffd2ad;
+    background: #2a1a0d;
+    border-color: #a85a1c;
+}
+
+.rk-btn--votado:hover:not(:disabled) {
+    color: #fff;
+    background: #33200f;
+    border-color: #f07818;
+}
+
+/* ---------- Card ---------- */
+
+.rk-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    padding: 18px;
+    color: #ddd;
+    font-family: 'Poppins', sans-serif;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+}
+
+.rk-card--vencedor {
+    background: linear-gradient(180deg, #1b140d, #111 140px);
+    border-color: #8a5f2c;
+}
+
+.rk-card--minha {
+    border-color: #5a4a26;
+}
+
+.rk-card--apagada {
+    opacity: 0.7;
+}
+
+.rk-card-topo {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+}
+
+.rk-card-topo--sem-posicao {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.rk-posicao {
+    display: grid;
+    place-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 6px;
+    color: #ddd;
+    font: 700 0.9rem/1 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+    background: #1d1d1d;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.rk-posicao--1 { color: #1a1005; background: #f2b27e; border-color: #f2b27e; }
+.rk-posicao--2 { color: #111; background: #cfcfcf; border-color: #cfcfcf; }
+.rk-posicao--3 { color: #1a1005; background: #c08a5b; border-color: #c08a5b; }
+
+.rk-card-identidade {
+    min-width: 0;
+}
+
+.rk-card .rk-card-titulo {
+    margin: 0;
+    color: #f2f2f2;
+    font: 700 1.02rem/1.35 'Poppins', sans-serif;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.rk-card-autor {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin: 6px 0 0;
+    color: #999;
+    font: 400 0.72rem/1.5 'Poppins', sans-serif;
+}
+
+.rk-card-autor img,
+.rk-card-pessoa img {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: #1c1c1c;
+    border: 1px solid #3a3a3a;
+    border-radius: 50%;
+}
+
+.rk-card-autor a,
+.rk-card-pessoa a {
+    color: #ddd;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.rk-card-autor a:hover,
+.rk-card-pessoa a:hover {
+    text-decoration: underline;
+}
+
+.rk-card-topo > .ranking-status-chip {
+    white-space: nowrap;
+}
+
+/* Card de prova: autor em destaque, sem repetir o titulo do desafio. */
+.rk-card--prova .rk-card-topo {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.rk-card-pessoa {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    font: 400 0.82rem/1.4 'Poppins', sans-serif;
+}
+
+.rk-card-pessoa img {
+    width: 36px;
+    height: 36px;
+}
+
+.rk-card-pessoa > div {
+    display: grid;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.rk-card-pessoa small {
+    color: #888;
+    font-size: 0.68rem;
+}
+
+.rk-tag-voce {
+    color: #f0a160;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+/* ---------- Midia ---------- */
+
+.rk-midia {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.rk-abas {
+    display: inline-flex;
+    width: fit-content;
+    padding: 3px;
+    background: #0b0b0b;
+    border: 1px solid #2a2a2a;
+    border-radius: 7px;
+}
+
+.rk-aba {
+    min-height: 34px;
+    padding: 6px 14px;
+    color: #999;
+    font: 600 0.7rem/1 'Poppins', sans-serif;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.rk-aba[aria-pressed="true"] {
+    color: #111;
+    background: #ddd;
+}
+
+.rk-aba:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.rk-midia-faixa {
+    display: grid;
+    grid-auto-columns: 100%;
+    grid-auto-flow: column;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    border-radius: 8px;
+}
+
+.rk-midia-item {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #080808;
+    border: 1px solid #242424;
+    border-radius: 8px;
+    scroll-snap-align: start;
+}
+
+.rk-midia-item .botao-imagem-ampliavel {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    cursor: zoom-in;
+}
+
+.rk-midia-arquivo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #080808;
+}
+
+.rk-midia-dica {
+    color: #888;
+    font: 400 0.68rem/1.5 'Poppins', sans-serif;
+}
+
+/* ---------- Texto ---------- */
+
+.rk-card .rk-descricao {
+    margin: 0;
+    color: #c4c4c4;
+    font: 400 0.8rem/1.7 'Poppins', sans-serif;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.rk-card .rk-descricao--previa {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.rk-link-texto {
+    width: fit-content;
+    padding: 0;
+    color: #f0a160;
+    font: 500 0.72rem/1.5 'Poppins', sans-serif;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.rk-link-texto:hover {
+    text-decoration: underline;
+}
+
+.rk-dobra {
+    background: #0c0c0c;
+    border: 1px solid #262626;
+    border-radius: 8px;
+}
+
+.rk-dobra > summary {
+    padding: 12px 14px;
+    color: #ddd;
+    font: 600 0.75rem/1.5 'Poppins', sans-serif;
+    cursor: pointer;
+}
+
+.rk-dobra > div {
+    padding: 0 14px 14px;
+}
+
+.rk-historico {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rk-historico li {
+    padding: 4px 9px;
+    color: #aaa;
+    font: 400 0.66rem/1.5 'Poppins', sans-serif;
+    background: #181818;
+    border-radius: 999px;
+}
+
+.rk-historico b {
+    color: #eee;
+    font-variant-numeric: tabular-nums;
+}
+
+.rk-parecer {
+    margin: 0;
+    padding: 12px 14px;
+    color: #ddd;
+    font: 400 0.76rem/1.6 'Poppins', sans-serif;
+    background: #1c1414;
+    border-left: 3px solid #a04848;
+    border-radius: 6px;
+}
+
+.rk-parecer--aprovada {
+    background: #121a14;
+    border-left-color: #3f8a55;
+}
+
+.rk-parecer strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #aaa;
+    font-size: 0.66rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ---------- Rodape ---------- */
+
+.rk-card-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 14px;
+    margin-top: auto;
+    border-top: 1px solid #242424;
+}
+
+.rk-placar {
+    display: grid;
+    color: #f2f2f2;
+    font: 700 1.3rem/1.15 'Poppins', sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.rk-placar small {
+    color: #999;
+    font-size: 0.64rem;
+    font-weight: 400;
+}
+
+.rk-placar--pendente { color: #e6c27a; }
+.rk-placar--aprovada { color: #8fd19e; }
+.rk-placar--recusada { color: #888; }
+
+.rk-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ---------- Comentarios e moderacao ---------- */
+
+.rk-bloco {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    background: #0c0c0c;
+    border: 1px solid #262626;
+    border-radius: 8px;
+}
+
+.rk-bloco > h4 {
+    margin: 0;
+    color: #aaa;
+    font: 600 0.66rem/1.5 'Poppins', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.rk-comentario {
+    margin: 0;
+    padding-bottom: 10px;
+    color: #ccc;
+    font: 400 0.76rem/1.6 'Poppins', sans-serif;
+    border-bottom: 1px solid #222;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.rk-comentario a {
+    display: block;
+    color: #eee;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.rk-bloco label {
+    display: grid;
+    gap: 6px;
+    color: #aaa;
+    font: 500 0.72rem/1.5 'Poppins', sans-serif;
+}
+
+.rk-bloco textarea {
+    width: 100%;
+    min-height: 76px;
+    box-sizing: border-box;
+    padding: 10px;
+    color: #eee;
+    font: 400 16px/1.5 'Poppins', sans-serif;
+    background: #151515;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    resize: vertical;
+}
+
+.rk-bloco--adm {
+    background: #14110c;
+    border-color: #4a3a22;
+}
+
+/* ---------- Painel "Como participar" ---------- */
+
+.rk-participar {
+    display: grid;
+    gap: 18px;
+    margin: 22px 0;
+    padding: 22px;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1a120b, #111 60%);
+    border: 1px solid #5a3d22;
+    border-radius: 12px;
+}
+
+.rk-rotulo {
+    color: #f0a160;
+    font: 600 0.66rem/1.5 'Poppins', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.rk-participar .rk-participar-titulo {
+    margin: 4px 0 0;
+    color: #f5f5f5;
+    font: 700 1.1rem/1.4 'Poppins', sans-serif;
+}
+
+.rk-passos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    counter-reset: passo;
+}
+
+.rk-passos li {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    color: #bbb;
+    font: 400 0.74rem/1.55 'Poppins', sans-serif;
+    counter-increment: passo;
+}
+
+.rk-passos li::before {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: #f0a160;
+    font-weight: 700;
+    background: #2a1a0d;
+    border: 1px solid #5a3d22;
+    border-radius: 50%;
+    content: counter(passo);
+}
+
+.rk-passos strong {
+    display: block;
+    color: #eee;
+    font-weight: 600;
+}
+
+.rk-participar-acao {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    padding-top: 16px;
+    border-top: 1px solid #3a2a1a;
+}
+
+.rk-participar-acao .rk-btn--principal {
+    min-width: 220px;
+}
+
+.rk-participar-prazo {
+    color: #aaa;
+    font: 400 0.74rem/1.5 'Poppins', sans-serif;
+}
+
+.rk-participar-prazo b {
+    color: #eee;
+    font-weight: 600;
+}
+
+.rk-participar-estado {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #ddd;
+    font: 500 0.8rem/1.5 'Poppins', sans-serif;
+}
+
+/* ---------- Formulario de participacao ---------- */
+
+.rk-formulario {
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+    background: #101010;
+    border: 1px solid #2f2f2f;
+    border-radius: 12px;
+}
+
+.rk-formulario > h3 {
+    margin: 0;
+}
+
+.rk-formulario > p {
+    margin: 0;
+    color: #aaa;
+}
+
+.rk-formulario fieldset {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.rk-etapa-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    margin-bottom: 4px;
+    color: #eee;
+    font: 600 0.85rem/1.5 'Poppins', sans-serif;
+}
+
+.rk-etapa-form > span {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    color: #f0a160;
+    font-size: 0.75rem;
+    background: #2a1a0d;
+    border: 1px solid #5a3d22;
+    border-radius: 50%;
+}
+
+.rk-obrigatorio {
+    color: #f07818;
+}
+
+/* O campo de arquivo fica escondido; o rotulo estilizado abre o seletor. */
+.rk-formulario .criar-post-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Atalho de envio acima da classificacao das builds. */
+.rk-envio-curto {
+    margin: 4px 0 20px;
+    padding: 14px 16px;
+    background: #15100b;
+    border: 1px solid #3a2a1a;
+    border-radius: 10px;
+}
+
+.rk-participar-formulario {
+    scroll-margin-top: 90px;
+}
+
+/* ---------- Responsivo ---------- */
+
+@media (max-width: 720px) {
+    .rk-passos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rk-participar {
+        padding: 18px 16px;
+    }
+
+    .rk-participar-acao > .rk-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .rk-card {
+        padding: 14px;
+    }
+
+    .rk-card-topo {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .rk-card-topo > .ranking-status-chip {
+        grid-column: 1 / -1;
+        width: fit-content;
+    }
+
+    .rk-card--prova .rk-card-topo > .ranking-status-chip {
+        grid-column: auto;
+    }
+
+    .rk-card-rodape {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .rk-acoes > .rk-btn {
+        flex: 1 1 0;
+    }
+}

@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import MidiasPublicacao from '../MidiasPublicacao';
 import EscolhaFinal, { SeloFinal } from './EscolhaFinal';
 import { executarRanking, podeVotarRanking } from '../../services/ranking';
 import MidiasBuildRanking from './MidiasBuildRanking';
 import { etapaEliminacao } from '../../services/classificacaoBuilds';
-import '../cards-builds/CardBuild.css';
+import './CardsRanking.css';
 
-export default function CardParticipacao({ participacao, desafio, user, admin = false, comentarios = [], finais = [], aoAtualizar, resumo = false, agora = 0 }) {
+const AVATAR_PADRAO = '/svg-animado/icone-usuario.svg';
+
+function textoStatus(p, { vencedor, eliminadaEm, conquista }) {
+  if (vencedor) return 'Vencedor';
+  if (eliminadaEm !== null) return `Eliminada na ${['classificatória', 'semifinal'][eliminadaEm]}`;
+  return { pendente: 'Aguardando ADM', aprovada: conquista ? 'Aprovada' : 'Na disputa', recusada: 'Recusada' }[p.status];
+}
+
+export default function CardParticipacao({ participacao, desafio, user, admin = false, comentarios = [], finais = [], aoAtualizar, resumo = false, agora = 0, posicao = null }) {
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState('');
   const [motivo, setMotivo] = useState('');
@@ -15,11 +22,16 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
   const [mostrarComentarios, setMostrarComentarios] = useState(false);
   const [descricaoExpandida, setDescricaoExpandida] = useState(false);
   const p = participacao;
+  const conquista = desafio.tipo === 'conquista';
   const vencedor = desafio.vencedor_id === p.id;
   const eliminadaEm = etapaEliminacao(desafio, p);
-  const conquista = desafio.tipo === 'conquista';
-  const podeAvaliar = admin && p.autor_id !== user?.id && (desafio.tipo === 'conquista' || agora < Date.parse(desafio.fim));
+  const minha = Boolean(user) && p.autor_id === user.id;
+  const podeAvaliar = admin && !minha && (conquista || agora < Date.parse(desafio.fim));
   const votacaoPermitida = podeVotarRanking(desafio, p, user?.id, agora);
+  const linkCompleto = `/ranking?desafio=${desafio.id}#participacao-${p.id}`;
+  const status = textoStatus(p, { vencedor, eliminadaEm, conquista });
+  const classeStatus = vencedor ? 'vencedor' : eliminadaEm !== null ? 'eliminada' : p.status;
+
   async function acao(funcao, parametros) {
     if (ocupado) return;
     setOcupado(true);
@@ -35,73 +47,105 @@ export default function CardParticipacao({ participacao, desafio, user, admin = 
       setOcupado(false);
     }
   }
+
+  const classes = ['rk-card', conquista ? 'rk-card--prova' : 'rk-card--build',
+    vencedor && 'rk-card--vencedor', minha && 'rk-card--minha',
+    (eliminadaEm !== null || p.status === 'recusada') && 'rk-card--apagada'].filter(Boolean).join(' ');
+
+  const avatar = <img src={p.autor_avatar || AVATAR_PADRAO} alt="" loading="lazy" />;
+  const nome = <Link to={`/perfil/${p.autor_id}`}>{p.autor_nome}</Link>;
+
   return (
-    <article className={`ranking-participacao ${desafio.tipo === 'build' ? 'ranking-build-card' : 'ranking-prova-card'} ${vencedor ? 'ranking-vencedor' : ''}`}>
-      <header>
-        <div className="ranking-build-autor">
-          <img src={p.autor_avatar || '/svg-animado/icone-usuario.svg'} alt="" loading="lazy" />
-          <Link to={`/perfil/${p.autor_id}`}>{p.autor_nome}</Link>
-        </div>
-        <span className={`ranking-status-chip ${vencedor ? 'vencedor' : eliminadaEm !== null ? 'eliminada' : p.status}`}>
-          {vencedor ? 'Vencedor' : eliminadaEm !== null ? `Eliminada na ${['classificatória', 'semifinal'][eliminadaEm]}`
-            : { pendente: 'Aguardando ADM', aprovada: conquista ? 'Aprovada pelo ADM' : 'Validada pelo ADM', recusada: 'Recusada' }[p.status]}
-        </span>
-      </header>
-      <div className="ranking-build-titulo">
-        <p className="ranking-build-jogo">{desafio.jogo}</p>
-        <h3>{conquista ? desafio.titulo : p.titulo}</h3>
-      </div>
-      {resumo && desafio.tipo === 'build' && p.descricao?.trim() && <div className="ranking-build-descricao">
-        <p className={`ranking-texto ${descricaoExpandida ? '' : 'ranking-build-descricao-previa'}`}>{p.descricao}</p>
-        <button type="button" aria-expanded={descricaoExpandida} onClick={() => setDescricaoExpandida((anterior) => !anterior)}>
-          {descricaoExpandida ? 'Mostrar menos' : 'Ler descrição completa'}
-        </button>
+    <article className={classes} aria-label={conquista ? `Prova de ${p.autor_nome}` : `Build ${p.titulo} de ${p.autor_nome}`}>
+      {conquista ? (
+        <header className="rk-card-topo">
+          <div className="rk-card-pessoa">
+            {avatar}
+            <div>
+              {nome}
+              <small>{minha ? <span className="rk-tag-voce">Sua prova</span> : `Prova enviada para ${desafio.jogo}`}</small>
+            </div>
+          </div>
+          <span className={`ranking-status-chip ${classeStatus}`}>{status}</span>
+        </header>
+      ) : (
+        <header className={`rk-card-topo ${posicao ? '' : 'rk-card-topo--sem-posicao'}`}>
+          {posicao && <span className={`rk-posicao ${posicao <= 3 ? `rk-posicao--${posicao}` : ''}`} aria-label={`${posicao}º lugar`}>{posicao}º</span>}
+          <div className="rk-card-identidade">
+            <h3 className="rk-card-titulo">{p.titulo}</h3>
+            <p className="rk-card-autor">{avatar}{nome}{minha && <span className="rk-tag-voce">· Sua build</span>}</p>
+          </div>
+          <span className={`ranking-status-chip ${classeStatus}`}>{status}</span>
+        </header>
+      )}
+
+      <MidiasBuildRanking participacao={p} abas={!conquista} limite={resumo && conquista ? 1 : undefined} />
+
+      {!conquista && p.descricao?.trim() && <div>
+        <p className={`rk-descricao ${resumo && !descricaoExpandida ? 'rk-descricao--previa' : ''}`}>{p.descricao}</p>
+        {resumo && p.descricao.length > 160 && <button className="rk-link-texto" type="button" aria-expanded={descricaoExpandida}
+          onClick={() => setDescricaoExpandida((anterior) => !anterior)}>{descricaoExpandida ? 'Mostrar menos' : 'Ler descrição completa'}</button>}
       </div>}
+
+      {!resumo && !conquista && p.atributos?.equipamentos && <details className="rk-dobra">
+        <summary>Equipamentos e estratégia</summary>
+        <div><p className="rk-descricao">{p.atributos.equipamentos}</p></div>
+      </details>}
+
+      {!resumo && !conquista && <ul className="rk-historico" aria-label="Votos recebidos em cada etapa">
+        {['Classificatória', 'Semifinal', 'Final'].map((nome, i) => <li key={nome}>{nome} <b>{p.historico_votos?.[i] ?? 0}</b></li>)}
+      </ul>}
+
       {vencedor && (desafio.final_vencedor ? <SeloFinal final={desafio.final_vencedor} />
-        : !resumo && p.autor_id === user?.id ? <EscolhaFinal finais={finais} participacaoId={p.id} aoEscolhido={aoAtualizar} />
+        : !resumo && minha ? <EscolhaFinal finais={finais} participacaoId={p.id} aoEscolhido={aoAtualizar} />
           : <p className="ranking-aguardando-final">Aguardando o vencedor escolher o final.</p>)}
-      {!resumo && desafio.tipo === 'build' && <p className="ranking-texto">{p.descricao}</p>}
-      {desafio.tipo === 'build' && p.midias.length > 0 ? <MidiasBuildRanking participacao={p} /> : p.midias.length > 0 && <>
-        <div className="ranking-prova-midias" role="region" aria-label={`Prova de ${p.autor_nome}`} tabIndex={p.midias.length > 1 ? 0 : undefined}>
-          <MidiasPublicacao publicacao={resumo ? { ...p, midias: p.midias.slice(0, 1) } : p}
-            itemClassName="ranking-midia-item" mediaClassName="ranking-midia" permitirAmpliar />
-        </div>
-        {!resumo && p.midias.length > 1 && <small className="ranking-prova-anexos">{p.midias.length} anexos · Deslize para ver todas as mídias</small>}
-      </>}
-      {resumo && desafio.tipo !== 'build' && p.midias.length > 1 && <small>{p.midias.length} anexos na participação completa</small>}
-      {!resumo && desafio.tipo === 'build' && <div className="ranking-atributos">
-        {p.atributos.equipamentos && <p className="ranking-texto">{p.atributos.equipamentos}</p>}
-      </div>}
-      <footer>
+
+      {!resumo && p.motivo && <p className={`rk-parecer ${p.status === 'aprovada' ? 'rk-parecer--aprovada' : ''}`}>
+        <strong>Parecer do ADM</strong>{p.motivo}
+      </p>}
+
+      <footer className="rk-card-rodape">
         {conquista
-          ? <strong className={`ranking-prova-pontos ${p.status}`}>
+          ? <span className={`rk-placar rk-placar--${p.status}`}>
             {p.status === 'aprovada' ? `+${desafio.pontos} pts` : `${desafio.pontos} pts`}
-            <span>{{ aprovada: 'concedidos', pendente: 'se aprovada pelo ADM', recusada: 'não concedidos' }[p.status]}</span>
-          </strong>
-          : <strong className="ranking-build-votos">{p.votos}<span>{Number(p.votos) === 1 ? 'voto nesta etapa' : 'votos nesta etapa'}</span></strong>}
-        {resumo ? <Link to={`/ranking?desafio=${desafio.id}#participacao-${p.id}`}>{conquista ? 'Ver prova' : desafio.etapa === 3 ? 'Ver build' : 'Ver e votar'}</Link> : <>
-          {!conquista && <button type="button" disabled={ocupado || !votacaoPermitida} aria-pressed={p.votou}
-            onClick={() => acao('ranking_votar', { p_participacao: p.id, p_etapa: desafio.etapa })}>{p.votou ? 'Retirar voto' : 'Votar'}</button>}
-          <button type="button" onClick={() => setMostrarComentarios(!mostrarComentarios)} aria-expanded={mostrarComentarios}>
-            {conquista ? 'Comentários' : 'Avaliações'} ({comentarios.length})
-          </button>
-        </>}
+            <small>{{ aprovada: 'concedidos no ranking', pendente: 'se o ADM aprovar', recusada: 'não concedidos' }[p.status]}</small>
+          </span>
+          : <span className="rk-placar">{p.votos}<small>{Number(p.votos) === 1 ? 'voto nesta etapa' : 'votos nesta etapa'}</small></span>}
+        <div className="rk-acoes">
+          {resumo ? <Link className="rk-btn" to={linkCompleto}>{conquista ? 'Ver prova' : desafio.etapa === 3 ? 'Ver build' : 'Ver e votar'}</Link> : <>
+            {!conquista && <button className={`rk-btn ${p.votou ? 'rk-btn--votado' : 'rk-btn--principal'}`} type="button"
+              disabled={ocupado || !votacaoPermitida} aria-pressed={p.votou}
+              title={!user ? 'Entre na sua conta para votar' : minha ? 'Você não pode votar na sua build' : p.votou ? 'Clique para retirar seu voto' : undefined}
+              onClick={() => acao('ranking_votar', { p_participacao: p.id, p_etapa: desafio.etapa })}>
+              {p.votou ? '✓ Votado' : 'Votar'}
+            </button>}
+            <button className="rk-btn" type="button" onClick={() => setMostrarComentarios(!mostrarComentarios)} aria-expanded={mostrarComentarios}>
+              {conquista ? 'Comentários' : 'Avaliações'} ({comentarios.length})
+            </button>
+          </>}
+        </div>
       </footer>
+
       {!resumo && <>
-        {p.motivo && <p className="ranking-parecer">Parecer do ADM: {p.motivo}</p>}
-        {desafio.tipo === 'build' && <small>Histórico de votos: classificatória {p.historico_votos[0]} · semifinal {p.historico_votos[1]} · final {p.historico_votos[2]}</small>}
-        {mostrarComentarios && <div className="ranking-comentarios">
-          {comentarios.map((c) => <p key={c.id}><Link to={`/perfil/${c.autor_id}`}>{c.autor_nome}</Link><br />{c.texto}</p>)}
+        {mostrarComentarios && <div className="rk-bloco">
+          <h4>{conquista ? 'Comentários da comunidade' : 'Avaliações da comunidade'}</h4>
+          {!comentarios.length && <p className="rk-comentario">Ninguém comentou ainda.</p>}
+          {comentarios.map((c) => <p className="rk-comentario" key={c.id}><Link to={`/perfil/${c.autor_id}`}>{c.autor_nome}</Link>{c.texto}</p>)}
           {user ? <form onSubmit={(event) => { event.preventDefault(); acao('ranking_comentar', { p_participacao: p.id, p_texto: texto }); }}>
-            <label>{conquista ? 'Comente a prova (o ADM lê antes de aprovar)' : 'Avaliar a build'}<textarea value={texto} onChange={(event) => setTexto(event.target.value)} required maxLength={2000} disabled={ocupado} /></label>
-            <button disabled={ocupado || !texto.trim()} type="submit">Comentar</button>
-          </form> : <Link to="/login">Entre para avaliar</Link>}
+            <label>{conquista ? 'Comente a prova (o ADM lê antes de aprovar)' : 'Avalie a build'}
+              <textarea value={texto} onChange={(event) => setTexto(event.target.value)} required maxLength={2000} disabled={ocupado} />
+            </label>
+            <button className="rk-btn" disabled={ocupado || !texto.trim()} type="submit">Comentar</button>
+          </form> : <Link className="rk-btn" to="/login">Entre para comentar</Link>}
         </div>}
-        {podeAvaliar && <div className="ranking-moderacao">
-          <label>Parecer do ADM (obrigatório ao recusar)<textarea maxLength={2000} value={motivo} onChange={(event) => setMotivo(event.target.value)} disabled={ocupado} /></label>
-          <div className="ranking-acoes">
-            <button type="button" disabled={ocupado || p.status === 'aprovada'} onClick={() => acao('ranking_avaliar', { p_participacao: p.id, p_aprovar: true, p_motivo: motivo })}>Aprovar</button>
-            <button type="button" disabled={ocupado || motivo.trim().length < 3} onClick={() => acao('ranking_avaliar', { p_participacao: p.id, p_aprovar: false, p_motivo: motivo })}>Recusar</button>
+        {podeAvaliar && <div className="rk-bloco rk-bloco--adm">
+          <h4>Avaliação do ADM</h4>
+          <label>Parecer (obrigatório ao recusar)
+            <textarea maxLength={2000} value={motivo} onChange={(event) => setMotivo(event.target.value)} disabled={ocupado} />
+          </label>
+          <div className="rk-acoes">
+            <button className="rk-btn rk-btn--principal" type="button" disabled={ocupado || p.status === 'aprovada'} onClick={() => acao('ranking_avaliar', { p_participacao: p.id, p_aprovar: true, p_motivo: motivo })}>Aprovar</button>
+            <button className="rk-btn" type="button" disabled={ocupado || motivo.trim().length < 3} onClick={() => acao('ranking_avaliar', { p_participacao: p.id, p_aprovar: false, p_motivo: motivo })}>Recusar</button>
           </div>
         </div>}
         {erro && <p className="ranking-erro" role="alert">{erro}</p>}

@@ -41,8 +41,8 @@ function CompeticaoRanking({ desafio, participacoes }) {
       {encerrada ? <p className="ranking-home-votacao">Resultado disponível por 3 dias após a final.</p>
         : <p className="ranking-home-votacao">Nova etapa, novos votos. Você pode votar novamente nas builds que avançaram.</p>}
       <h5 className="ranking-home-builds-titulo">{tituloEtapaBuilds(desafio.etapa)}</h5>
-      <div className="ranking-competidores">
-        {builds.map((p) => <CardParticipacao key={p.id} participacao={p} desafio={desafio} resumo />)}
+      <div className="rk-grade">
+        {builds.map((p, index) => <CardParticipacao key={p.id} participacao={p} desafio={desafio} resumo posicao={index + 1} />)}
       </div>
       {!builds.length && <p className="ranking-vazio">Nenhuma build validada para esta competição.</p>}
     </section>
