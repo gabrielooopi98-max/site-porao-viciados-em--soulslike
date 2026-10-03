@@ -5,7 +5,7 @@ import { etapaDesafio, formatarDataRanking } from '../../services/ranking';
 import { classificarBuilds, tituloEtapaBuilds } from '../../services/classificacaoBuilds';
 import CardParticipacao from './CardParticipacao';
 
-function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
+function TabelaBuilds({ desafio, participacoes, mostrarCards = false, permitirPreviaFinal = false }) {
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const [previaChama, setPreviaChama] = useState(false);
   const tabelaId = useId();
@@ -43,7 +43,7 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
         </> : <p>O vencedor ainda está escolhendo seu final.</p>}
       </div>}
     </article>
-    {import.meta.env.DEV && mostrarCards && <div className="ranking-builds-previa-final">
+    {import.meta.env.DEV && permitirPreviaFinal && <div className="ranking-builds-previa-final">
       <button className="btn-filtro" type="button" aria-pressed={previaChama}
         onClick={() => setPreviaChama((ativa) => !ativa)}>
         {previaChama ? 'Fechar prévia da Chama Frenética' : 'Testar banner da Chama Frenética'}
@@ -94,16 +94,17 @@ function TabelaBuilds({ desafio, participacoes, mostrarCards = false }) {
   ) : <p className="ranking-vazio">Ainda não há builds nesta etapa.</p>;
 }
 
-function ClassificacaoReal({ desafioId, mostrarCards }) {
+function ClassificacaoReal({ desafioId, mostrarCards, permitirPreviaFinal }) {
   const { dados, erro, carregando, atualizar } = useRanking(desafioId);
   if (carregando) return <p role="status">Carregando classificação das builds…</p>;
   if (erro) return <p className="ranking-erro" role="alert">{erro} <button type="button" onClick={atualizar}>Tentar novamente</button></p>;
   const desafio = dados.desafios.find((d) => d.id === desafioId);
   if (!desafio) return <p role="status">Esta competição não está mais disponível. Escolha outra competição.</p>;
-  return <TabelaBuilds key={`${desafio.id}:${desafio.etapa}`} desafio={desafio} participacoes={dados.participacoes} mostrarCards={mostrarCards} />;
+  return <TabelaBuilds key={`${desafio.id}:${desafio.etapa}`} desafio={desafio} participacoes={dados.participacoes}
+    mostrarCards={mostrarCards} permitirPreviaFinal={permitirPreviaFinal} />;
 }
 
-export default function ClassificacaoBuilds({ dados, mostrarCards = false }) {
+export default function ClassificacaoBuilds({ dados, mostrarCards = false, permitirPreviaFinal = false }) {
   const seletorId = useId();
   const [selecionada, setSelecionada] = useState('');
   const competicoes = dados.desafios.filter((d) => d.tipo === 'build');
@@ -126,7 +127,8 @@ export default function ClassificacaoBuilds({ dados, mostrarCards = false }) {
             <span className="rk-participar-prazo">Inscrições até <b>{formatarDataRanking(desafio.fim)}</b></span>
           </> : <span className="rk-participar-prazo">Inscrições encerradas.{desafio.etapa < 3 ? ' Vote nas builds da etapa atual.' : ''}</span>}
       </div>}
-      <ClassificacaoReal key={desafio.id} desafioId={desafio.id} mostrarCards={mostrarCards} />
+      <ClassificacaoReal key={desafio.id} desafioId={desafio.id} mostrarCards={mostrarCards}
+        permitirPreviaFinal={permitirPreviaFinal} />
     </div>
   );
 }

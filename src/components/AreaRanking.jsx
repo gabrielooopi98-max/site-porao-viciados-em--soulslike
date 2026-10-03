@@ -104,7 +104,7 @@ export default function AreaRanking() {
               </div>
               <Link className="ranking-home-link" to="/ranking">Ver competições <span aria-hidden="true">→</span></Link>
             </header>
-            <ClassificacaoBuilds dados={dados} />
+            <ClassificacaoBuilds dados={dados} permitirPreviaFinal />
           </section>
           <section className="ranking-home-classificacao ranking-home-geral ranking-home-secao-seguinte" aria-labelledby="ranking-home-geral-titulo">
             <header className="ranking-home-secao-topo">
