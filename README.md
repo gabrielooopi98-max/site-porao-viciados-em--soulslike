@@ -298,10 +298,18 @@ O status "Equipado" identifica apenas o banner visivel; trocar a previa
 substitui a anterior. Era do Fogo (Dark Souls Remastered, `ds1_chama`) usa
 `banner-caverna-fogo-1760x575.svg` e o titulo Herdeiro da Chama. A arte tambem
 aparece no primeiro lugar do ranking quando o vencedor escolhe esse final.
+Era das Trevas (Dark Souls Remastered, `ds1_trevas`) usa
+`banner-ruinas-1760x575.svg` e o titulo Lorde Sombrio.
 Outros finais continuam na colecao, mas ainda nao possuem arte de banner.
 Reaplique `supabase/ranking_desafios.sql` no Supabase para ativar a tabela e
 as RPCs de banners. O banco valida a conquista antes de salvar, e a previa
 do ranking nao desbloqueia banners no perfil.
+Cada card de jogo na colecao mostra conquistas sobre o total, percentual e
+barra de progresso segmentada sem precisar abrir o card; ao completar todos
+os finais, o status muda para "Jogo concluido".
+Os jogos aparecem em linhas com as capas dedicadas de
+`public/capas-jogos-souslikes`, progresso horizontal e realce cinza discreto
+no hover, inspirado na biblioteca de conquistas dos jogos.
 As competicoes ficam separadas em "Builds em disputa", com jogo, etapa,
 progresso classificatoria/semifinal/final, premio, valor por voto e prazo.
 Cada card mostra uma previa de midia, informa quando ha mais anexos e
@@ -387,8 +395,14 @@ ou a conversa de onde abriu a publicacao.
 ## Perfis da comunidade
 
 Perfil pessoal e publico usam paineis neutros, sem textura, glow ou fundos
-saturados. Avatar e estatisticas ficam juntos; seguir, amizade e conversa
-mantem os fluxos existentes no perfil publico.
+saturados. Avatar, nome e status online ficam na capa; amizades, seguindo e
+seguidores aparecem junto da identidade, e posts e builds ficam na faixa
+abaixo. O perfil publico preserva os botoes de seguir, amizade e conversa.
+Os totais de amigos, seguindo e seguidores abrem um painel com abas, busca,
+avatares e ações de remoção no próprio perfil. Reaplique
+`supabase/amizades_mensagens_privadas.sql` para habilitar as RPCs de consulta
+e remoção segura de seguidores; perfis alheios podem consultar as listas sem
+alterar relações de outras pessoas.
 O cinza claro aparece apenas nos subtitulos com traco, setas dos atalhos e
 detalhes de botoes sociais e filtros ativos, sem tingir os paineis.
 O perfil pessoal oferece

@@ -10,6 +10,7 @@ import { FavoritosProvider } from './contexts/FavoritosContext';
 import { useAuth } from './contexts/useAuth';
 import CabecalhoComunidade from './components/CabecalhoComunidade';
 import PresencaMensagensPrivadas from './components/PresencaMensagensPrivadas';
+import { PresencaPerfilProvider } from './components/autenticacao/PresencaPerfil';
 import AreaRanking from './components/AreaRanking';
 import DivisoriaSecao from './components/DivisoriaSecao';
 
@@ -1308,9 +1309,10 @@ function PaginaDetalhesBuild() {
 function App() {
   return (
     <AuthProvider>
-      <FavoritosProvider>
-      <PresencaMensagensPrivadas />
-      <Routes>
+      <PresencaPerfilProvider>
+        <FavoritosProvider>
+        <PresencaMensagensPrivadas />
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={(
           <Suspense fallback={<main className="componente-carregando" role="status">Preparando acesso...</main>}>
@@ -1361,8 +1363,9 @@ function App() {
         )} />
         <Route path="/post/:id" element={<PaginaDetalhesPost />} />
         <Route path="/build/:id" element={<PaginaDetalhesBuild />} />
-      </Routes>
-      </FavoritosProvider>
+        </Routes>
+        </FavoritosProvider>
+      </PresencaPerfilProvider>
     </AuthProvider>
   );
 }

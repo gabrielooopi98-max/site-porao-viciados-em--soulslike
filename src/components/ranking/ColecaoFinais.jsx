@@ -1,6 +1,7 @@
 import EscolhaFinal from './EscolhaFinal';
 import { agruparFinais, formatarDataRanking } from '../../services/ranking';
 import { BANNERS_FINAIS, finalBannerAtivo } from '../../services/bannersFinais';
+import { CAPAS_JOGOS_COLECAO } from '../../services/capasJogosColecao';
 import './FinaisRanking.css';
 
 export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar, banner }) {
@@ -9,15 +10,13 @@ export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar,
   return (
     <section className="ranking-colecao-finais" aria-labelledby="titulo-colecao-finais">
       <header>
-        <div>
-          <span className="banner-kicker">Competições de builds</span>
+        <div className="ranking-colecao-cabecalho">
+          <span className="ranking-colecao-kicker">Competições de builds</span>
           <h2 id="titulo-colecao-finais">Coleção de finais</h2>
-          <p>Vença competições de builds para desbloquear os finais dos soulslike.</p>
-          {banner && <p>Clique em um final conquistado com banner disponível para usá-lo no perfil.</p>}
-          {banner && <p>Os banners disponíveis também podem ser testados sem conquista: a prévia não salva nem concede título.</p>}
+          <p className="ranking-colecao-introducao">Conquiste finais dos seus soulslike favoritos vencendo competições de builds.</p>
         </div>
         <div className="ranking-colecao-total">
-          <strong>{conquistados.size}<small> / {finais.length}</small></strong>
+          <strong><span>{conquistados.size}</span><small> / {finais.length}</small></strong>
           <span>Finais conquistados</span>
         </div>
       </header>
@@ -36,15 +35,47 @@ export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar,
       <div className="ranking-colecao-jogos">
         {agruparFinais(finais).map(([jogo, lista]) => {
           const total = lista.filter((f) => conquistados.has(f.id)).length;
+          const percentual = lista.length ? Math.round((total / lista.length) * 100) : 0;
+          const completo = total === lista.length && lista.length > 0;
+          const capa = CAPAS_JOGOS_COLECAO[jogo];
+          const abreviacao = jogo === 'Elden Ring' ? 'ER'
+            : jogo === 'Bloodborne' ? 'BB'
+              : jogo === 'Lies of P' ? 'LP'
+                : jogo === 'Sekiro: Shadows Die Twice' ? 'SEKIRO'
+                  : jogo.replace('Dark Souls ', 'DS ');
           return (
-          <details className="ranking-colecao-jogo" key={jogo} open={total > 0}>
+          <details className={`ranking-colecao-jogo${completo ? ' completo' : ''}`} key={jogo} open={total > 0}>
             <summary>
-              <span><strong>{jogo}</strong><small>{total} de {lista.length} conquistados</small></span>
+              <span className={`ranking-colecao-capa${capa ? '' : ' sem-imagem'}`} aria-hidden="true">
+                {capa ? <>
+                  <img className="ranking-colecao-capa-fundo" src={capa} alt="" loading="lazy" />
+                  <img className="ranking-colecao-capa-imagem" src={capa} alt="" loading="lazy" />
+                </> : <span>{abreviacao}</span>}
+              </span>
+              <span className="ranking-colecao-jogo-info">
+                <span className="ranking-colecao-jogo-nome"><strong>{jogo}</strong></span>
+                <span className="ranking-colecao-resumo">
+                  {total} / {lista.length} finais
+                  {completo && <span className="ranking-colecao-completa">Platinado</span>}
+                </span>
+                <span className="ranking-colecao-progresso-jogo">
+                  <span className="ranking-colecao-progresso-linha">
+                    <progress
+                      className="ranking-colecao-progresso"
+                      value={total}
+                      max={lista.length || 1}
+                      aria-label={`${total} de ${lista.length} finais conquistados em ${jogo}`}
+                    />
+                    <strong>{percentual}%</strong>
+                  </span>
+                </span>
+              </span>
               <span className="ranking-colecao-expandir" aria-hidden="true">+</span>
             </summary>
-            <progress className="ranking-colecao-progresso" value={total} max={lista.length} aria-label={`Progresso em ${jogo}`} />
-            <ul>
-              {lista.map((f) => {
+            <div className="ranking-colecao-conteudo">
+              <div className="ranking-colecao-conteudo-inner">
+                <ul>
+                  {lista.map((f) => {
                 const desbloqueado = conquistados.has(f.id);
                 const arte = BANNERS_FINAIS[f.id];
                 const temBanner = Boolean(arte);
@@ -77,9 +108,11 @@ export default function ColecaoFinais({ finais = [], vitorias = [], aoAtualizar,
                       aria-pressed={aplicado} disabled={banner.salvando || (!teste && !banner.dados)}
                       onClick={() => teste ? banner.alternarPrevia(f.id) : banner.aplicar(aplicado ? null : f.id)}>{conteudo}</button> : conteudo}
                   </li>
-                );
-              })}
-            </ul>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
           </details>
           );
         })}

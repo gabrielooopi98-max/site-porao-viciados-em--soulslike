@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/useAuth';
@@ -11,19 +11,29 @@ import ColecaoFinais from '../ranking/ColecaoFinais';
 import CardPerfil from './CardPerfil';
 import { BANNERS_FINAIS } from '../../services/bannersFinais';
 import useBannerFinalPerfil from './useBannerFinalPerfil';
+import usePresencaPerfil from './usePresencaPerfil';
+import PainelRelacoesPerfil from './PainelRelacoesPerfil';
 
 function PaginaPerfil() {
   const navigate = useNavigate();
   const { user, carregando, signOut } = useAuth();
-  const [estatisticas, setEstatisticas] = useState({ posts: 0, builds: 0, seguidores: 0 });
+  const [estatisticas, setEstatisticas] = useState({ posts: 0, builds: 0, seguidores: 0, seguindo: 0, amigos: 0 });
+  const [erroEstatisticas, setErroEstatisticas] = useState('');
   const [abaConteudo, setAbaConteudo] = useState('posts');
   const [conteudos, setConteudos] = useState([]);
   const [carregandoConteudos, setCarregandoConteudos] = useState(false);
   const [erroConteudos, setErroConteudos] = useState('');
   const [erroConta, setErroConta] = useState('');
   const [saindo, setSaindo] = useState(false);
+  const [painelRelacoes, setPainelRelacoes] = useState(null);
   const ranking = useRanking();
   const banner = useBannerFinalPerfil(user?.id, ranking.dados?.minhas_vitorias);
+  const online = usePresencaPerfil(user?.id);
+  const fecharPainelRelacoes = useCallback(() => setPainelRelacoes(null), []);
+  const alterarContagemRelacao = useCallback((relacao, delta) => {
+    const chave = relacao === 'amigos' ? 'amigos' : relacao;
+    setEstatisticas((atuais) => ({ ...atuais, [chave]: Math.max(0, atuais[chave] + delta) }));
+  }, []);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -33,12 +43,25 @@ function PaginaPerfil() {
       supabase.from('posts').select('id', { count: 'exact', head: true }).eq('autor_id', user.id),
       supabase.from('builds').select('id', { count: 'exact', head: true }).eq('autor_id', user.id),
       supabase.from('seguidores').select('id', { count: 'exact', head: true }).eq('seguido_id', user.id),
-    ]).then(([resultadoPosts, resultadoBuilds, resultadoSeguidores]) => {
+      supabase.from('seguidores').select('id', { count: 'exact', head: true }).eq('seguidor_id', user.id),
+      supabase.from('amizades').select('id', { count: 'exact', head: true })
+        .eq('status', 'aceita')
+        .or(`solicitante_id.eq.${user.id},destinatario_id.eq.${user.id}`),
+    ]).then(([resultadoPosts, resultadoBuilds, resultadoSeguidores, resultadoSeguindo, resultadoAmigos]) => {
       if (!ativo) return;
+      const resultados = [resultadoPosts, resultadoBuilds, resultadoSeguidores, resultadoSeguindo, resultadoAmigos];
+      resultados.forEach((resultado) => {
+        if (resultado.error) console.error('Erro ao carregar estatísticas do perfil:', resultado.error);
+      });
+      setErroEstatisticas(resultados.some((resultado) => resultado.error)
+        ? 'Não foi possível carregar todas as estatísticas do perfil.'
+        : '');
       setEstatisticas({
         posts: resultadoPosts.count ?? 0,
         builds: resultadoBuilds.count ?? 0,
         seguidores: resultadoSeguidores.count ?? 0,
+        seguindo: resultadoSeguindo.count ?? 0,
+        amigos: resultadoAmigos.count ?? 0,
       });
     });
 
@@ -136,32 +159,60 @@ function PaginaPerfil() {
 
       <main className="perfil-page perfil-organizado">
         <CardPerfil banner={banner} tituloId="titulo-perfil" cabecalho={
-          <div className="perfil-cabecalho">
-            {avatar ? (
-              <VisualizadorAvatar className="perfil-avatar-grande" src={avatar} alt={`Foto de ${nome}`} style={avatarStyle} />
-            ) : (
-              <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>
-            )}
-            <div>
-              <span className="perfil-card-etiqueta">Meu perfil</span>
-              <h1 id="titulo-perfil">{nome}</h1>
-              {!banner.previa && BANNERS_FINAIS[banner.dados?.final_id] && <p className="perfil-card-titulo-final">{BANNERS_FINAIS[banner.dados.final_id].titulo}</p>}
+          <div className="perfil-banner-cabecalho">
+            <div className="perfil-cabecalho">
+              {avatar ? (
+                <VisualizadorAvatar className="perfil-avatar-grande" src={avatar} alt={`Foto de ${nome}`} style={avatarStyle} />
+              ) : (
+                <div className="perfil-avatar-grande perfil-avatar-vazio" aria-hidden="true">?</div>
+              )}
+              <div className="perfil-identidade-info">
+                <span className="perfil-card-etiqueta">Meu perfil</span>
+                <h1 id="titulo-perfil">{nome}</h1>
+                {!banner.previa && BANNERS_FINAIS[banner.dados?.final_id] && <p className="perfil-card-titulo-final">{BANNERS_FINAIS[banner.dados.final_id].titulo}</p>}
+                <span className={`perfil-status${online ? ' online' : online === false ? ' offline' : ''}`} role="status">
+                  <i aria-hidden="true" />{online === null ? 'Verificando status' : online ? 'Online' : 'Offline'}
+                </span>
+                <div className="perfil-relacoes" aria-label="Estatísticas sociais">
+                  <button type="button" onClick={() => setPainelRelacoes('amigos')}><strong>{estatisticas.amigos}</strong><span>Amigos</span></button>
+                  <button type="button" onClick={() => setPainelRelacoes('seguindo')}><strong>{estatisticas.seguindo}</strong><span>Seguindo</span></button>
+                  <button type="button" onClick={() => setPainelRelacoes('seguidores')}><strong>{estatisticas.seguidores}</strong><span>Seguidores</span></button>
+                </div>
+              </div>
+            </div>
+            <div className="perfil-acoes perfil-acoes-banner">
+              <button className="btn-criar-post perfil-editar" type="button" onClick={() => navigate('/configurar-perfil')}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6ZM14 5l5 5" /></svg>
+                Personalizar perfil
+              </button>
             </div>
           </div>
         }>
           <div className="perfil-estatisticas">
-            <div><strong>{estatisticas.posts}</strong><span>Posts</span></div>
-            <div><strong>{estatisticas.builds}</strong><span>Builds</span></div>
-            <div><strong>{estatisticas.seguidores}</strong><span>Seguidores</span></div>
+            <div>
+              <span className="perfil-estatistica-icone" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M6 3.75h8l4 4V20.25H6z" /><path d="M14 3.75v4h4M9 12h6M9 15.5h6" /></svg>
+              </span>
+              <span className="perfil-estatistica-dados"><strong>{estatisticas.posts}</strong><span>Posts</span></span>
+            </div>
+            <div>
+              <span className="perfil-estatistica-icone" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m12 3 8.25 4.5v9L12 21l-8.25-4.5v-9z" /><path d="m3.75 7.5 8.25 4.5 8.25-4.5M12 12v9" /></svg>
+              </span>
+              <span className="perfil-estatistica-dados"><strong>{estatisticas.builds}</strong><span>Builds</span></span>
+            </div>
           </div>
-
-          <div className="perfil-acoes">
-            <button className="btn-criar-post perfil-editar" type="button" onClick={() => navigate('/configurar-perfil')}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6ZM14 5l5 5" /></svg>
-              Editar perfil
-            </button>
-          </div>
+          {erroEstatisticas && <p className="perfil-erro-amizade" role="alert">{erroEstatisticas}</p>}
         </CardPerfil>
+        {painelRelacoes && <PainelRelacoesPerfil
+          usuarioId={user.id}
+          usuarioNome={nome}
+          visualizadorId={user.id}
+          abaInicial={painelRelacoes}
+          contagens={estatisticas}
+          aoFechar={fecharPainelRelacoes}
+          aoAlterarContagem={alterarContagemRelacao}
+        />}
 
         <nav className="perfil-atalhos" aria-label="Atalhos do seu perfil">
           <button className="perfil-atalho-favoritos" type="button" onClick={() => navigate('/favoritos')}>

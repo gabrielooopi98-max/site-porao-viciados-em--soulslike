@@ -6,6 +6,8 @@ import { BANNERS_FINAIS, finalBannerAtivo } from '../src/services/bannersFinais.
 test('banners dos finais possuem arquivos e titulos correspondentes', async () => {
   assert.equal(BANNERS_FINAIS.ds1_chama.nome, 'Era do Fogo');
   assert.equal(BANNERS_FINAIS.ds1_chama.titulo, 'Herdeiro da Chama');
+  assert.equal(BANNERS_FINAIS.ds1_trevas.nome, 'Era das Trevas');
+  assert.equal(BANNERS_FINAIS.ds1_trevas.titulo, 'Lorde Sombrio');
   for (const arte of Object.values(BANNERS_FINAIS)) {
     await access(new URL(`../public${arte.src}`, import.meta.url));
   }

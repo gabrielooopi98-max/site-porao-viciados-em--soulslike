@@ -75,6 +75,92 @@ create policy "Participante cancela ou remove amizade"
         or (status = 'aceita' and auth.uid() in (solicitante_id, destinatario_id))
     );
 
+create or replace function public.perfil_contar_amigos(p_usuario uuid)
+returns integer
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select count(*)::integer
+    from public.amizades a
+    where a.status = 'aceita'
+      and (a.solicitante_id = p_usuario or a.destinatario_id = p_usuario);
+$$;
+revoke all on function public.perfil_contar_amigos(uuid) from public, anon, authenticated;
+grant execute on function public.perfil_contar_amigos(uuid) to anon, authenticated;
+
+create or replace function public.perfil_listar_relacoes(p_usuario uuid, p_tipo text)
+returns table(usuario_id uuid, nome text, avatar_url text, relacao_id uuid)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    with relacoes as (
+        select
+            case when a.solicitante_id = p_usuario then a.destinatario_id else a.solicitante_id end as usuario_id,
+            case when a.solicitante_id = p_usuario then a.destinatario_nome else a.solicitante_nome end as nome,
+            case when a.solicitante_id = p_usuario then a.destinatario_avatar_url else a.solicitante_avatar_url end as avatar_url,
+            a.id as relacao_id
+        from public.amizades a
+        where p_tipo = 'amigos'
+          and a.status = 'aceita'
+          and (a.solicitante_id = p_usuario or a.destinatario_id = p_usuario)
+        union all
+        select s.seguido_id, null::text, null::text, s.id
+        from public.seguidores s
+        where p_tipo = 'seguindo' and s.seguidor_id = p_usuario
+        union all
+        select s.seguidor_id, null::text, null::text, s.id
+        from public.seguidores s
+        where p_tipo = 'seguidores' and s.seguido_id = p_usuario
+    )
+    select
+        r.usuario_id,
+        coalesce(r.nome, perfil.autor_nome, 'Viciado em Souls')::text,
+        coalesce(r.avatar_url, perfil.autor_avatar_url)::text,
+        r.relacao_id
+    from relacoes r
+    left join lateral (
+        select fonte.autor_nome, fonte.autor_avatar_url
+        from (
+            select p.autor_nome, p.autor_avatar_url, p.criado_em
+            from public.posts p where p.autor_id = r.usuario_id
+            union all
+            select b.autor_nome, b.autor_avatar_url, b.criado_em
+            from public.builds b where b.autor_id = r.usuario_id
+            union all
+            select m.autor_nome, m.autor_avatar_url, m.criado_em
+            from public.mensagens_chat m where m.autor_id = r.usuario_id
+        ) fonte
+        order by fonte.criado_em desc
+        limit 1
+    ) perfil on true
+    where p_tipo in ('amigos', 'seguindo', 'seguidores')
+    order by nome;
+$$;
+revoke all on function public.perfil_listar_relacoes(uuid, text) from public, anon, authenticated;
+grant execute on function public.perfil_listar_relacoes(uuid, text) to anon, authenticated;
+
+create or replace function public.perfil_remover_seguidor(p_seguidor uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    if auth.uid() is null then
+        raise exception 'Entre na sua conta para remover um seguidor.';
+    end if;
+
+    delete from public.seguidores
+    where seguidor_id = p_seguidor and seguido_id = auth.uid();
+end;
+$$;
+revoke all on function public.perfil_remover_seguidor(uuid) from public, anon, authenticated;
+grant execute on function public.perfil_remover_seguidor(uuid) to authenticated;
+
 alter table public.notificacoes
     drop constraint if exists notificacoes_tipo_check;
 

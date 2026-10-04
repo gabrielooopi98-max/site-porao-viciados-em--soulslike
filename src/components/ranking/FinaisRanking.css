@@ -131,7 +131,7 @@
 /* Colecao de finais no perfil */
 .ranking-colecao-finais {
     display: grid;
-    gap: 18px;
+    gap: 24px;
     width: 100%;
     padding: 24px;
     color: #ddd;
@@ -143,26 +143,60 @@
 
 .ranking-colecao-finais > header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 20px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #ffffff12;
+}
+
+.ranking-colecao-cabecalho {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.ranking-colecao-kicker {
+    margin-bottom: 2px;
+    padding-left: 8px;
+    color: #c4c4c4;
+    border-left: 2px solid #777;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    line-height: 1.4;
+    text-transform: uppercase;
 }
 
 .ranking-colecao-finais h2 {
-    margin: 4px 0;
-    font-size: 1rem;
+    margin: 0;
+    color: #eee;
+    font: 800 1.2rem/1.4 'Poppins', sans-serif;
     text-align: left;
 }
 
-.ranking-colecao-finais > header p {
-    margin: 0;
-    color: #999;
+.ranking-colecao-introducao {
+    margin: 2px 0 0;
+    color: #aaa;
     font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.ranking-colecao-ajuda {
+    max-width: 640px;
+    margin: 3px 0 0;
+    color: #888;
+    font-size: 0.65rem;
+    line-height: 1.55;
 }
 
 .ranking-colecao-total strong {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
     color: #eee;
-    font-size: 1.6rem;
+    font: 600 1.4rem/1.1 'Cinzel', serif;
     white-space: nowrap;
 }
 
@@ -173,8 +207,10 @@
 
 .ranking-colecao-total > span {
     display: block;
+    margin-top: 5px;
     color: #999;
     font-size: 0.65rem;
+    white-space: nowrap;
 }
 
 .ranking-colecao-progresso {
@@ -215,26 +251,45 @@
 
 .ranking-colecao-jogos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    gap: 14px;
+    gap: 0;
 }
 
 .ranking-colecao-jogo {
+    position: relative;
     min-width: 0;
-    padding: 14px;
-    background: #151515;
-    border: 1px solid #303030;
-    border-radius: 6px;
+    padding: 7px 8px;
+    overflow: hidden;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #ffffff24;
+    border-radius: 7px;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.ranking-colecao-jogo:hover,
+.ranking-colecao-jogo:focus-within {
+    background: #ffffff24;
+    box-shadow: inset 0 0 0 1px #ffffff12;
+}
+
+.ranking-colecao-jogo[open]:not(:hover, :focus-within) {
+    background: #ffffff08;
 }
 
 .ranking-colecao-jogo summary {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 9px;
+    min-height: 96px;
+    padding: 2px 10px 2px 0;
     color: #ddd;
     font-size: 0.8rem;
+    background: transparent;
+    border-radius: 0;
     cursor: pointer;
     list-style: none;
 }
@@ -245,33 +300,195 @@
 
 .ranking-colecao-jogo summary:focus-visible {
     outline: 2px solid #aaa;
-    outline-offset: 5px;
+    outline-offset: 2px;
 }
 
-.ranking-colecao-jogo summary small {
+.ranking-colecao-capa {
+    position: relative;
+    display: grid;
+    flex: 0 0 137px;
+    width: 164px;
+    height: 110px;
+    place-items: center;
+    overflow: hidden;
+    color: #d3c4aa;
+    background: #151515;
+    border: 1px solid #ffffff16;
+    border-radius: 5px;
+    box-shadow: 0 3px 8px #0005, inset 0 0 0 1px #0005;
+}
+
+.ranking-colecao-capa img {
+    position: absolute;
     display: block;
-    margin-top: 4px;
-    color: #999;
-    font-size: 0.68rem;
+    width: 100%;
+    height: 100%;
+}
+
+.ranking-colecao-capa-fundo {
+    inset: 0;
+    object-fit: cover;
+    filter: blur(8px) brightness(0.5) saturate(0.8);
+    transform: scale(1.16);
+    transition: filter 220ms ease;
+}
+
+.ranking-colecao-capa-imagem {
+    z-index: 1;
+    inset: 0;
+    padding: 2px;
+    box-sizing: border-box;
+    object-fit: contain;
+    filter: saturate(0.82) brightness(0.88);
+    transition: filter 220ms ease;
+}
+
+.ranking-colecao-jogo:hover .ranking-colecao-capa-imagem,
+.ranking-colecao-jogo[open] .ranking-colecao-capa-imagem {
+    filter: saturate(0.96) brightness(1);
+}
+
+.ranking-colecao-jogo:hover .ranking-colecao-capa-fundo,
+.ranking-colecao-jogo[open] .ranking-colecao-capa-fundo {
+    filter: blur(7px) brightness(0.62) saturate(1);
+}
+
+.ranking-colecao-capa.sem-imagem span {
+    font: 600 0.9rem/1 'Cinzel', serif;
+    letter-spacing: 0.08em;
+    text-shadow: 0 2px 8px #000;
+}
+
+.ranking-colecao-jogo-info {
+    display: grid;
+    flex: 1;
+    align-content: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.ranking-colecao-jogo-nome {
+    min-width: 0;
+}
+
+.ranking-colecao-jogos .ranking-colecao-jogo-nome strong {
+    display: block;
+    overflow: hidden;
+    color: #e7e7e7;
+    font: 600 0.86rem/1.45 'Poppins', sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ranking-colecao-resumo {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #a7a7a7;
+    font: 500 0.63rem/1.4 'Poppins', sans-serif;
+}
+
+.ranking-colecao-completa {
+    color: #d5bd8e;
+    font-size: 0.58rem;
+}
+
+.ranking-colecao-progresso-jogo {
+    display: block;
+    width: 100%;
+}
+
+.ranking-colecao-progresso-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ranking-colecao-progresso-linha .ranking-colecao-progresso {
+    flex: 1;
+    height: 3px;
+    background: #383838;
+    border-radius: 0;
+}
+
+.ranking-colecao-progresso-linha .ranking-colecao-progresso::-webkit-progress-bar {
+    background: #383838;
+    border-radius: 0;
+}
+
+.ranking-colecao-progresso-linha .ranking-colecao-progresso::-webkit-progress-value {
+    background: #b8b8b8;
+    border-radius: 0;
+    transition: width 400ms ease;
+}
+
+.ranking-colecao-progresso-linha .ranking-colecao-progresso::-moz-progress-bar {
+    background: #b8b8b8;
+}
+
+.ranking-colecao-jogo.completo .ranking-colecao-progresso-linha .ranking-colecao-progresso::-webkit-progress-value,
+.ranking-colecao-jogo.completo .ranking-colecao-progresso-linha .ranking-colecao-progresso::-moz-progress-bar {
+    background: #d2bd91;
+}
+
+.ranking-colecao-progresso-linha > strong {
+    flex: 0 0 40px;
+    color: #aaa;
+    font: 500 0.62rem/1 'Poppins', sans-serif;
+    text-align: right;
+}
+
+.ranking-colecao-jogo.completo .ranking-colecao-progresso-linha > strong {
+    color: #d2bd91;
 }
 
 .ranking-colecao-expandir {
-    color: #999;
-    font-size: 1.2rem;
-    transition: transform 160ms ease;
+    display: grid;
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    place-items: center;
+    color: #666;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    line-height: 1;
+    text-align: center;
+    transition: transform 200ms ease, color 200ms ease, background-color 200ms ease;
 }
 
 .ranking-colecao-jogo[open] .ranking-colecao-expandir {
+    color: #ddd;
+    background: #ffffff10;
     transform: rotate(45deg);
 }
 
-.ranking-colecao-jogo > progress {
-    margin: 14px 0;
+.ranking-colecao-conteudo {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: grid-template-rows 280ms ease, opacity 200ms ease, transform 200ms ease, visibility 280ms;
+}
+
+.ranking-colecao-conteudo-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.ranking-colecao-jogo[open] > .ranking-colecao-conteudo {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .ranking-colecao-jogos ul {
     display: grid;
-    gap: 6px;
+    gap: 4px;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -279,38 +496,69 @@
 
 .ranking-colecao-jogos li {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
     overflow-wrap: anywhere;
-    padding: 8px 10px;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 9px 10px;
     color: #aaa;
-    background: #121212;
-    border: 1px solid #292929;
-    border-radius: 4px;
+    background: #ffffff04;
+    border: 1px solid #ffffff0c;
+    border-radius: 5px;
+    transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.ranking-colecao-jogos li:hover:not(.ranking-final-com-banner) {
+    background: #ffffff08;
+    border-color: #ffffff1c;
 }
 
 .ranking-colecao-jogos li strong {
     font-size: 0.78rem;
 }
 
+.ranking-colecao-jogos li.desbloqueado:not(.ranking-final-com-banner) {
+    color: #e3d3b8;
+    background: #d3b47d0a;
+    border-color: #d3b47d24;
+}
+
 .ranking-colecao-jogos li.ranking-final-com-banner {
     padding: 0;
+    overflow: hidden;
+    border: 1px solid #ffffff20;
+    background: #111;
+    border-radius: 5px;
+}
+
+.ranking-colecao-jogos li.ranking-final-com-banner:hover {
+    border-color: #88714e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ranking-colecao-conteudo {
+        transition: none;
+    }
+
+    .ranking-colecao-progresso-linha .ranking-colecao-progresso::-webkit-progress-value {
+        transition: none;
+    }
+
 }
 
 .ranking-final-aplicar {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: stretch;
     width: 100%;
     min-height: 44px;
-    padding: 8px 10px;
+    padding: 0;
     color: inherit;
     font: inherit;
     text-align: left;
     background: transparent;
     border: 0;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
 }
 
@@ -319,12 +567,23 @@
     min-width: 0;
 }
 
+.ranking-colecao-jogos .ranking-final-informacoes > strong {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
 .ranking-final-banner {
     display: block;
     width: 100%;
     aspect-ratio: 1760 / 575;
     object-fit: cover;
-    border-radius: 3px;
+    transition: transform 260ms ease, filter 260ms ease;
+}
+
+.ranking-final-aplicar:hover:not(:disabled) .ranking-final-banner {
+    filter: brightness(1.08);
+    transform: scale(1.015);
 }
 
 .ranking-final-com-banner .ranking-final-aplicar {
@@ -336,7 +595,7 @@
     display: block;
     width: 100%;
     overflow: hidden;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 .ranking-final-liberado {
@@ -369,19 +628,29 @@
     bottom: 12px;
     display: block;
     max-width: calc(100% - 28px);
+    padding: 4px 8px;
     color: #ddd;
+    background: #090909a6;
+    border: 1px solid #ffffff1a;
+    border-radius: 4px;
     text-align: right;
     text-shadow: 0 1px 3px #000, 0 2px 7px #000;
 }
 
 .ranking-colecao-jogos .ranking-final-capa-nome strong {
     color: #ddd;
-    font: 600 clamp(0.7rem, 1.5vw, 0.85rem)/1.5 'Cinzel', serif;
+    font: 700 clamp(0.82rem, 1.7vw, 1rem)/1.5 'Cinzel', serif;
+    text-transform: uppercase;
 }
 
 .ranking-final-aplicar[aria-pressed="true"] .ranking-final-liberado {
     border-color: #d8ba8e;
     color: #d8ba8e;
+}
+
+.ranking-final-aplicar[aria-pressed="true"] .ranking-final-capa {
+    outline: 1px solid #d8ba8e80;
+    outline-offset: -2px;
 }
 
 .ranking-final-usando {
@@ -448,6 +717,98 @@
     margin-top: 6px;
     color: #888;
     font-size: 0.6rem;
+}
+
+@media (max-width: 600px) {
+    .ranking-colecao-finais {
+        gap: 20px;
+        padding: 16px;
+        border-radius: 7px;
+    }
+
+    .ranking-colecao-finais > header {
+        align-items: flex-start;
+        gap: 12px;
+        padding-bottom: 18px;
+    }
+
+    .ranking-colecao-cabecalho {
+        flex: 1 1 100%;
+        gap: 7px;
+    }
+
+    .ranking-colecao-finais h2 {
+        font-size: 1.08rem;
+    }
+
+    .ranking-colecao-introducao {
+        font-size: 0.72rem;
+    }
+
+    .ranking-colecao-total {
+        min-width: 0;
+    }
+
+    .ranking-colecao-total strong {
+        font-size: 1.18rem;
+    }
+
+    .ranking-colecao-total > span {
+        white-space: normal;
+        font-size: 0.58rem;
+    }
+
+    .ranking-colecao-jogo {
+        padding: 6px 6px;
+    }
+
+    .ranking-colecao-jogo summary {
+        min-height: 70px;
+        gap: 8px;
+        padding: 2px 5px 2px 0;
+    }
+
+    .ranking-colecao-capa {
+        flex-basis: 76px;
+        width: 76px;
+        height: 74px;
+    }
+
+    .ranking-colecao-capa-fundo,
+    .ranking-colecao-capa-imagem {
+        transition: none;
+    }
+
+    .ranking-colecao-jogos .ranking-colecao-jogo-nome strong {
+        font-size: 0.76rem;
+    }
+
+    .ranking-colecao-resumo {
+        gap: 5px;
+        font-size: 0.58rem;
+    }
+
+    .ranking-colecao-progresso-linha {
+        gap: 7px;
+    }
+
+    .ranking-final-liberado {
+        top: 8px;
+        left: 8px;
+        width: 28px;
+        height: 28px;
+    }
+
+    .ranking-final-usando {
+        top: 8px;
+        right: 8px;
+    }
+
+    .ranking-final-capa-nome {
+        right: 8px;
+        bottom: 8px;
+        padding: 3px 6px;
+    }
 }
 
 .ranking-colecao-vazia {

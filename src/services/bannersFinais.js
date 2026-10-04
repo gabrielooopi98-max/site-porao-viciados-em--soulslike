@@ -9,6 +9,11 @@ export const BANNERS_FINAIS = {
     nome: 'Era do Fogo',
     titulo: 'Herdeiro da Chama',
   },
+  ds1_trevas: {
+    src: '/svg-animado/banner-ruinas-1760x575.svg',
+    nome: 'Era das Trevas',
+    titulo: 'Lorde Sombrio',
+  },
 };
 
 export function finalBannerAtivo(banner) {
