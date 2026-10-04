@@ -121,7 +121,7 @@ create table if not exists public.ranking_finais (
 insert into public.ranking_finais (id, jogo, final, titulo, ordem) values
     ('ds1_chama', 'Dark Souls Remastered', 'Era do Fogo', 'Herdeiro da Chama', 10),
     ('ds1_trevas', 'Dark Souls Remastered', 'Era das Trevas', 'Lorde Sombrio', 11),
-    ('ds2_trono', 'Dark Souls II', 'Trono do Desejo', 'Monarca de Drangleic', 20),
+    ('ds2_trono', 'Dark Souls II', 'Prossiga para o Trono', 'Monarca de Drangleic', 20),
     ('ds2_recusa', 'Dark Souls II', 'Trono Recusado', 'Aquele que Recusou o Trono', 21),
     ('ds3_ligar', 'Dark Souls III', 'Ligar a Primeira Chama', 'Lorde das Cinzas', 30),
     ('ds3_fim', 'Dark Souls III', 'Fim do Fogo', 'Aquele que Apagou a Chama', 31),
