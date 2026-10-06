@@ -11,6 +11,7 @@ function IconeMenu({ nome }) {
     posts: <><path d="M6 3h9l4 4v14H6z" /><path d="M14 3v5h5M9 12h7M9 16h7" /></>,
     builds: <><path d="m14 6 4-4 4 4-4 4" /><path d="m2 22 12-12" /><path d="m7 7 10 10M4 10l10 10" /></>,
     ranking: <><path d="M8 21h8M12 17v4" /><path d="M7 4h10v5a5 5 0 0 1-10 0z" /><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4" /></>,
+    batalhas: <><path d="M14.5 17.5 3 6V3h3l11.5 11.5" /><path d="m13 19 6-6M16 16l4 4M19 21l2-2" /></>,
     chat: <><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6.5A7.5 7.5 0 1 1 20 11.5Z" /><path d="M8 11h.01M12 11h.01M16 11h.01" /></>,
   };
 
@@ -75,6 +76,9 @@ export default function CabecalhoComunidade() {
               </NavLink>
               <NavLink to="/builds" onClick={() => setMenuAberto(false)}>
                 <i><IconeMenu nome="builds" /></i><span>Builds</span>
+              </NavLink>
+              <NavLink to="/batalhas" onClick={() => setMenuAberto(false)}>
+                <i><IconeMenu nome="batalhas" /></i><span>Batalhas</span>
               </NavLink>
               <NavLink to="/ranking" onClick={() => setMenuAberto(false)}>
                 <i><IconeMenu nome="ranking" /></i><span>Ranking e desafios</span>

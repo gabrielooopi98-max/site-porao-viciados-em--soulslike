@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test:ranking": "node --test tests/ranking.test.mjs tests/classificacaoBuilds.test.mjs tests/bannersFinais.test.mjs",
+    "test:batalhas": "node --test tests/combate.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

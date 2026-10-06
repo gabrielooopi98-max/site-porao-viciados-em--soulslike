@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { gerarIdUnico } from '../../gerarIdUnico';
 import MidiasPublicacao from '../MidiasPublicacao';
@@ -371,6 +371,14 @@ function DetalhesBuild({ build, fecharDetalhesBuild }) {
                                 )}
                             </dl>
                         )}
+
+                        <Link className="detalhe-build-arena" to={`/batalhas?build=${build.id}`}>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
+                                <path d="m13 19 6-6M16 16l4 4M19 21l2-2" />
+                            </svg>
+                            Enfrentar um chefe com esta build
+                        </Link>
 
                         {midias.length > 0 && (
                             <div className={`detalhe-post-midia${midias.length > 1 ? ' detalhe-post-midia-varias' : ''}`}>
