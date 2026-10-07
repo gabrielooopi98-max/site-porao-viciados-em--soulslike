@@ -28,7 +28,6 @@ const PainelCriarPost = lazy(() => import('./components/painel-criar-post/Painel
 const PainelCriarBuild = lazy(() => import('./components/painel-criar-build/PainelCriarBuild'));
 const DetalhesPost = lazy(() => import('./components/detalhes-post/DetalhesPost'));
 const DetalhesBuild = lazy(() => import('./components/detalhes-build/DetalhesBuild'));
-const PaginaBatalhas = lazy(() => import('./components/rpg-combat/PaginaBatalhas'));
 
 const PAGE_SIZE = 12;
 const HOME_CARD_LIMIT = 8;
@@ -415,14 +414,9 @@ function Home() {
                 Chat da comunidade
               </button>
 
-              <button
-                className="btn-banner"
-                type="button"
-                onClick={() => navigate('/batalhas')}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5" /><path d="m13 19 6-6M16 16l4 4M19 21l2-2" /></svg>
-                Batalhas
-              </button>
+              <a href="#builds" className="btn-banner">
+                Ver builds
+              </a>
             </div>
 
           </div>
@@ -1360,11 +1354,6 @@ function App() {
         <Route path="/ranking" element={(
           <Suspense fallback={<main className="componente-carregando" role="status">Preparando ranking...</main>}>
             <PaginaRanking />
-          </Suspense>
-        )} />
-        <Route path="/batalhas" element={(
-          <Suspense fallback={<main className="componente-carregando" role="status">Preparando a arena...</main>}>
-            <PaginaBatalhas />
           </Suspense>
         )} />
         <Route path="/favoritos" element={(
